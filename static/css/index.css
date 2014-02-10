@@ -1,0 +1,59 @@
+html { 
+	height: 100%;
+}
+body { 
+	height: 100%;
+	margin: 0; 
+	padding: 0; 
+}
+
+#wrapper {
+	position: relative;
+}
+
+#map-canvas {
+		position: absolute;
+		height: 100%;
+		width: 100%;
+}
+#gpsmenu {
+	position: absolute;
+	top: 80px;
+	right: 0px;
+	width: 320px;
+	height: 150px;
+	z-index: 99;
+	background-color: rgba(0,0,0,0.8);
+	color: #FFF;
+	font-family: Helvetica, Arial, sans-serif;
+}
+
+#usermenu {
+	position: absolute;
+	top: 240px;
+	right: 0px;
+	width: 320px;
+	z-index: 99;
+	background-color: rgba(0,0,0,0.8);
+	color: #FFF;
+	font-family: Helvetica, Arial, sans-serif;
+	overflow: scroll;
+}
+
+#logo {
+	margin: 0px;
+}
+
+.fill {
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    width: auto;
+    height: auto;
+}
+
+.angular-leaflet-map {
+	height: 100%;
+}
