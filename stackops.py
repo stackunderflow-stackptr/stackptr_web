@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import os
-
 from flask import *
 app = Flask(__name__)
 application = app
+
+import os
+import json
+import md5
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -31,6 +33,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
+    locations = db.relationship("TrackPerson", backref="user")
     
 
     def __init__(self, username, email):
@@ -51,6 +54,22 @@ class User(db.Model):
  
     def __repr__(self):
         return 'User %r' % (self.username)
+
+class TrackPerson(db.Model):
+	username = db.Column(db.String(80), db.ForeignKey('user.username'))
+	device = db.Column(db.String(128), primary_key=True)
+	lat = db.Column(db.Float())
+	lon = db.Column(db.Float())
+	alt = db.Column(db.Float())
+	hdg = db.Column(db.Float())
+	spd = db.Column(db.Float())
+	lastupd = db.Column(db.DateTime())
+	
+	def __init__(self, username, device):
+		self.username = username
+		self.device = device
+
+db.create_all()
 
 @login_manager.user_loader
 def load_user(id):
@@ -77,7 +96,7 @@ def index():
 	return render_template("map.html", current_user=g.user.username)
 
 @app.route('/login', methods=['GET', 'POST'])
-def login(next):
+def login():
 	if request.method == "GET":
 		return render_template("login.html")
 	else:
@@ -98,7 +117,18 @@ def logout():
 	logout_user()
 	return redirect("/")
 
-
+@app.route('/user.json')
+@login_required
+def userjson():
+	a = TrackPerson.query.all()
+	#a = [{'username': i.username} for i in a]
+	
+	out = [ {'loc': tu.lat,
+	'user': tu.username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32'}
+	for tu in a ]
+	
+	return str(out)
 
 
 
