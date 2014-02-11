@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no">
+{% endblock extra_head %}
+
+{% block extra_css %}
+	<link rel="stylesheet" type="text/css" href="/static/css/index.css" />
+	<link rel="stylesheet" type="text/css" href="/static/css/leaflet.css" />
+	<!--[if lte IE 8]>
+    <link rel="stylesheet" href="/static/css/leaflet.ie.css" />
+ 	<![endif]-->
+{% endblock extra_css %}
+
+{% block extra_js %}
+	<script type="text/javascript" src="/static/js/leaflet.js"></script>
+	<script type="text/javascript" src="/static/js/stackops-map.js"></script>
+{% endblock extra_js %}
+
+{% block content %}
+<nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+	<div class="navbar-header">
+		<img src="/static/logo2.png" id="logo" height="50px">
+	</div>
+	<ul class="nav navbar-nav">
+		<li><a onclick="togglePane('#gpsmenu')">Update</a></li>
+		<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
+	</ul>
+	<ul class="nav navbar-nav navbar-right">
+		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Feature Requests / todo</a></li>
+		<li><a>Logged in as: {{ current_user }}</a></li>
+		<li><a href="/logout">Log out</a></li>
+	</ul>
+</nav>
+
+<div class="panel panel-primary" id="gpsmenu">
+	<div class="panel-heading">Update <a onclick="togglePane('#gpsmenu')">close</a></div>
+	<div class="panel-body">
+	<button id="upload_loc" class="btn btn-primary">Upload</button>
+	<button id="refresh_loc" class="btn btn-default">Download</button>
+	<button id="autorefresh_loc" class="btn btn-default">Start Live</button>
+	<div id="loc"></div>
+	</div>
+</div>
+
+<div class="panel panel-primary" id="usermenu">
+	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')">close</a></div>
+	<div class="panel-body">
+		<div class="list-group" id="userlist">
+		</div>
+		<form class="form-horizontal" role="form" method="POST" action="/adduser/" id="adduserform">
+			<div class="form-group">
+				<div class="col-lg-6">
+					<input type="text" class="form-control" name="username">
+				</div>
+				<div class="col-lg-6">
+					<button type="submit" id="adduser" class="btn btn-default">+</button>
+					<button id="goto_loc" class="btn btn-warning">Me</button>
+				</div>
+			</div>
+		</form>
+		<div id="addstatus"></div>
+	</div>
+</div>
+
+<div class="fill">
+	   <div id="map-canvas" height="100%"></leaflet>
+</div>
+
+{% endblock content %}
