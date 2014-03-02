@@ -37,6 +37,7 @@ function headingFormat(heading) {
 
 var map; 				// leaflet map
 var placemarks = {};	// map of placemarks
+var webLocation;		// last location from website
 var gpsLocation;		// my current location as a L.LatLng()
 var watchID;			// id of geolocation watcher
 
@@ -93,7 +94,8 @@ function updateFollowing() {
 		if (myData['user'] in placemarks) {
 		} else {
 			$("#loc").html("Creating placemark for self");
-			placemarks[myData['user']] = new L.marker(new L.LatLng(-34.9,138.5),
+			webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
+			placemarks[myData['user']] = new L.marker(webLocation,
 			{
 				icon: new L.icon({
 					iconUrl: myData['icon'],
@@ -112,7 +114,7 @@ function updateFollowing() {
 				placemarks[user['user']].setLatLng(loc);
 			} else {
 				// create a placemark otherwise
-				placemarks[user['user']] = new L.marker(new L.LatLng(user['loc'][1], user['loc'][0]), {
+				placemarks[user['user']] = new L.marker(new L.LatLng(user['loc'][0], user['loc'][1]), {
 					icon: new L.icon({
 						iconUrl: user['icon'],
 					}),
@@ -122,7 +124,7 @@ function updateFollowing() {
 		});
 		$("#loc").html("Locations updated");
 		updateSideList();
-		startGPS();
+		//startGPS();
 	});
 	return true;
 };
@@ -138,11 +140,17 @@ function updateSideList() {
 		var user_loc = placemarks[user['user']].getLatLng();
 		
 		var extra = "";
+		
+		var my_loc;
 		if (gpsLocation) {
-			var distance = gpsLocation.distanceTo(user_loc);
-			var heading = Math.atan2(user_loc.lng - gpsLocation.lng, user_loc.lat - gpsLocation.lat) * 180 / Math.PI;
-			extra = ' ' + distanceFormat(distance) + ' ' + headingFormat(heading);
+			my_loc = gpsLocation;
+		} else { 
+			my_loc = webLocation;
 		}
+		
+		var distance = my_loc.distanceTo(user_loc);
+		var heading = Math.atan2(user_loc.lng - my_loc.lng, user_loc.lat - my_loc.lat) * 180 / Math.PI;
+		extra = ' ' + distanceFormat(distance) + ' ' + headingFormat(heading);
 		
 		var imgel = $('<img width="24" height="24">');
 		imgel.attr('src', user['icon']);
