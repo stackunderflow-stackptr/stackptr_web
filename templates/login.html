@@ -10,6 +10,7 @@
 {% endif %}
 
 <form class="form-horizontal" role="form" method="post" action="/login">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 <div class="form-group">
 	<label for="email" class="col-sm-2 control-label">Email</label>
 	<div class="col-sm-10">

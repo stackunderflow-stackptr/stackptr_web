@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 from flask import *
+from flask_wtf.csrf import CsrfProtect
 app = Flask(__name__)
 application = app
+CsrfProtect(app)
 
 import os
 import json
@@ -12,6 +14,7 @@ import ConfigParser
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(app.root_path, "stackops.conf"))
 app.secret_key = config.get("app","secret_key")
+app.CSRF_ENABLED = True
 
 import logging, sys
 logging.basicConfig(stream=sys.stderr)

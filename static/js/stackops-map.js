@@ -124,7 +124,7 @@ function updateFollowing() {
 		});
 		$("#loc").html("Locations updated");
 		updateSideList();
-		//startGPS();
+		startGPS();
 	});
 	return true;
 };
