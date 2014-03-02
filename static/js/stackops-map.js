@@ -35,13 +35,13 @@ function headingFormat(heading) {
 
 ///////////////////////////////////////////////////////////////////////////
 
-var map; 		// leaflet map
+var map; 				// leaflet map
 var placemarks = {};	// map of placemarks
-var gpsLocation;	// my current location as a L.LatLng()
-var watchID;		// id of geolocation watcher
+var gpsLocation;		// my current location as a L.LatLng()
+var watchID;			// id of geolocation watcher
 
-var myData;		// data for logged in user
-var followingData;	// data for following users
+var myData;				// data for logged in user
+var followingData;		// data for following users
 
 var autoRefresh = false; // do we auto-update?
 
@@ -68,7 +68,7 @@ function startGPS() {
 };
 
 function uploadLocation() {
-	$.post('/update/', {lat: gpsLocation.lat, lon: gpsLocation.lng},
+	$.post('/update', {lat: gpsLocation.lat, lon: gpsLocation.lng},
 				function(data) {
 					$("#loc").html("Server returned: " + data);
 				});

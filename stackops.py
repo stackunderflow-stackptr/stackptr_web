@@ -58,8 +58,8 @@ class User(db.Model):
 class TrackPerson(db.Model):
 	username = db.Column(db.String(80), db.ForeignKey('user.username'))
 	device = db.Column(db.String(128), primary_key=True)
-	lat = db.Column(db.Float())
-	lon = db.Column(db.Float())
+	lat = db.Column(db.Float(Precision=64))
+	lon = db.Column(db.Float(Precision=64))
 	alt = db.Column(db.Float())
 	hdg = db.Column(db.Float())
 	spd = db.Column(db.Float())
@@ -120,17 +120,30 @@ def logout():
 @app.route('/user.json')
 @login_required
 def userjson():
-	a = TrackPerson.query.all()
-	#a = [{'username': i.username} for i in a]
-	
-	out = [ {'loc': tu.lat,
+	tu = TrackPerson.query.filter_by(username = g.user.username).first()
+	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32'}
-	for tu in a ]
 	
-	return str(out)
+	others = [ {'loc': [tu.lat, tu.lon],
+	'user': tu.username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32'}
+	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username).all() ]
+	
+	data = {'me': me, 'following': others}
+	
+	return json.dumps(data)
 
-
+@app.route('/update', methods=['POST'])
+@login_required
+def update():
+	lat = request.form['lat']
+	lon = request.form['lon']
+	tu = TrackPerson.query.filter_by(username = g.user.username).first()
+	tu.lat = lat
+	tu.lon = lon
+	db.session.commit()
+	return "lat: %s, lon: %s" % (lat,lon)
 
 
 
