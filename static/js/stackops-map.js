@@ -207,12 +207,52 @@ $(document).ready(function() {
 	
 	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
 	
-	L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png', {
+	L.tileLayer('https://otile1-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 	}).addTo(map);
 
+	// Initialise the FeatureGroup to store editable layers
+	var drawnItems = new L.FeatureGroup();
+	map.addLayer(drawnItems);
 	
 	
+	var defaultShape = {
+		color: '#000',
+	}
+	// Initialise the draw control and pass it the FeatureGroup of editable layers
+	var drawControl = new L.Control.Draw({
+		draw: {
+			polyline: {
+				shapeOptions: defaultShape,
+			},
+			polygon: {
+				shapeOptions: defaultShape,
+			},
+			rectangle: {
+				shapeOptions: defaultShape,
+			},
+			circle: {
+				shapeOptions: defaultShape,
+			},
+		},
+	    edit: {
+	        featureGroup: drawnItems,
+	    }
+	});
+	map.addControl(drawControl);
+	
+	map.on('draw:created', function (e) {
+		var type = e.layerType,
+		layer = e.layer;
+		
+		if (type === 'marker') {
+			layer.bindPopup('A popup!');
+		}
+		
+		drawnItems.addLayer(layer);
+	});
+
+
 	$("#refresh_loc").click(updateFollowing);
 	updateFollowing();
 	
