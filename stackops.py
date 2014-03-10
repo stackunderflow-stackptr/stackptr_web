@@ -72,6 +72,7 @@ class TrackPerson(db.Model):
 		self.username = username
 		self.device = device
 
+
 db.create_all()
 
 @login_manager.user_loader
@@ -83,14 +84,6 @@ def load_user(id):
 @app.before_request
 def before_request():
 	g.user = current_user
-    
-#	g.conn = conn = MySQLdb.connect(host=config.get("mysql","host"),
-#			user=config.get("mysql","user"),
-#			passwd=config.get("mysql","passwd"),
-#			db=config.get("mysql","db"), 
-#			cursorclass=MySQLdb.cursors.DictCursor, charset='utf8')
-#	g.cursor = g.conn.cursor()
-
 
 
 @app.route('/')
@@ -148,6 +141,14 @@ def update():
 	db.session.commit()
 	return "lat: %s, lon: %s" % (lat,lon)
 
-
+@app.route('/addfeature', methods=['POST'])
+@login_required
+def addfeature():
+	ret = ""
+	for key in request.form.keys():
+		for value in request.form.getlist(key):
+			ret += (key+":|"+value+"|\n")
+	return ret # "data is: |" + request.data + "|"
+	
 
 

@@ -102,6 +102,7 @@ function updateFollowing() {
 				}),
 			});
 			placemarks[myData['user']].addTo(map);
+			//placemarks[myData['user']].bindPopup("test");
 		};
 		
 		// create placemarks for followed people
@@ -207,8 +208,10 @@ $(document).ready(function() {
 	
 	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
 	
-	L.tileLayer('https://otile1-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	L.tileLayer('https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    subdomains: '1234'
 	}).addTo(map);
 
 	// Initialise the FeatureGroup to store editable layers
@@ -245,9 +248,21 @@ $(document).ready(function() {
 		var type = e.layerType,
 		layer = e.layer;
 		
-		if (type === 'marker') {
+		/*if (type === 'marker') {
 			layer.bindPopup('A popup!');
-		}
+		}*/
+		
+		//alert(layer.toGeoJSON());
+		
+		$.post('/addfeature', 
+			{'layer': '',
+			 'geojson': JSON.stringify(layer.toGeoJSON())
+			}, 
+			function(data) {
+				alert(data);
+			}	
+		);
+		
 		
 		drawnItems.addLayer(layer);
 	});
@@ -258,7 +273,7 @@ $(document).ready(function() {
 	
 	$("#adduser").click(function(e) {
 		e.preventDefault();
-		$.post('/adduser/', $('#adduserform').serialize(),
+		$.post('/adduser', $('#adduserform').serialize(),
 			function(data) {
 				$("#addstatus").html("Server returned: " + data);
 				refreshLocation();
