@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from flask import *
-from flask_wtf.csrf import CsrfProtect
+from flask_wtf import *
+
 app = Flask(__name__)
 application = app
 CsrfProtect(app)
@@ -108,14 +109,13 @@ def load_user(id):
 def before_request():
 	g.user = current_user
 
-
 @app.route('/')
 @login_required
 def index():
 	return render_template("map.html", current_user=g.user.username)
 
 @app.route('/csrf')
-def csrf():
+def csrftoken():
 	return render_template("csrf.html")
 
 @app.route('/login', methods=['GET', 'POST'])
