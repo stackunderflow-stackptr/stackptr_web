@@ -46,6 +46,8 @@ var followingData;		// data for following users
 
 var autoRefresh = false; // do we auto-update?
 
+var groupData = {};		// group placemarks
+
 var uploadInterval;
 var downloadInterval;
 ///////////////////////////////////////////////////////////////////////////
@@ -195,15 +197,47 @@ function fixheight() {
 	}
 };
 
+function featureClick(featureid) {
+	alert(featureid);
+	return;
+}
+
+function changegroup() {
+	var group = $("#selectgroup").val();
+
+	$.post('/groupdata', {'group': group}, 
+		function(data) {
+			data.forEach(function(feature) {
+				if (feature['id'] in groupData) {
+					// update it
+				} else {
+					$("#groupfeaturelist").append(
+						$("<a href='' class='list-group-item'>")
+						.text(' '+ feature['id'])
+						.click(function(e) {e.preventDefault(); featureClick(feature['id'])})
+					);
+					L.geoJson(feature['json']).addTo(map);
+					groupData[feature['id']] = '';
+				}
+				
+			});
+		}	
+	,'json');
+}
+
 $(window).resize(fixheight);
    
 $(document).ready(function() {
 	fixheight();
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
+	$("#groupmenu").draggable();
 	$("#upload_loc").click(uploadLocation);
 	$("#goto_loc").click(gotoMyLocation);
 	$("#autorefresh_loc").click(toggleAutoRefresh);
+	$("#selectgroup").change(changegroup);
+	
+	changegroup();
 	
 	
 	map = L.map('map-canvas').setView([-34.929, 138.601], 13);

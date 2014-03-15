@@ -40,6 +40,18 @@ body {
 	overflow: scroll;
 }
 
+#groupmenu {
+	position: absolute;
+	top: 520px;
+	right: 0px;
+	width: 320px;
+	z-index: 99;
+	background-color: rgba(0,0,0,0.8);
+	color: #FFF;
+	font-family: Helvetica, Arial, sans-serif;
+	overflow: scroll;
+}
+
 #logo {
 	margin: 0px;
 }

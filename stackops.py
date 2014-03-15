@@ -31,6 +31,20 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 
+class TrackPerson(db.Model):
+	username = db.Column(db.String(80), db.ForeignKey('user.username'))
+	device = db.Column(db.String(128), primary_key=True)
+	lat = db.Column(db.Float(Precision=64))
+	lon = db.Column(db.Float(Precision=64))
+	alt = db.Column(db.Float())
+	hdg = db.Column(db.Float())
+	spd = db.Column(db.Float())
+	lastupd = db.Column(db.DateTime())
+	
+	def __init__(self, username, device):
+		self.username = username
+		self.device = device
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
@@ -58,20 +72,29 @@ class User(db.Model):
     def __repr__(self):
         return 'User %r' % (self.username)
 
-class TrackPerson(db.Model):
-	username = db.Column(db.String(80), db.ForeignKey('user.username'))
-	device = db.Column(db.String(128), primary_key=True)
-	lat = db.Column(db.Float(Precision=64))
-	lon = db.Column(db.Float(Precision=64))
-	alt = db.Column(db.Float())
-	hdg = db.Column(db.Float())
-	spd = db.Column(db.Float())
-	lastupd = db.Column(db.DateTime())
+class Follower(db.Model):
+	follower = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
+	following = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
+	confirmed = db.Column(db.Integer)
 	
-	def __init__(self, username, device):
-		self.username = username
-		self.device = device
+	def __init__(self, follower, following):
+		self.follower = follower
+		self.following = following
+		confirmed = 0
 
+class Object(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String(128))
+	group = db.Column(db.Integer, db.ForeignKey('group.id'))
+	owner = db.Column(db.String(80), db.ForeignKey('user.username'))
+	json = db.Column(db.Text)
+
+class Group(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String(128), unique=True)
+	owner = db.Column(db.String(80), db.ForeignKey('user.username'))
+	description = db.Column(db.Text)
+	status = db.Column(db.Integer)
 
 db.create_all()
 
@@ -141,14 +164,27 @@ def update():
 	db.session.commit()
 	return "lat: %s, lon: %s" % (lat,lon)
 
+@app.route('/groupdata', methods=['POST'])
+@login_required
+def groupdata():
+	res = []
+	gd = Object.query.filter_by(group = 1).all()
+	for item in gd:
+		feature = {'id': item.id, 'name': item.name, 'owner': item.owner, 'json': json.loads(item.json)}
+		res.append(feature)
+	return json.dumps(res)
+
 @app.route('/addfeature', methods=['POST'])
 @login_required
 def addfeature():
-	ret = ""
-	for key in request.form.keys():
-		for value in request.form.getlist(key):
-			ret += (key+":|"+value+"|\n")
-	return ret # "data is: |" + request.data + "|"
+	feature = Object()
+	feature.name = "Untitled"
+	feature.group = 1
+	feature.owner = g.user.username
+	feature.json = request.form['geojson']
+	db.session.add(feature)
+	db.session.commit()
+	return "success"
 	
 
 
