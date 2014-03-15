@@ -114,6 +114,10 @@ def before_request():
 def index():
 	return render_template("map.html", current_user=g.user.username)
 
+@app.route('/csrf')
+def csrf():
+	return render_template("csrf.html")
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if request.method == "GET":
