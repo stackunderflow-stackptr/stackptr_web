@@ -21,7 +21,7 @@ body {
 	top: 80px;
 	right: 0px;
 	width: 320px;
-	height: 150px;
+	height: 180px;
 	z-index: 99;
 	background-color: rgba(0,0,0,0.8);
 	color: #FFF;
@@ -30,7 +30,7 @@ body {
 
 #usermenu {
 	position: absolute;
-	top: 240px;
+	top: 260px;
 	right: 0px;
 	width: 320px;
 	z-index: 99;

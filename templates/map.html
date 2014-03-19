@@ -40,6 +40,10 @@
 	<button id="upload_loc" class="btn btn-primary">Upload</button>
 	<button id="refresh_loc" class="btn btn-default">Refresh</button>
 	<button id="autorefresh_loc" class="btn btn-default">Start Live</button>
+	<select class="form-control" name="locsource" id="locsource">
+	<option>Server</option>
+	<option>HTML5 Geolocation</option>
+	</select>
 	<div id="loc"></div>
 	</div>
 </div>
@@ -65,7 +69,7 @@
 </div>
 
 <div class="panel panel-primary" id="groupmenu">
-	<div class="panel-heading">Groups <a onclick="togglePane('#usermenu')">close</a></div>
+	<div class="panel-heading">Groups <a onclick="togglePane('#groupmenu')">close</a></div>
 	<div class="panel-body">
 		<form class="form-horizontal" role="form" method="POST" action="/selectgroup" id="selectgroupform">
 			<div class="form-group">

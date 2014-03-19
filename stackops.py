@@ -146,11 +146,11 @@ def userjson():
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32'}
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro'}
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32'}
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro'}
 	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username).all() ]
 	
 	data = {'me': me, 'following': others}

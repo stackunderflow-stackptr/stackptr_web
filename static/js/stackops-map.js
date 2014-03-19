@@ -45,6 +45,7 @@ var myData;				// data for logged in user
 var followingData;		// data for following users
 
 var autoRefresh = false; // do we auto-update?
+var usesGeoLoc = false;
 
 var groupData = {};		// group placemarks
 
@@ -93,10 +94,12 @@ function updateFollowing() {
 		followingData = data['following'];
 		
 		// create placemark for me, no position set
+		webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
 		if (myData['user'] in placemarks) {
+			placemarks[myData['user']].setLatLng(webLocation);
 		} else {
 			$("#loc").html("Creating placemark for self");
-			webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
+			
 			placemarks[myData['user']] = new L.marker(webLocation,
 			{
 				icon: new L.icon({
@@ -113,8 +116,7 @@ function updateFollowing() {
 		followingData.forEach(function(user) {
 			if (user['user'] in placemarks) {
 				// if it does exist, move the placemark to it's current location
-				var loc = new L.LatLng(user['loc'][1], user['loc'][0]);
-				placemarks[user['user']].setLatLng(loc);
+				placemarks[user['user']].setLatLng(new L.LatLng(user['loc'][0], user['loc'][1]));
 			} else {
 				// create a placemark otherwise
 				placemarks[user['user']] = new L.marker(new L.LatLng(user['loc'][0], user['loc'][1]), {
@@ -127,7 +129,6 @@ function updateFollowing() {
 		});
 		$("#loc").html("Locations updated");
 		updateSideList();
-		startGPS();
 	});
 	return true;
 };
@@ -145,7 +146,7 @@ function updateSideList() {
 		var extra = "";
 		
 		var my_loc;
-		if (gpsLocation) {
+		if (usesGeoLoc) {
 			my_loc = gpsLocation;
 		} else { 
 			my_loc = webLocation;
@@ -172,9 +173,9 @@ function toggleAutoRefresh() {
 	if (!autoRefresh) {
 		autoRefresh = true;
 		$('#autorefresh_loc').text("Stop Live");
-		uploadInterval = window.setInterval(uploadLocation, 10000);
+		//uploadInterval = window.setInterval(uploadLocation, 10000);
 		downloadInterval = window.setInterval(updateFollowing, 10000);
-		uploadLocation();
+		//uploadLocation();
 		updateFollowing();
 	} else {
 		autoRefresh = false;
@@ -225,33 +226,11 @@ function changegroup() {
 	,'json');
 }
 
-$(window).resize(fixheight);
-   
-$(document).ready(function() {
-	fixheight();
-	$("#gpsmenu").draggable();
-	$("#usermenu").draggable();
-	$("#groupmenu").draggable();
-	$("#upload_loc").click(uploadLocation);
-	$("#goto_loc").click(gotoMyLocation);
-	$("#autorefresh_loc").click(toggleAutoRefresh);
-	$("#selectgroup").change(changegroup);
+function setupDraw() {
 	
-	changegroup();
-	
-	
-	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
-	
-	L.tileLayer('https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19,
-    subdomains: '1234'
-	}).addTo(map);
-
 	// Initialise the FeatureGroup to store editable layers
 	var drawnItems = new L.FeatureGroup();
 	map.addLayer(drawnItems);
-	
 	
 	var defaultShape = {
 		color: '#000',
@@ -300,6 +279,33 @@ $(document).ready(function() {
 		
 		drawnItems.addLayer(layer);
 	});
+}
+
+$(window).resize(fixheight);
+   
+$(document).ready(function() {
+	fixheight();
+	$("#gpsmenu").draggable();
+	$("#usermenu").draggable();
+	$("#groupmenu").draggable();
+	$("#upload_loc").click(uploadLocation);
+	$("#goto_loc").click(gotoMyLocation);
+	$("#autorefresh_loc").click(toggleAutoRefresh);
+	$("#selectgroup").change(changegroup);
+	
+	
+	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
+	
+	L.tileLayer('https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    subdomains: '1234'
+	}).addTo(map);
+
+	changegroup();
+
+	
+	setupDraw();
 
 
 	$("#refresh_loc").click(updateFollowing);
