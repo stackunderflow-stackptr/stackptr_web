@@ -48,6 +48,8 @@ var autoRefresh = false; // do we auto-update?
 var usesGeoLoc = false;
 
 var groupData = {};		// group placemarks
+var drawnItems;			// FeatureGroup of drawn items
+
 
 var uploadInterval;
 var downloadInterval;
@@ -217,8 +219,9 @@ function changegroup() {
 						.text(' '+ feature['id'])
 						.click(function(e) {e.preventDefault(); featureClick(feature['id'])})
 					);
-					L.geoJson(feature['json']).addTo(map);
-					groupData[feature['id']] = '';
+					var gjlayer = L.geoJson(feature['json']);
+					drawnItems.addLayer(gjlayer);
+					groupData[feature['id']] = gjlayer;
 				}
 				
 			});
@@ -229,7 +232,7 @@ function changegroup() {
 function setupDraw() {
 	
 	// Initialise the FeatureGroup to store editable layers
-	var drawnItems = new L.FeatureGroup();
+	drawnItems = new L.FeatureGroup();
 	map.addLayer(drawnItems);
 	
 	var defaultShape = {
@@ -247,12 +250,11 @@ function setupDraw() {
 			rectangle: {
 				shapeOptions: defaultShape,
 			},
-			circle: {
-				shapeOptions: defaultShape,
-			},
+			circle: false,
 		},
 	    edit: {
 	        featureGroup: drawnItems,
+	        remove: {},
 	    }
 	});
 	map.addControl(drawControl);
@@ -275,9 +277,29 @@ function setupDraw() {
 				alert(data);
 			}	
 		);
+		changegroup();
+		//drawnItems.addLayer(layer);
+	});
+	
+	map.on('draw:deleted', function(e) {
+		console.log("draw:deleted");
 		
+		e.layers.eachLayer(function(deletedLayer) {
+			for (var key in groupData) {
+				groupData[key].eachLayer(function(layer) {
+					if (deletedLayer == layer) {
+						$.post('/delfeature', 
+							{'id': key,}, 
+							function(data) {
+								alert(data);
+							}	
+						);
+					}
+				});
+			}
+		});
 		
-		drawnItems.addLayer(layer);
+		changegroup();
 	});
 }
 

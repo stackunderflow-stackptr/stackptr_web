@@ -189,6 +189,14 @@ def addfeature():
 	db.session.add(feature)
 	db.session.commit()
 	return "success"
-	
+
+@app.route('/delfeature', methods=['POST'])
+@login_required
+def delfeature():
+	feature = Object.query.filter_by(id = int(request.form['id'])).first()
+	db.session.delete(feature)
+	db.session.commit()
+	return "deleting feature " + request.form['id']
+
 
 
