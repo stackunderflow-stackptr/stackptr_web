@@ -57,7 +57,7 @@ body {
 }
 
 .fill {
-    top: 50px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
@@ -68,4 +68,12 @@ body {
 
 .angular-leaflet-map {
 	height: 100%;
+}
+
+.leaflet-top {
+	top: 50px;
+}
+
+.semitransparent {
+	opacity: 0.9;
 }
