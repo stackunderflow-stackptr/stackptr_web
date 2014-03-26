@@ -198,5 +198,12 @@ def delfeature():
 	db.session.commit()
 	return "deleting feature " + request.form['id']
 
-
+@app.route('/renamefeature', methods=['POST'])
+@login_required
+def renamefeature():
+	feature = Object.query.filter_by(id = int(request.form['id'])).first()
+	feature.name = request.form['name']
+	#feature.description
+	db.session.commit()
+	return "renaming feature" + request.form['id']
 

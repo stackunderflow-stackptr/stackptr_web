@@ -48,6 +48,7 @@ var autoRefresh = false; // do we auto-update?
 var usesGeoLoc = false;
 
 var groupData = {};		// group placemarks
+var groupInfo = {};
 var drawnItems;			// FeatureGroup of drawn items
 
 
@@ -200,28 +201,57 @@ function fixheight() {
 	}
 };
 
-function featureClick(featureid) {
-	alert(featureid);
-	return;
+function popoutEdit(featureid, tgt) {
+	console.log("test");
+	tgt.popover('toggle');
+	
+	$("#" + featureid + "_textinput").val(groupInfo[featureid]['name']); // and 'owner'
+	$("#" + featureid + "_description").val("description");
+	return false;
 }
+
+function changefeature(a,e) {
+	$.post('/renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val()},
+	function(data) {
+		alert(data);
+	});
+	e.preventDefault();
+	return false;
+}
+
+function featureClick(feature) {
+	map.fitBounds(feature.getBounds());
+	
+	console.log("panning");
+};
 
 function changegroup() {
 	var group = $("#selectgroup").val();
-
 	$.post('/groupdata', {'group': group}, 
 		function(data) {
 			data.forEach(function(feature) {
 				if (feature['id'] in groupData) {
 					// update it
 				} else {
-					$("#groupfeaturelist").append(
-						$("<a href='' class='list-group-item'>")
-						.text(' '+ feature['id'])
-						.click(function(e) {e.preventDefault(); featureClick(feature['id'])})
-					);
+					var editlink = $("<a href='#' onclick='' >edit</a>");
+					var item = $("<a href='#' class='list-group-item'>")
+						.text(' '+ feature['name'] + ' ');
+					editlink.click(function(e) {
+						e.stopImmediatePropagation();
+						popoutEdit(feature['id'], item);
+					});
+					item.append(editlink);
+					item.click(function(e) {
+						e.preventDefault();
+						featureClick(groupData[feature['id']]);
+					});
+					item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + feature['id'] +  "_textinput' name='" + feature['id'] +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + feature['id'] + "_description' name=" + feature['id'] + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + feature['id'] + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
+					
+					$("#groupfeaturelist").append(item);
 					var gjlayer = L.geoJson(feature['json']);
 					drawnItems.addLayer(gjlayer);
 					groupData[feature['id']] = gjlayer;
+					groupInfo[feature['id']] = feature;
 				}
 				
 			});
@@ -301,6 +331,7 @@ function setupDraw() {
 		
 		changegroup();
 	});
+	changegroup();
 }
 
 $(window).resize(fixheight);
@@ -323,9 +354,6 @@ $(document).ready(function() {
     maxZoom: 19,
     subdomains: '1234'
 	}).addTo(map);
-
-	changegroup();
-
 	
 	setupDraw();
 
