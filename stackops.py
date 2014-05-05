@@ -5,11 +5,18 @@ from flask_wtf import *
 
 app = Flask(__name__)
 application = app
-CsrfProtect(app)
+
+csrf = CsrfProtect()
+csrf.init_app(app)
+csrf_protect = app.before_request_funcs[None][0]
+app.before_request_funcs[None] = []
 
 import os
 import json
 import md5
+import datetime
+import random
+import string
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -28,9 +35,6 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
 db = SQLAlchemy(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
 
 class TrackPerson(db.Model):
 	username = db.Column(db.String(80), db.ForeignKey('user.username'))
@@ -76,6 +80,9 @@ class User(db.Model):
 class ApiKey(db.Model):
 	key = db.Column(db.String(32), primary_key=True)
 	user = db.Column(db.String(80), db.ForeignKey('user.username'))
+	created = db.Column(db.DateTime)
+	name = db.Column(db.String(128))	
+
 
 class Follower(db.Model):
 	follower = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
@@ -103,12 +110,20 @@ class Group(db.Model):
 
 db.create_all()
 
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
 @login_manager.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+	csrf_protect()
+	return User.query.get(int(id))
 
 @login_manager.request_loader
 def load_user_from_request(request):
+	apikey = request.args.get('apikey')
+	if apikey:
+		key = ApiKey.query.filter_by(key=apikey).first()
+		return User.query.filter_by(username=key.user).first()
 	return None
 
 #from opsmodels import *
@@ -117,12 +132,14 @@ def load_user_from_request(request):
 def before_request():
 	g.user = current_user
 
-## root and login
+## index
 
 @app.route('/')
 @login_required
 def index():
 	return render_template("map.html", current_user=g.user.username)
+
+## login
 
 @app.route('/csrf')
 def csrftoken():
@@ -139,7 +156,7 @@ def login():
 		if not registered_user:
 			return "no such user %s" % email
 		if check_password_hash(registered_user.password, password):
-			login_user(registered_user)
+			login_user(registered_user, remember=True)
 			return redirect("/")
 		else:
 			return "incorrect password"
@@ -155,8 +172,34 @@ def logout():
 @app.route('/api/')
 @login_required
 def api_info():
-	keys = ApiKey.query.filter_by(user = g.user.username).all()
+	keys = ApiKey.query.filter_by(user = g.user.username).order_by(ApiKey.created).all()
 	return render_template("api.html", keys=keys)
+
+@app.route('/api/new', methods=['POST'])
+@login_required
+def api_create():
+	key = ApiKey()
+	key.key = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+	key.user = g.user.username
+	key.created = datetime.datetime.now()
+	key.name = request.form['description']
+	db.session.add(key)
+	db.session.commit()
+	return redirect(url_for('api_info'))
+
+@app.route('/api/remove', methods=['POST'])
+@login_required
+def api_remove():
+	key = ApiKey.query.filter_by(key = request.form['key_id'], user=g.user.username).first()
+	db.session.delete(key)
+	db.session.commit()
+	return redirect(url_for('api_info'))
+
+## test
+@app.route('/test')
+@login_required
+def test():
+	return str(g.user.username)
 
 ## data
 

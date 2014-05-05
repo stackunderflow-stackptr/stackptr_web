@@ -7,11 +7,31 @@
 <h1> API keys </h1>
 
 <table class="table table-striped">
-<tr><th>username</th><th>key</th></tr>
-{% for key in keys %}
-<tr><td>{{ key.user }}</td><td>{{ key.key }}</td>
-{% endfor %}
+	<tr><th>key</th><th>created</th><th>description</th><th></th></tr>
+	{% for key in keys %}
+		<tr><td>{{ key.key }}</td><td>{{ key.created }}</td><td>{{ key.name }}</td>
+		<td>
+			<form method="POST" action="/api/remove">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<input type="hidden" name="key_id" value="{{ key.key }}">
+				<button type="submit" class="btn btn-sm btn-danger">Remove</button>
+			</form>
+		</td>
+	{% endfor %}
 </table>
+
+<form class="form-horizontal" role="form" method="POST" action="/api/new" id="adduserform">
+	<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+	<div class="form-group">
+		<div class="col-lg-6">
+			<input type="text" class="form-control" name="description" placeholder="Description (optional)">
+		</div>
+		<div class="col-lg-6">
+			<button type="submit" class="btn btn-default">Add</button>
+		</div>
+	</div>
+</form>
+
 
 </div>
 </div>
