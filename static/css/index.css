@@ -30,7 +30,7 @@ body {
 
 #usermenu {
 	position: absolute;
-	top: 260px;
+	top: 80px;
 	right: 0px;
 	width: 320px;
 	z-index: 99;
@@ -42,7 +42,7 @@ body {
 
 #groupmenu {
 	position: absolute;
-	top: 520px;
+	top: 320px;
 	right: 0px;
 	width: 320px;
 	z-index: 99;
@@ -76,4 +76,16 @@ body {
 
 .semitransparent {
 	opacity: 0.9;
+}
+
+.list-item-person {
+	padding: 5px 5px;
+}
+
+.list-item-draw {
+	padding: 5px 15px;
+}
+
+.hidden {
+	display: none;
 }

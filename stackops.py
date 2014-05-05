@@ -73,6 +73,10 @@ class User(db.Model):
     def __repr__(self):
         return 'User %r' % (self.username)
 
+class ApiKey(db.Model):
+	key = db.Column(db.String(32), primary_key=True)
+	user = db.Column(db.String(80), db.ForeignKey('user.username'))
+
 class Follower(db.Model):
 	follower = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
 	following = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
@@ -103,11 +107,17 @@ db.create_all()
 def load_user(id):
     return User.query.get(int(id))
 
+@login_manager.request_loader
+def load_user_from_request(request):
+	return None
+
 #from opsmodels import *
 
 @app.before_request
 def before_request():
 	g.user = current_user
+
+## root and login
 
 @app.route('/')
 @login_required
@@ -139,6 +149,16 @@ def login():
 def logout():
 	logout_user()
 	return redirect("/")
+
+## API keys
+
+@app.route('/api/')
+@login_required
+def api_info():
+	keys = ApiKey.query.filter_by(user = g.user.username).all()
+	return render_template("api.html", keys=keys)
+
+## data
 
 @app.route('/user.json')
 @login_required

@@ -28,13 +28,14 @@
 		<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right">
+		<li><a id="refresh"></a></li>
 		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Feature Requests / todo</a></li>
 		<li><a>Logged in as: {{ current_user }}</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
 </nav>
 
-<div class="panel panel-primary" id="gpsmenu">
+<div class="panel panel-primary hidden" id="gpsmenu">
 	<div class="panel-heading">Update <a onclick="togglePane('#gpsmenu')">close</a></div>
 	<div class="panel-body">
 	<button id="upload_loc" class="btn btn-primary">Upload</button>
@@ -53,6 +54,7 @@
 	<div class="panel-body">
 		<div class="list-group" id="userlist">
 		</div>
+		<!--
 		<form class="form-horizontal" role="form" method="POST" action="/adduser" id="adduserform">
 			<div class="form-group">
 				<div class="col-lg-6">
@@ -65,6 +67,7 @@
 			</div>
 		</form>
 		<div id="addstatus"></div>
+		-->
 	</div>
 </div>
 

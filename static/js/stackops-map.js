@@ -51,6 +51,7 @@ var groupData = {};		// group placemarks
 var groupInfo = {};
 var drawnItems;			// FeatureGroup of drawn items
 
+var refreshTime;		// seconds left for refresh counter
 
 var uploadInterval;
 var downloadInterval;
@@ -163,13 +164,28 @@ function updateSideList() {
 		imgel.attr('src', user['icon']);
 		
 		$("#userlist").append(
-			$("<a href='' class='list-group-item'>")
+			$("<a href='' class='list-group-item list-item-person'>")
 				.text(' '+ user['user'] + extra)
 				.click(function(e) {e.preventDefault(); userClick(user['user'])})
 				.prepend(imgel)
 		);
 		
 	});
+}
+
+function updateTimer() {
+	refreshTime--;
+	if (refreshTime <= 0) {
+		$("#refresh").text("Updating...");
+		updateFollowing();
+		refreshTime = 10;
+	}
+	$("#refresh").text("Updating in " + refreshTime + " seconds");
+}
+
+function setupAutoRefresh() {
+	downloadInterval = window.setInterval(updateTimer, 1000);
+	refreshTime = 11;
 }
 
 function toggleAutoRefresh() {
@@ -234,7 +250,7 @@ function changegroup() {
 					// update it
 				} else {
 					var editlink = $("<a href='#' onclick='' >edit</a>");
-					var item = $("<a href='#' class='list-group-item'>")
+					var item = $("<a href='#' class='list-group-item list-item-draw'>")
 						.text(' '+ feature['name'] + ' ');
 					editlink.click(function(e) {
 						e.stopImmediatePropagation();
@@ -349,7 +365,7 @@ $(document).ready(function() {
 	
 	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
 	
-	L.tileLayer('https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+	L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
     subdomains: '1234'
@@ -369,6 +385,8 @@ $(document).ready(function() {
 				refreshLocation();
 		});
 	});
+	
+	setupAutoRefresh();
 });
 
 function togglePane(pane) {
