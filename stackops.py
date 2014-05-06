@@ -2,6 +2,7 @@
 
 from flask import *
 from flask_wtf import *
+from flask_cors import *
 
 app = Flask(__name__)
 application = app
@@ -120,7 +121,11 @@ def load_user(id):
 
 @login_manager.request_loader
 def load_user_from_request(request):
-	apikey = request.args.get('apikey')
+	apikey = None
+	if request.method == "POST":
+		apikey = request.form.get('apikey')
+	else:
+		apikey = request.args.get('apikey')
 	if apikey:
 		key = ApiKey.query.filter_by(key=apikey).first()
 		return User.query.filter_by(username=key.user).first()
@@ -185,6 +190,8 @@ def api_create():
 	key.name = request.form['description']
 	db.session.add(key)
 	db.session.commit()
+	if 'return' in request.form:
+		return key.key
 	return redirect(url_for('api_info'))
 
 @app.route('/api/remove', methods=['POST'])
