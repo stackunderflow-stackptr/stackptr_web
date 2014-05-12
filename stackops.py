@@ -230,12 +230,23 @@ def userjson():
 @app.route('/update', methods=['POST'])
 @login_required
 def update():
-	lat = request.form['lat']
-	lon = request.form['lon']
+	lat = request.form.get('lat')
+	lon = request.form.get('lon')
+	alt = request.form.get('alt')
+	hdg = request.form.get('hdg')
+	spd = request.form.get('spd')
+	
+	
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	tu.lat = lat
 	tu.lon = lon
+	tu.alt = alt
+	tu.hdg = hdg
+	tu.spd = spd
+	
+	tu.lastupd = datetime.datetime.now()
 	db.session.commit()
+	
 	return "lat: %s, lon: %s" % (lat,lon)
 
 @app.route('/groupdata', methods=['POST'])

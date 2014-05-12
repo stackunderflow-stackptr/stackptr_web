@@ -178,14 +178,14 @@ function updateTimer() {
 	if (refreshTime <= 0) {
 		$("#refresh").text("Updating...");
 		updateFollowing();
-		refreshTime = 10;
+		refreshTime = 5;
 	}
 	$("#refresh").text("Updating in " + refreshTime + " seconds");
 }
 
 function setupAutoRefresh() {
 	downloadInterval = window.setInterval(updateTimer, 1000);
-	refreshTime = 11;
+	refreshTime = 6;
 }
 
 function toggleAutoRefresh() {

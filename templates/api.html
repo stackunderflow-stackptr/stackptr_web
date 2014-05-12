@@ -1,5 +1,20 @@
 {% extends "base.html" %}
 
+{% block extra_js %}
+	<script type="text/javascript" src="/static/js/jquery.qrcode-0.7.0.min.js"></script>
+{% endblock extra_js %}
+
+{% block extra_head %}
+	<script> 
+		function showQR(text) {
+			$('#qr').text("").qrcode({
+				text: text,
+			});
+			$('#qrModal').modal();
+		};
+	</script>
+{% endblock extra_head %}
+
 {% block content %}
 <div class="container">
 <div class="row">
@@ -7,9 +22,11 @@
 <h1> API keys </h1>
 
 <table class="table table-striped">
-	<tr><th>key</th><th>created</th><th>description</th><th></th></tr>
+	<tr><th>key</th><th></th><th>created</th><th>description</th><th></th></tr>
 	{% for key in keys %}
-		<tr><td>{{ key.key }}</td><td>{{ key.created }}</td><td>{{ key.name }}</td>
+		<tr><td>{{ key.key }}</td>
+		<td><button type="submit" class="btn btn-sm btn-info" onclick="showQR('{{key.key}}')"><span class="glyphicon glyphicon-qrcode"></span></button></td>
+		<td>{{ key.created }}</td><td>{{ key.name }}</td>
 		<td>
 			<form method="POST" action="/api/remove">
 				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -31,6 +48,22 @@
 		</div>
 	</div>
 </form>
+
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">QRCode</h4>
+      </div>
+      <div class="modal-body" id="qr">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 </div>
