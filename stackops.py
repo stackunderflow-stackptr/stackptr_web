@@ -210,7 +210,7 @@ def test():
 
 ## data
 
-@app.route('/user.json')
+@app.route('/users')
 @login_required
 def userjson():
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
@@ -218,9 +218,12 @@ def userjson():
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro'}
 	
+	now = datetime.datetime.utcnow()
+	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro'}
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro',
+	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds}
 	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username).all() ]
 	
 	data = {'me': me, 'following': others}
@@ -244,7 +247,7 @@ def update():
 	tu.hdg = hdg
 	tu.spd = spd
 	
-	tu.lastupd = datetime.datetime.now()
+	tu.lastupd = datetime.datetime.utcnow()
 	db.session.commit()
 	
 	return "lat: %s, lon: %s" % (lat,lon)

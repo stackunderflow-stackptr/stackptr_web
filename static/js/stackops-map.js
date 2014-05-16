@@ -33,6 +33,20 @@ function headingFormat(heading) {
 	return heading.toFixed(0) + ' ' + compassBox(heading);
 }
 
+function timeFormat(time) {
+	if (time == -1) {
+		return 'no upd';
+	} else if (time < 60) {
+		return time + 's ago'
+	} else if (time < 3600) {
+		return (time/60).toFixed(0) + 'm ago';
+	} else if (time < 28800) {
+		return (time/3600).toFixed(0) + 'h' + ((time % 3600)/60).toFixed(0) + 'm ago';
+	} else {
+		return (time/86400).toFixed(0) + 'd ago';
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
 var map; 				// leaflet map
@@ -92,7 +106,7 @@ function gotoMyLocation() {
 // update following users
 function updateFollowing() {
 	$("#loc").html("Fetching locations...");
-	$.getJSON('user.json', function(data) {
+	$.getJSON('users', function(data) {
 		$("#loc").html("Locations fetched, parsing...");
 		myData = data['me'];
 		followingData = data['following'];
@@ -158,7 +172,8 @@ function updateSideList() {
 		
 		var distance = my_loc.distanceTo(user_loc);
 		var heading = Math.atan2(user_loc.lng - my_loc.lng, user_loc.lat - my_loc.lat) * 180 / Math.PI;
-		extra = ' ' + distanceFormat(distance) + ' ' + headingFormat(heading);
+		var time = user['lastupd'];
+		extra = ' ' + distanceFormat(distance) + ' ' + headingFormat(heading) + ' ' + timeFormat(time);
 		
 		var imgel = $('<img width="24" height="24">');
 		imgel.attr('src', user['icon']);
