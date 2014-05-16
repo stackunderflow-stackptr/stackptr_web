@@ -129,6 +129,8 @@ function updateFollowing() {
 		webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
 		if (myData['user'] in placemarks) {
 			placemarks[myData['user']].setLatLng(webLocation);
+			placemarks[myData['user']].setOpacity(opacityValue(myData['lastupd']));
+
 		} else {
 			$("#loc").html("Creating placemark for self");
 			
@@ -137,9 +139,9 @@ function updateFollowing() {
 				icon: new L.icon({
 					iconUrl: myData['icon'],
 				}),
+				opacity: opacityValue(myData['lastupd']),
 			});
 			placemarks[myData['user']].addTo(map);
-			placemarks[myData['user']].setOpacity(opacityValue(myData['lastupd']));
 			//placemarks[myData['user']].bindPopup("test");
 		};
 		
@@ -150,16 +152,18 @@ function updateFollowing() {
 			if (user['user'] in placemarks) {
 				// if it does exist, move the placemark to it's current location
 				placemarks[user['user']].setLatLng(new L.LatLng(user['loc'][0], user['loc'][1]));
+				placemarks[user['user']].setOpacity(opacityValue(user['lastupd']));
 			} else {
 				// create a placemark otherwise
 				placemarks[user['user']] = new L.marker(new L.LatLng(user['loc'][0], user['loc'][1]), {
 					icon: new L.icon({
 						iconUrl: user['icon'],
 					}),
+					opacity: opacityValue(user['lastupd']),
 				});
 				placemarks[user['user']].addTo(map);
 			};
-			placemarks[user['user']].setOpacity(opacityValue(user['lastupd']));
+			
 		});
 		$("#loc").html("Locations updated");
 		updateSideList();
