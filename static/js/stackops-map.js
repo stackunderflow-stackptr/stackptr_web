@@ -47,6 +47,20 @@ function timeFormat(time) {
 	}
 }
 
+function opacityValue(time) {
+	if (time == -1) {
+		return 0.4;
+	} else if (time < 60) {
+		return 1.0;
+	} else if (time < 1800) {
+		return 0.8;
+	} else if (time < 7200) {
+		return 0.6;
+	} else {
+		return 0.5;
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
 var map; 				// leaflet map
@@ -125,6 +139,7 @@ function updateFollowing() {
 				}),
 			});
 			placemarks[myData['user']].addTo(map);
+			placemarks[myData['user']].setOpacity(opacityValue(myData['lastupd']));
 			//placemarks[myData['user']].bindPopup("test");
 		};
 		
@@ -144,6 +159,7 @@ function updateFollowing() {
 				});
 				placemarks[user['user']].addTo(map);
 			};
+			placemarks[user['user']].setOpacity(opacityValue(user['lastupd']));
 		});
 		$("#loc").html("Locations updated");
 		updateSideList();
