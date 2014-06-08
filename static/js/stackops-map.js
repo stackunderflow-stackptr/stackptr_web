@@ -1,91 +1,6 @@
-function distanceFormat(distance) {
-	if (distance > 1000) {
-		return (distance/1000).toFixed(2) + ' km';
-	} else {
-		return distance.toFixed(0) + ' m'
-	}
-}
-function compassBox(heading) {
-	if (heading < 22.5) {
-		return "N";
-	} else if (heading < 67.5) {
-		return "NE";
-	} else if (heading < 112.5) {
-		return "E";
-	} else if (heading < 157.5) {
-		return "SE";
-	} else if (heading < 202.5) {
-		return "S";
-	} else if (heading < 247.5) {
-		return "SW";
-	} else if (heading < 292.5) {
-		return "W";
-	} else if (heading < 337.5) {
-		return "NW";
-	} else {
-		return "N";
-	}
-}
-function headingFormat(heading) {
-	if (heading < 0) {
-		heading = 360 + heading;
-	}
-	return heading.toFixed(0) + ' ' + compassBox(heading);
-}
-
-function timeFormat(time) {
-	if (time == -1) {
-		return 'no upd';
-	} else if (time < 60) {
-		return time + 's ago'
-	} else if (time < 3600) {
-		return (time/60).toFixed(0) + 'm ago';
-	} else if (time < 28800) {
-		return (time/3600).toFixed(0) + 'h' + ((time % 3600)/60).toFixed(0) + 'm ago';
-	} else {
-		return (time/86400).toFixed(0) + 'd ago';
-	}
-}
-
-function opacityValue(time) {
-	if (time == -1) {
-		return 0.4;
-	} else if (time < 60) {
-		return 1.0;
-	} else if (time < 1800) {
-		return 0.8;
-	} else if (time < 7200) {
-		return 0.6;
-	} else {
-		return 0.5;
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-var map; 				// leaflet map
-var placemarks = {};	// map of placemarks
-var webLocation;		// last location from website
-var gpsLocation;		// my current location as a L.LatLng()
-var watchID;			// id of geolocation watcher
-
-var myData;				// data for logged in user
-var followingData;		// data for following users
-
-var autoRefresh = false; // do we auto-update?
-var usesGeoLoc = false;
-
-var groupData = {};		// group placemarks
-var groupInfo = {};
-var drawnItems;			// FeatureGroup of drawn items
-
-var refreshTime;		// seconds left for refresh counter
-
-var uploadInterval;
-var downloadInterval;
-///////////////////////////////////////////////////////////////////////////
-
 // GPS functions
+
+/*
 function updateGPS(position) {
 	$("#loc").html("Lat: " + position.coords.latitude +
 				"<br>Lon: " + position.coords.longitude);
@@ -116,59 +31,50 @@ function gotoMyLocation() {
 	map.panTo(gpsLocation);
 	map.setZoom(16);
 };
+*/
 
 // update following users
-function updateFollowing() {
-	$("#loc").html("Fetching locations...");
-	$.getJSON('users', function(data) {
-		$("#loc").html("Locations fetched, parsing...");
-		myData = data['me'];
-		followingData = data['following'];
-		
-		// create placemark for me, no position set
-		webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
-		if (myData['user'] in placemarks) {
-			placemarks[myData['user']].setLatLng(webLocation);
-			placemarks[myData['user']].setOpacity(opacityValue(myData['lastupd']));
 
-		} else {
-			$("#loc").html("Creating placemark for self");
-			
-			placemarks[myData['user']] = new L.marker(webLocation,
-			{
-				icon: new L.icon({
-					iconUrl: myData['icon'],
-				}),
-				opacity: opacityValue(myData['lastupd']),
-			});
-			placemarks[myData['user']].addTo(map);
-			//placemarks[myData['user']].bindPopup("test");
-		};
-		
-		// create placemarks for followed people
-		
-		$("#loc").html("Creating placemarks for followed");
-		followingData.forEach(function(user) {
-			if (user['user'] in placemarks) {
-				// if it does exist, move the placemark to it's current location
-				placemarks[user['user']].setLatLng(new L.LatLng(user['loc'][0], user['loc'][1]));
-				placemarks[user['user']].setOpacity(opacityValue(user['lastupd']));
-			} else {
-				// create a placemark otherwise
-				placemarks[user['user']] = new L.marker(new L.LatLng(user['loc'][0], user['loc'][1]), {
-					icon: new L.icon({
-						iconUrl: user['icon'],
-					}),
-					opacity: opacityValue(user['lastupd']),
-				});
-				placemarks[user['user']].addTo(map);
-			};
-			
-		});
-		$("#loc").html("Locations updated");
-		updateSideList();
+/*function downloadFollowingAPI(apikey) {
+	$.getJSON
+}*/
+
+function downloadFollowingAndUpdate() {
+	$.getJSON('users', function(data) {
+		updatePlacemarks(data,placemarks);
+		updateSideList(data);
 	});
-	return true;
+}
+
+function updatePlacemarks(data,pl) {
+	var myData = data['me'];
+	var followingData = data['following'];
+	updatePlacemark(myData,pl);
+	followingData.forEach(function(obj) {
+		updatePlacemark(obj,pl);
+	});
+}
+
+function updatePlacemark(data,pl) {
+	webLocation = new L.LatLng(data['loc'][0], data['loc'][1]);
+	if (data['user'] in pl) {
+		placemarks[data['user']].setLatLng(webLocation);
+		placemarks[data['user']].setOpacity(opacityValue(data['lastupd']));
+	
+	} else {		
+		pl[data['user']] = new L.marker(webLocation,
+		{
+			icon: new L.icon({
+				iconUrl: data['icon'],
+			}),
+			opacity: opacityValue(data['lastupd']),
+		});
+		pl[data['user']].addTo(map);
+	};
+}
+
+function updateFollowing() {
+		downloadFollowingAndUpdate();
 };
 
 function userClick(user) {
@@ -176,9 +82,9 @@ function userClick(user) {
 	map.setZoom(16);
 };
 
-function updateSideList() {
+function updateSideList(data) {
 	$('#userlist').html('');
-	followingData.forEach(function(user) {
+	data['following'].forEach(function(user) {
 		var user_loc = placemarks[user['user']].getLatLng();
 		
 		var extra = "";
@@ -223,13 +129,12 @@ function setupAutoRefresh() {
 	refreshTime = 6;
 }
 
+/*
 function toggleAutoRefresh() {
 	if (!autoRefresh) {
 		autoRefresh = true;
 		$('#autorefresh_loc').text("Stop Live");
-		//uploadInterval = window.setInterval(uploadLocation, 10000);
 		downloadInterval = window.setInterval(updateFollowing, 10000);
-		//uploadLocation();
 		updateFollowing();
 	} else {
 		autoRefresh = false;
@@ -237,7 +142,7 @@ function toggleAutoRefresh() {
 		window.clearInterval(downloadInterval);
 		$('#autorefresh_loc').text("Start Live");
 	}
-}
+}*/
 
 function fixheight() {
 	var winheight = $(window).height();
@@ -385,44 +290,7 @@ function setupDraw() {
 	changegroup();
 }
 
-$(window).resize(fixheight);
-   
-$(document).ready(function() {
-	fixheight();
-	$("#gpsmenu").draggable();
-	$("#usermenu").draggable();
-	$("#groupmenu").draggable();
-	$("#upload_loc").click(uploadLocation);
-	$("#goto_loc").click(gotoMyLocation);
-	$("#autorefresh_loc").click(toggleAutoRefresh);
-	$("#selectgroup").change(changegroup);
-	
-	
-	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
-	
-	L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19,
-    subdomains: '1234'
-	}).addTo(map);
-	
-	setupDraw();
 
-
-	$("#refresh_loc").click(updateFollowing);
-	updateFollowing();
-	
-	$("#adduser").click(function(e) {
-		e.preventDefault();
-		$.post('/adduser', $('#adduserform').serialize(),
-			function(data) {
-				$("#addstatus").html("Server returned: " + data);
-				refreshLocation();
-		});
-	});
-	
-	setupAutoRefresh();
-});
 
 function togglePane(pane) {
 	$(pane).toggle();

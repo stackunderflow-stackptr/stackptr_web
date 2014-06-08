@@ -211,6 +211,7 @@ def test():
 ## data
 
 @app.route('/users')
+@cross_origin()
 @login_required
 def userjson():
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
