@@ -48,6 +48,7 @@ function downloadFollowingAndUpdate() {
 
 function updatePlacemarks(data,pl) {
 	var myData = data['me'];
+	webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
 	var followingData = data['following'];
 	updatePlacemark(myData,pl);
 	followingData.forEach(function(obj) {
@@ -56,13 +57,13 @@ function updatePlacemarks(data,pl) {
 }
 
 function updatePlacemark(data,pl) {
-	webLocation = new L.LatLng(data['loc'][0], data['loc'][1]);
+	var uLoc = new L.LatLng(data['loc'][0], data['loc'][1]);
 	if (data['user'] in pl) {
-		placemarks[data['user']].setLatLng(webLocation);
+		placemarks[data['user']].setLatLng(uLoc);
 		placemarks[data['user']].setOpacity(opacityValue(data['lastupd']));
 	
 	} else {		
-		pl[data['user']] = new L.marker(webLocation,
+		pl[data['user']] = new L.marker(uLoc,
 		{
 			icon: new L.icon({
 				iconUrl: data['icon'],
