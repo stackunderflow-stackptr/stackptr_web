@@ -230,6 +230,7 @@ def userjson():
 	data = {'me': me, 'following': others}
 	
 	# FIXME: Return last update time as a ISO8601 datetime (UTC), rather than relative time.
+	# FIXME: Return "None" instead of -1 for unknown values.
 	return json.dumps(data)
 
 @app.route('/update', methods=['POST'])
@@ -240,7 +241,7 @@ def update():
 	alt = request.form.get('alt')
 	hdg = request.form.get('hdg')
 	spd = request.form.get('spd')
-	
+	# FIXME: Define API for not having altitude or heading+speed available
 	
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	tu.lat = lat
