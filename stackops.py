@@ -214,12 +214,12 @@ def test():
 @cross_origin()
 @login_required
 def userjson():
+	now = datetime.datetime.utcnow()
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro'}
-	
-	now = datetime.datetime.utcnow()
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro',
+	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds }
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
