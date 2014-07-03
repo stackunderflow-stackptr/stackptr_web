@@ -214,12 +214,12 @@ def test():
 @cross_origin()
 @login_required
 def userjson():
+	now = datetime.datetime.utcnow()
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro'}
-	
-	now = datetime.datetime.utcnow()
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro',
+	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds }
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
@@ -229,6 +229,8 @@ def userjson():
 	
 	data = {'me': me, 'following': others}
 	
+	# FIXME: Return last update time as a ISO8601 datetime (UTC), rather than relative time.
+	# FIXME: Return "None" instead of -1 for unknown values.
 	return json.dumps(data)
 
 @app.route('/update', methods=['POST'])
@@ -239,7 +241,7 @@ def update():
 	alt = request.form.get('alt')
 	hdg = request.form.get('hdg')
 	spd = request.form.get('spd')
-	
+	# FIXME: Define API for not having altitude or heading+speed available
 	
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	tu.lat = lat
@@ -261,6 +263,8 @@ def groupdata():
 	for item in gd:
 		feature = {'id': item.id, 'name': item.name, 'owner': item.owner, 'json': json.loads(item.json)}
 		res.append(feature)
+
+	# FIXME: Other groups?
 	return json.dumps(res)
 
 @app.route('/addfeature', methods=['POST'])
@@ -273,6 +277,8 @@ def addfeature():
 	feature.json = request.form['geojson']
 	db.session.add(feature)
 	db.session.commit()
+	# FIXME: Return the object ID of the element created.
+	# FIXME: Allow passing the name and group ID of the object.
 	return "success"
 
 @app.route('/delfeature', methods=['POST'])
@@ -281,6 +287,7 @@ def delfeature():
 	feature = Object.query.filter_by(id = int(request.form['id'])).first()
 	db.session.delete(feature)
 	db.session.commit()
+	# FIXME: Use HTTP status codes to indicate success/failure.
 	return "deleting feature " + request.form['id']
 
 @app.route('/renamefeature', methods=['POST'])
@@ -290,5 +297,7 @@ def renamefeature():
 	feature.name = request.form['name']
 	#feature.description
 	db.session.commit()
+	# FIXME: Use HTTP status codes to indicate success/failure.
+	# FIXME: Modification of an existing feature's geometry??
 	return "renaming feature" + request.form['id']
 
