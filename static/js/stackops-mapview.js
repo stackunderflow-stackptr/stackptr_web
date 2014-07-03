@@ -16,7 +16,8 @@ $(document).ready(function() {
 	L.tileLayer('https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
-    subdomains: '1234'
+    subdomains: '1234',
+	detectRetina: true,
 	}).addTo(map);
 	
 	setupDraw();
