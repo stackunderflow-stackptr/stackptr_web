@@ -37,24 +37,24 @@ function headingFormat(heading) {
 }
 
 function timeFormat(time) {
-   utc = new Date().getTime() + (new Date().getTimezoneOffset() * 60000);
-	currenttime = Math.round(utc/1000);
-	timediff = currenttime - time;
-	console.log ("Current according to js: " + currenttime + " Last updated: " + time + " Time diff: " + timediff)
-	if (timediff == -1) {
+	var utc = Math.round((new Date().getTime() + (new Date().getTimezoneOffset() * 60000))/1000);
+	time = utc - time;
+	if (time == -1) {
 		return 'no upd';
-	} else if (timediff < 60) {
-		return timediff + 's ago'
-	} else if (timediff < 3600) {
-		return (timediff/60).toFixed(0) + 'm ago';
-	} else if (timediff < 86400) {
-		return (timediff/3600).toFixed(0) + 'h' + ((time % 3600)/60).toFixed(0) + 'm ago';
+	} else if (time < 60) {
+		return time + 's ago'
+	} else if (time < 3600) {
+		return (time/60).toFixed(0) + 'm ago';
+	} else if (time < 86400) {
+		return (time/3600).toFixed(0) + 'h' + ((time % 3600)/60).toFixed(0) + 'm ago';
 	} else {
-		return (timediff/86400).toFixed(0) + 'd ago';
+		return (time/86400).toFixed(0) + 'd ago';
 	}
 }
 
 function opacityValue(time) {
+	var utc = Math.round((new Date().getTime() + (new Date().getTimezoneOffset() * 60000))/1000);
+	time = utc - time;
 	if (time == -1) {
 		return 0.4;
 	} else if (time < 60) {

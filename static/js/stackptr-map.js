@@ -52,7 +52,7 @@ function updatePlacemarks(data,pl,fg) {
 	var myData = data['me'];
 	webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
 	var followingData = data['following'];
-	updatePlacemark(myData,pl);
+	updatePlacemark(myData,pl,fg);
 	followingData.forEach(function(obj) {
 		updatePlacemark(obj,pl,fg);
 	});
@@ -76,7 +76,7 @@ function updatePlacemark(data,pl,fg) {
 		});
 		pl[data['user']].addTo(fg);		
 		pl[data['user']].bindPopup(formatExtra(data['extra']));
-]	};
+	};
 }
 
 function updateFollowing() {
@@ -85,7 +85,7 @@ function updateFollowing() {
 
 function userClick(user) {
 	map.panTo(placemarks[user].getLatLng());
-	placemarks[user].openPopup();
+	//placemarks[user].openPopup();
 	map.setZoom(16);
 };
 
@@ -94,11 +94,31 @@ function do_expand(user, item) {
 	
 	extra.append($("<b>").text("Battery: "));
 	extra.append($("<span>").text(user['extra']['bat'] * 100.0));
-	extra.append($("<b>").text("% "));
+	extra.append($("<span>").text("% "));
 	extra.append($("<span>").text(user['extra']['bst']));
 	extra.append($("<br>"));
 	
-	extra.append($("<b>").text("Status:"));
+	extra.append($("<b>").text("Provider: "));
+	extra.append($("<span>").text(user['extra']['prov']));
+	extra.append($("<br>"));
+
+	extra.append($("<b>").text("Altitude: "));
+	extra.append($("<span>").text(user['alt']));
+	extra.append($("<span>").text(" m"));
+	extra.append($("<br>"));
+
+	extra.append($("<b>").text("Heading: "));
+	extra.append($("<span>").text(user['hdg']));
+	extra.append($("<span>").text(" deg"));
+	extra.append($("<br>"));
+	
+	extra.append($("<b>").text("Speed: "));
+	extra.append($("<span>").text(user['spd']));
+	extra.append($("<span>").text(" m/s"));
+	extra.append($("<br>"));
+	
+	
+	
 	$(item.parentNode).append(extra);
 	
 	$(item).removeClass("glyphicon-plus");

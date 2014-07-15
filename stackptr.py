@@ -225,6 +225,7 @@ def userjson():
 	now = datetime.datetime.utcnow()
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	me = {'loc': [tu.lat, tu.lon],
+	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s"),
@@ -232,6 +233,7 @@ def userjson():
 	}
 	
 	others = [ {'loc': [tu.lat, tu.lon],
+	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s"),
