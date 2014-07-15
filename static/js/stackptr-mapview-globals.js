@@ -17,3 +17,5 @@ var refreshTime;		// seconds left for refresh counter
 
 var uploadInterval;
 var downloadInterval;
+
+var expandedUsers = [];

@@ -75,6 +75,8 @@ function updatePlacemark(data,pl) {
 			opacity: opacityValue(data['lastupd']),
 		});
 		pl[data['user']].addTo(map);
+		
+		pl[data['user']].bindPopup(formatExtra(data['extra']));
 	};
 }
 
@@ -84,12 +86,48 @@ function updateFollowing() {
 
 function userClick(user) {
 	map.panTo(placemarks[user].getLatLng());
+	placemarks[user].openPopup();
 	map.setZoom(16);
 };
 
+function do_expand(user, item) {
+	var extra = $("<span class='extra'></span>");
+	
+	extra.append($("<b>").text("Battery: "));
+	extra.append($("<span>").text(user['extra']['bat'] * 100.0));
+	extra.append($("<b>").text("% "));
+	extra.append($("<span>").text(user['extra']['bst']));
+	extra.append($("<br>"));
+	
+	extra.append($("<b>").text("Status:"));
+	$(item.parentNode).append(extra);
+	
+	$(item).removeClass("glyphicon-plus");
+	$(item).addClass("glyphicon-minus");
+}
+
+function do_unexpand(user, item) {
+	$(item).removeClass("glyphicon-minus");
+	$(item).addClass("glyphicon-plus");
+	$(item.parentNode).find(".extra").remove();
+}
+
+function expand_side(user, item) {
+	if ($.inArray(user['user'],expandedUsers) == -1) {
+		expandedUsers.push(user['user']);
+		do_expand(user, item);
+	} else {
+		expandedUsers.splice($.inArray(user['user'], expandedUsers),1);
+		do_unexpand(user,item);
+	}
+}
+
 function updateSideList(data) {
 	$('#userlist').html('');
-	data['following'].forEach(function(user) {
+	updateUser(data['me']);
+	data['following'].forEach(updateUser);
+	
+	function updateUser(user) {
 		var user_loc = placemarks[user['user']].getLatLng();
 		
 		var extra = "";
@@ -109,14 +147,26 @@ function updateSideList(data) {
 		var imgel = $('<img width="24" height="24">');
 		imgel.attr('src', user['icon']);
 		
+		var plus = $("<span class='glyphicon glyphicon-plus pull-right'></span><br>");
+		plus.click(function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			expand_side(user, this);
+			});
+		
 		$("#userlist").append(
 			$("<a href='' class='list-group-item list-item-person'>")
 				.text(' '+ user['user'] + extra)
 				.click(function(e) {e.preventDefault(); userClick(user['user'])})
 				.prepend(imgel)
+				.append(plus)
 		);
 		
-	});
+		if ($.inArray(user['user'],expandedUsers) != -1) {
+			do_expand(user, plus[0]);
+		};
+		
+	};
 }
 
 function updateTimer() {
@@ -161,6 +211,11 @@ function fixheight() {
 		$("#usermenu").css('height','auto');
 	}
 };
+
+function popoutClose(e) {
+	e.preventDefault();
+	$('.popover').remove();
+}
 
 function popoutEdit(featureid, tgt) {
 	$('.popover').remove();
@@ -230,7 +285,7 @@ function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updatei
 
 function addItemToGroupsList(id,data){
 	feature=data
-	var editlink = $("<a id='feature-edit"+id+"''href='#' onclick='' >edit</a>");
+	var editlink = $("<a id='feature-edit"+id+"'' href='#' onclick='' ><span class='glyphicon glyphicon-pencil pull-right'></span></a>");
 	var item = $("<a id='feature-"+id+"'' href='#' class='list-group-item list-item-draw'>")
 		.text(' '+ feature['name'] + ' ');
 	editlink.click(function(e) {
@@ -242,8 +297,8 @@ function addItemToGroupsList(id,data){
 		e.preventDefault();
 		featureClick(groupData[id]);
 	});
-	item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
-
+	item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger' onclick='popoutClose(event)'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
+	
 	$("#groupfeaturelist").append(item);
 				
 }

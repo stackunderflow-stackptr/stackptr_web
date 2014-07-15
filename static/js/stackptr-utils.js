@@ -67,3 +67,17 @@ function opacityValue(time) {
 		return 0.5;
 	}
 }
+
+function formatExtra(extra) {
+	var content = $("<span>");
+	if (extra["bat"]) {
+		content.append($("<b>").text("Battery: "));
+		content.append($("<span>").text(extra["bat"] * 100.0));
+		content.append($("<b>").text("%"));
+	}
+	
+	
+	//content.append("test2");
+	
+	return content.html();
+}

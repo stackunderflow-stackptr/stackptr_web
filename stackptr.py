@@ -212,6 +212,12 @@ def test():
 
 ## data
 
+def process_extra(extra):
+	try:
+		return json.loads(str(extra))
+	except ValueError:
+		return {}
+
 @app.route('/users')
 @cross_origin()
 @login_required
@@ -221,12 +227,16 @@ def userjson():
 	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s") }
+	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s"),
+	'extra': process_extra(tu.extra),
+	}
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s") }
+	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s"),
+	'extra': process_extra(tu.extra),
+	}
 	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
 							   .filter(TrackPerson.lastupd != None).all() ]
 	
