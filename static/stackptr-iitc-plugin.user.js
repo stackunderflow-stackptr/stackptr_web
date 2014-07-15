@@ -41,7 +41,7 @@ window.plugin.stackptr.setup = function() {
 	window.plugin.stackptr.configload();
 	$.getScript("https://stackptr.com/static/js/stackops-utils.js", function() {
 		$.getScript("https://stackptr.com/static/js/stackops-map.js", function() {
-			window.plugin.stackptr.updateFollowing();
+			setInterval(window.plugin.stackptr.updateFollowing, 5000);
 		});
 	});
 };
