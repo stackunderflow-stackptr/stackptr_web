@@ -34,6 +34,8 @@ window.plugin.stackptr.settings = function() {
 
 
 window.plugin.stackptr.setup = function() {
+	//fix for placemarker issue
+	L.Icon.Default.imagePath = "https://stackptr.com/static/js/images/"
 	window.plugin.stackptr.layer = new L.FeatureGroup();
 	window.plugin.stackptr.placemarks = {};
 	window.addLayerGroup('StackPtr', window.plugin.stackptr.layer, true);
