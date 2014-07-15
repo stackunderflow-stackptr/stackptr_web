@@ -218,12 +218,12 @@ def userjson():
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro',
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds }
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=32&d=retro',
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds}
 	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username).all() ]
 	
@@ -258,12 +258,11 @@ def update():
 @app.route('/groupdata', methods=['POST'])
 @login_required
 def groupdata():
-	res = []
+	res = {}
 	gd = Object.query.filter_by(group = 1).all()
 	for item in gd:
-		feature = {'id': item.id, 'name': item.name, 'owner': item.owner, 'json': json.loads(item.json)}
-		res.append(feature)
-
+		res[item.id] = {'name': item.name, 'owner': item.owner, 'json': json.loads(item.json)}
+	
 	# FIXME: Other groups?
 	return json.dumps(res)
 

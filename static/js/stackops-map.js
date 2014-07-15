@@ -67,6 +67,8 @@ function updatePlacemark(data,pl) {
 		{
 			icon: new L.icon({
 				iconUrl: data['icon'],
+				iconRetinaUrl: data['icon'],
+				iconSize: [32,32],
 			}),
 			opacity: opacityValue(data['lastupd']),
 		});
