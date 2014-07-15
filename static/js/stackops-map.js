@@ -172,7 +172,7 @@ function popoutEdit(featureid, tgt) {
 function changefeature(a,e) {
 	$.post('/renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val()},
 	function(data) {
-		alert(data);
+		console.log(data)
 	});
 	e.preventDefault();
 	return false;
@@ -201,10 +201,12 @@ function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updatei
 	for(item in groupData){
 		if (!(item in data)){
 			fg.removeLayer(groupData[item])
+			delete groupData[item]
 		}
 	}
 	for (item in data){
 		feature = data[item]
+		groupInfo[item] = data[item]
 		if (item in groupData){
 			//TODO check if actually updated or something rather than just deleting and readding all the items
 			fg.removeLayer(groupData[item])
@@ -223,22 +225,22 @@ function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updatei
 }
 
 function addItemToGroupsList(id,data){
-					feature=data
-					var editlink = $("<a href='#' onclick='' >edit</a>");
-					var item = $("<a href='#' class='list-group-item list-item-draw'>")
-						.text(' '+ feature['name'] + ' ');
-					editlink.click(function(e) {
-						e.stopImmediatePropagation();
-						popoutEdit(id, item);
-					});
-					item.append(editlink);
-					item.click(function(e) {
-						e.preventDefault();
-						featureClick(groupData[id]);
-					});
-					item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
-					
-					$("#groupfeaturelist").append(item);
+	feature=data
+	var editlink = $("<a href='#' onclick='' >edit</a>");
+	var item = $("<a href='#' class='list-group-item list-item-draw'>")
+		.text(' '+ feature['name'] + ' ');
+	editlink.click(function(e) {
+		e.stopImmediatePropagation();
+		popoutEdit(id, item);
+	});
+	item.append(editlink);
+	item.click(function(e) {
+		e.preventDefault();
+		featureClick(groupData[id]);
+	});
+	item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
+
+	$("#groupfeaturelist").append(item);
 				
 }
 
@@ -291,7 +293,7 @@ function setupDraw() {
 			 'geojson': JSON.stringify(layer.toGeoJSON())
 			}, 
 			function(data) {
-				alert(data);
+				console.log(data);
 			}	
 		);
 		changegroup();
