@@ -4,7 +4,7 @@ html {
 body { 
 	height: 100%;
 	margin: 0; 
-	padding: 0; 
+	padding: 0;
 }
 
 #wrapper {
@@ -37,7 +37,7 @@ body {
 	background-color: rgba(0,0,0,0.8);
 	color: #FFF;
 	font-family: Helvetica, Arial, sans-serif;
-	overflow: scroll;
+	/*overflow: scroll;*/
 }
 
 #groupmenu {
@@ -49,7 +49,7 @@ body {
 	background-color: rgba(0,0,0,0.8);
 	color: #FFF;
 	font-family: Helvetica, Arial, sans-serif;
-	overflow: scroll;
+	/*overflow: scroll;*/
 }
 
 #logo {
@@ -88,4 +88,12 @@ body {
 
 .hidden {
 	display: none;
+}
+
+.closebox {
+	color: #FFF;
+}
+
+.closebox:hover {
+	color: #000;
 }

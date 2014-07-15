@@ -9,6 +9,11 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/leaflet.css" />
 	<link rel="stylesheet" type="text/css" href="/static/css/leaflet.draw.css" />
 	<link rel="stylesheet" type="text/css" href="/static/css/index.css" />
+	<style type="text/css">
+		body {
+			overflow: hidden;
+		}
+	</style>
 {% endblock extra_css %}
 
 {% block extra_js %}
@@ -40,7 +45,7 @@
 </nav>
 
 <div class="panel panel-primary hidden" id="gpsmenu">
-	<div class="panel-heading">Update <a onclick="togglePane('#gpsmenu')">close</a></div>
+	<div class="panel-heading">Update <a onclick="togglePane('#gpsmenu')"><span class="glyphicon glyphicon-remove"></span></a></div>
 	<div class="panel-body">
 	<button id="upload_loc" class="btn btn-primary">Upload</button>
 	<button id="refresh_loc" class="btn btn-default">Refresh</button>
@@ -54,7 +59,7 @@
 </div>
 
 <div class="panel panel-primary" id="usermenu">
-	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')">close</a></div>
+	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body">
 		<div class="list-group" id="userlist">
 		</div>
@@ -76,7 +81,7 @@
 </div>
 
 <div class="panel panel-primary" id="groupmenu">
-	<div class="panel-heading">Groups <a onclick="togglePane('#groupmenu')">close</a></div>
+	<div class="panel-heading">Groups <a onclick="togglePane('#groupmenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body">
 		<form class="form-horizontal" role="form" method="POST" action="/selectgroup" id="selectgroupform">
 			<div class="form-group">
