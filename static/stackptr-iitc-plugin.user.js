@@ -39,8 +39,8 @@ window.plugin.stackptr.setup = function() {
 	window.addLayerGroup('StackPtr', window.plugin.stackptr.layer, true);
 	$('#toolbox').append('<a onclick="window.plugin.stackptr.settings();return false;">StackPtr Opts</a>');
 	window.plugin.stackptr.configload();
-	$.getScript("https://stackptr.com/static/js/stackops-utils.js", function() {
-		$.getScript("https://stackptr.com/static/js/stackops-map.js", function() {
+	$.getScript("https://stackptr.com/static/js/stackptr-utils.js", function() {
+		$.getScript("https://stackptr.com/static/js/stackptr-map.js", function() {
 			setInterval(window.plugin.stackptr.updateFollowing, 5000);
 		});
 	});
