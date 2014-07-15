@@ -37,10 +37,10 @@ window.plugin.stackptr.setup = function() {
 	window.plugin.stackptr.layer = new L.FeatureGroup();
 	window.plugin.stackptr.placemarks = {};
 	window.addLayerGroup('StackPtr', window.plugin.stackptr.layer, true);
-	$('#toolbox').append('<a onclick="window.plugin.stackptr.settings();return false;">StackPtr Opt</a>');
+	$('#toolbox').append('<a onclick="window.plugin.stackptr.settings();return false;">StackPtr Opts</a>');
 	window.plugin.stackptr.configload();
-	$.getScript("https://ops.stackunderflow.com/static/js/stackops-utils.js", function() {
-		$.getScript("https://ops.stackunderflow.com/static/js/stackops-map.js", function() {
+	$.getScript("https://stackptr.com/static/js/stackops-utils.js", function() {
+		$.getScript("https://stackptr.com/static/js/stackops-map.js", function() {
 			window.plugin.stackptr.updateFollowing();
 		});
 	});
@@ -67,7 +67,7 @@ setup = window.plugin.stackptr.setup;
 
 
 window.plugin.stackptr.updateFollowing = function() {
-	$.getJSON('https://ops.stackunderflow.com/users?apikey=' + window.plugin.stackptr.apikey, function(data) {
+	$.getJSON('https://stackptr.com/users?apikey=' + window.plugin.stackptr.apikey, function(data) {
 		updatePlacemarks(data,window.plugin.stackptr.placemarks);
 	});
 	return true;
