@@ -81,7 +81,7 @@ setup = window.plugin.stackptr.setup;
 
 window.plugin.stackptr.updateFollowing = function() {
 	$.getJSON('https://stackptr.com/users?apikey=' + window.plugin.stackptr.apikey, function(data) {
-		updatePlacemarks(data,window.plugin.stackptr.placemarks);
+		updatePlacemarks(data,window.plugin.stackptr.placemarks, window.plugin.stackptr.layer);
 	});
 	return true;
 };

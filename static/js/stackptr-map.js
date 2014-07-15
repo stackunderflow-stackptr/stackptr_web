@@ -43,22 +43,22 @@ function gotoMyLocation() {
 
 function downloadFollowingAndUpdate() {
 	$.getJSON('users', function(data) {
-		updatePlacemarks(data,placemarks);
+		updatePlacemarks(data,placemarks,map);
 		updateSideList(data);
 	});
 }
 
-function updatePlacemarks(data,pl) {
+function updatePlacemarks(data,pl,fg) {
 	var myData = data['me'];
 	webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
 	var followingData = data['following'];
 	updatePlacemark(myData,pl);
 	followingData.forEach(function(obj) {
-		updatePlacemark(obj,pl);
+		updatePlacemark(obj,pl,fg);
 	});
 }
 
-function updatePlacemark(data,pl) {
+function updatePlacemark(data,pl,fg) {
 	var uLoc = new L.LatLng(data['loc'][0], data['loc'][1]);
 	if (data['user'] in pl) {
 		pl[data['user']].setLatLng(uLoc);
@@ -74,7 +74,7 @@ function updatePlacemark(data,pl) {
 			}),
 			opacity: opacityValue(data['lastupd']),
 		});
-		pl[data['user']].addTo(map);
+		pl[data['user']].addTo(fg);
 	};
 }
 
