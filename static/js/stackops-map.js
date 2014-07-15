@@ -59,8 +59,8 @@ function updatePlacemarks(data,pl) {
 function updatePlacemark(data,pl) {
 	var uLoc = new L.LatLng(data['loc'][0], data['loc'][1]);
 	if (data['user'] in pl) {
-		placemarks[data['user']].setLatLng(uLoc);
-		placemarks[data['user']].setOpacity(opacityValue(data['lastupd']));
+		pl[data['user']].setLatLng(uLoc);
+		pl[data['user']].setOpacity(opacityValue(data['lastupd']));
 	
 	} else {		
 		pl[data['user']] = new L.marker(uLoc,
