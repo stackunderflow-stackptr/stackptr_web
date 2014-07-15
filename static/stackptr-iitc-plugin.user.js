@@ -46,6 +46,12 @@ window.plugin.stackptr.setup = function() {
 	});
 };
 
+groupData = {}
+groupInfo = {}
+window.plugin.stackptr.updateGroup = function(){
+  $.post('https://stackptr.com/groupdata', {'group': "Ingress", "apikey": window.plugin.stackptr.apikey}, function(data){updateDrawnItems(data,window.plugin.stackptr.layer,function(){},function(){},function(){})}, 'json');
+}
+
 window.plugin.stackptr.updateHidden = function(pln, status) {
 	alert("updateHidden");
 };

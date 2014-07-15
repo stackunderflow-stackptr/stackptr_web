@@ -163,7 +163,7 @@ function fixheight() {
 };
 
 function popoutEdit(featureid, tgt) {
-	console.log("test");
+	$('.popover').remove();
 	tgt.popover('toggle');
 	
 	$("#" + featureid + "_textinput").val(groupInfo[featureid]['name']); // and 'owner'
@@ -204,6 +204,7 @@ function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updatei
 		if (!(item in data)){
 			fg.removeLayer(groupData[item])
 			delete groupData[item]
+			removeitemcallback(item,data[item]);
 		}
 	}
 	for (item in data){
@@ -215,6 +216,7 @@ function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updatei
 			var gjlayer = L.geoJson(feature['json']);
 			fg.addLayer(gjlayer);
 			groupData[item] = gjlayer;
+			updateitemcallback(item,data[item]);
 		} else {
 
 			var gjlayer = L.geoJson(feature['json']);
@@ -228,8 +230,8 @@ function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updatei
 
 function addItemToGroupsList(id,data){
 	feature=data
-	var editlink = $("<a href='#' onclick='' >edit</a>");
-	var item = $("<a href='#' class='list-group-item list-item-draw'>")
+	var editlink = $("<a id='feature-edit"+id+"''href='#' onclick='' >edit</a>");
+	var item = $("<a id='feature-"+id+"'' href='#' class='list-group-item list-item-draw'>")
 		.text(' '+ feature['name'] + ' ');
 	editlink.click(function(e) {
 		e.stopImmediatePropagation();
