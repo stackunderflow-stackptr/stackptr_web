@@ -41,13 +41,20 @@ window.plugin.stackptr.setup = function() {
 	window.plugin.stackptr.configload();
 	$.getScript("https://stackptr.com/static/js/stackptr-utils.js", function() {
 		$.getScript("https://stackptr.com/static/js/stackptr-map.js", function() {
-			setInterval(window.plugin.stackptr.updateFollowing, 5000);
+			setInterval(window.plugin.stackptr.update, 5000);
 		});
 	});
 };
 
 groupData = {}
 groupInfo = {}
+
+window.plugin.stackptr.update = function(){
+	//fix for placemarker issue - TODO find better way
+	L.Icon.Default.imagePath = "https://stackptr.com/static/js/images/"
+	window.plugin.stackptr.updateFollowing();
+	window.plugin.stackptr.updateGroup();
+}
 window.plugin.stackptr.updateGroup = function(){
   $.post('https://stackptr.com/groupdata', {'group': "Ingress", "apikey": window.plugin.stackptr.apikey}, function(data){updateDrawnItems(data,window.plugin.stackptr.layer,function(){},function(){},function(){})}, 'json');
 }
@@ -74,7 +81,7 @@ setup = window.plugin.stackptr.setup;
 
 window.plugin.stackptr.updateFollowing = function() {
 	$.getJSON('https://stackptr.com/users?apikey=' + window.plugin.stackptr.apikey, function(data) {
-		updatePlacemarks(data,window.plugin.stackptr.placemarks);
+		updatePlacemarks(data,window.plugin.stackptr.placemarks, window.plugin.stackptr.layer);
 	});
 	return true;
 };
