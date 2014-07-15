@@ -1,3 +1,6 @@
+// stackptr-mapview.js
+// this is for stuff specific to stackptr.com, not external maps
+
 $(window).resize(fixheight);
    
 $(document).ready(function() {

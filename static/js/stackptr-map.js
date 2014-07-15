@@ -1,4 +1,6 @@
-// GPS functions
+// stackptr-map.js
+// This file is for code common between the map on stackptr.com and any other map
+
 
 /*
 function updateGPS(position) {

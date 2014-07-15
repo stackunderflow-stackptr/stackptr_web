@@ -18,6 +18,7 @@ import md5
 import datetime
 import random
 import string
+import calendar
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -45,6 +46,7 @@ class TrackPerson(db.Model):
 	alt = db.Column(db.Float())
 	hdg = db.Column(db.Float())
 	spd = db.Column(db.Float())
+	extra = db.Column(db.String(512))
 	lastupd = db.Column(db.DateTime())
 	
 	def __init__(self, username, device):
@@ -219,13 +221,14 @@ def userjson():
 	me = {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds }
+	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s") }
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else (now - tu.lastupd).seconds}
-	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username).all() ]
+	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s") }
+	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
+							   .filter(TrackPerson.lastupd != None).all() ]
 	
 	data = {'me': me, 'following': others}
 	
@@ -236,26 +239,31 @@ def userjson():
 @app.route('/update', methods=['POST'])
 @login_required
 def update():
-	lat = request.form.get('lat')
-	lon = request.form.get('lon')
-	alt = request.form.get('alt')
-	hdg = request.form.get('hdg')
-	spd = request.form.get('spd')
-	# FIXME: Define API for not having altitude or heading+speed available
+	lat = request.form.get('lat', None)
+	lon = request.form.get('lon', None)
+	alt = request.form.get('alt', None)
+	hdg = request.form.get('hdg', None)
+	spd = request.form.get('spd', None)
+	ext = request.form.get('ext', None)
 	
+	if None in (lat, lon):
+		return "No lat/lon specified"
+		
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
 	tu.lat = lat
 	tu.lon = lon
 	tu.alt = alt
 	tu.hdg = hdg
 	tu.spd = spd
+	tu.extra = ext
 	
 	tu.lastupd = datetime.datetime.utcnow()
 	db.session.commit()
 	
-	return "lat: %s, lon: %s" % (lat,lon)
+	return "OK"
 
 @app.route('/groupdata', methods=['POST'])
+@cross_origin()
 @login_required
 def groupdata():
 	res = {}

@@ -1,3 +1,6 @@
+// stackptr-utils.js
+// This file is for various utilities that are helpful
+
 function distanceFormat(distance) {
 	if (distance > 1000) {
 		return (distance/1000).toFixed(2) + ' km';
