@@ -191,11 +191,15 @@ function updateSideList(data) {
 function updateTimer() {
 	refreshTime--;
 	if (refreshTime <= 0) {
-		$("#refresh").text("Updating...");
+		$(".refreshtimer").each(function(i){
+			$(this).text("Updating...");
+		});
 		updateFollowing();
 		refreshTime = 5;
 	}
-	$("#refresh").text("Updating in " + refreshTime + " seconds");
+	$(".refreshtimer").each(function(i){
+		$(this).text("Updating in " + refreshTime + " seconds");
+	});
 }
 
 function setupAutoRefresh() {

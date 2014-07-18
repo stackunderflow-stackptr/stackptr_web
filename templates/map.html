@@ -30,17 +30,33 @@
 	<div class="navbar-header">
 		<img src="/static/logo2.png" id="logo" height="50px">
 	</div>
-	<ul class="nav navbar-nav">
+	<ul class="nav navbar-nav hidden-sm hidden-xs">
 		<!-- <li><a onclick="togglePane('#gpsmenu')">Update</a></li> -->
 		<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
 		<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 		<li><a href="/api/">Manage API keys</a></li>
 	</ul>
-	<ul class="nav navbar-nav navbar-right">
-		<li><a id="refresh"></a></li>
-		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Feature Requests / todo</a></li>
+	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
+		<li><a class="refreshtimer"></a></li>
+		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Todo List</a></li>
 		<li><a>Logged in as: {{ current_user }}</a></li>
 		<li><a href="/logout">Log out</a></li>
+	</ul>
+	
+	<ul class="nav navbar-nav navbar-right visible-sm-block visible-xs-block">
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
+			<ul class="dropdown-menu" role="menu">
+				<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
+				<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
+				<li><a href="/api/">Manage API keys</a></li>
+				<li class="divider"></li>
+				<li><a class="refreshtimer"></a></li>
+				<li class="divider"></li>
+				<li><a>Logged in as: {{ current_user }}</a></li>
+				<li><a href="/logout">Log out</a></li>
+			</ul>
+		</li>
 	</ul>
 </nav>
 
