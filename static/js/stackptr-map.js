@@ -118,8 +118,8 @@ function do_expand(user, item) {
 	
 	if (user['spd']) {
 		extra.append($("<b>").text("Speed: "));
-		extra.append($("<span>").text(user['spd']));
-		extra.append($("<span>").text(" m/s"));
+		extra.append($("<span>").text(user['spd'] * 3.6));
+		extra.append($("<span>").text(" km/h"));
 		extra.append($("<br>"));
 	}
 	
@@ -199,7 +199,7 @@ function updateTimer() {
 		$(".refreshtimer").each(function(i){
 			$(this).text("Updating...");
 		});
-		//updateFollowing();
+		updateFollowing();
 		refreshTime = 5;
 	}
 	$(".refreshtimer").each(function(i){
