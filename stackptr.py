@@ -19,6 +19,7 @@ import datetime
 import random
 import string
 import calendar
+import pytz
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -218,6 +219,11 @@ def process_extra(extra):
 	except ValueError:
 		return {}
 
+def utc_seconds(time):
+	epoch = datetime.datetime(1970, 1, 1)
+	diff = (time - epoch).total_seconds()
+	return int(diff)
+
 @app.route('/users')
 @cross_origin()
 @login_required
@@ -228,7 +234,7 @@ def userjson():
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s"),
+	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	}
 	
@@ -236,7 +242,7 @@ def userjson():
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else tu.lastupd.strftime("%s"),
+	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	}
 	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\

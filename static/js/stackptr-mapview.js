@@ -4,7 +4,6 @@
 $(window).resize(fixheight);
    
 $(document).ready(function() {
-	fixheight();
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();

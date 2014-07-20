@@ -2,7 +2,7 @@
 // @id             iitc-plugin-stackptr
 // @name           IITC plugin: StackPtr
 // @category       Layer
-// @version        0.02
+// @version        0.03
 // @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
 // @updateURL      https://stackptr.com/static/stackptr-iitc-plugin.user.js
 // @downloadURL    https://stackptr.com/static/stackptr-iitc-plugin.user.js
@@ -27,7 +27,7 @@ window.plugin.stackptr.settings = function() {
 	 
 	 if (window.plugin.stackptr.apikey == undefined){
 	 	var html = '<b>API Key :</b><input type="text" name="apikey" onchange="window.plugin.stackptr.apikey=this.value;window.plugin.stackptr.configsave()" value=""></br>';
-	 	html = html + "<br> Warning no API key set. Goto https://stackptr.com/api/ to generate an API key";
+	 	html = html + "<br>Warning: no API key set. Go to <a href='https://stackptr.com/api/' target='new'>https://stackptr.com/api/</a> to generate an API key";
 	 } else {
 	 		 	var html = '<b>API Key :</b><input type="text" name="apikey" onchange="window.plugin.stackptr.apikey=this.value;window.plugin.stackptr.configsave()" value="' + window.plugin.stackptr.apikey + '\"></br>';
 	 }

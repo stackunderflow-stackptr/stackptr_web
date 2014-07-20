@@ -37,7 +37,7 @@ function headingFormat(heading) {
 }
 
 function timeFormat(time) {
-	var utc = Math.round((new Date().getTime() + (new Date().getTimezoneOffset() * 60000))/1000);
+	var utc = Math.round(new Date().getTime()/1000);
 	time = utc - time;
 	if (time == -1) {
 		return 'no upd';
@@ -53,7 +53,7 @@ function timeFormat(time) {
 }
 
 function opacityValue(time) {
-	var utc = Math.round((new Date().getTime() + (new Date().getTimezoneOffset() * 60000))/1000);
+	var utc = Math.round(new Date().getTime()/1000);
 	time = utc - time;
 	if (time == -1) {
 		return 0.4;

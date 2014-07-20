@@ -16,21 +16,11 @@ body {
 		height: 100%;
 		width: 100%;
 }
-#gpsmenu {
-	position: absolute;
-	top: 80px;
-	right: 0px;
-	width: 320px;
-	height: 180px;
-	z-index: 99;
-	background-color: rgba(0,0,0,0.8);
-	color: #FFF;
-	font-family: Helvetica, Arial, sans-serif;
-}
+
 
 #usermenu {
 	position: absolute;
-	top: 80px;
+	top: 60px;
 	right: 0px;
 	width: 320px;
 	z-index: 99;
@@ -50,6 +40,10 @@ body {
 	color: #FFF;
 	font-family: Helvetica, Arial, sans-serif;
 	/*overflow: scroll;*/
+}
+
+#groupmenu_content {
+	overflow: auto;
 }
 
 #logo {

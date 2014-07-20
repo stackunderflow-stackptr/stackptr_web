@@ -41,7 +41,7 @@ function gotoMyLocation() {
 	$.getJSON
 }*/
 
-function downloadFollowingAndUpdate() {
+function updateFollowing() {
 	$.getJSON('users', function(data) {
 		updatePlacemarks(data,placemarks,map);
 		updateSideList(data);
@@ -79,10 +79,6 @@ function updatePlacemark(data,pl,fg) {
 	};
 }
 
-function updateFollowing() {
-		downloadFollowingAndUpdate();
-};
-
 function userClick(user) {
 	map.panTo(placemarks[user].getLatLng());
 	//placemarks[user].openPopup();
@@ -92,32 +88,40 @@ function userClick(user) {
 function do_expand(user, item) {
 	var extra = $("<span class='extra'></span>");
 	
-	extra.append($("<b>").text("Battery: "));
-	extra.append($("<span>").text(user['extra']['bat'] * 100.0));
-	extra.append($("<span>").text("% "));
-	extra.append($("<span>").text(user['extra']['bst']));
-	extra.append($("<br>"));
+	if (user['extra']['bat']) {
+		extra.append($("<b>").text("Battery: "));
+		extra.append($("<span>").text(user['extra']['bat'] * 100.0));
+		extra.append($("<span>").text("% "));
+		extra.append($("<span>").text(user['extra']['bst']));
+		extra.append($("<br>"));
+	}
 	
-	extra.append($("<b>").text("Provider: "));
-	extra.append($("<span>").text(user['extra']['prov']));
-	extra.append($("<br>"));
+	if (user['extra']['prov']) {
+		extra.append($("<b>").text("Provider: "));
+		extra.append($("<span>").text(user['extra']['prov']));
+		extra.append($("<br>"));
+	}
 
-	extra.append($("<b>").text("Altitude: "));
-	extra.append($("<span>").text(user['alt']));
-	extra.append($("<span>").text(" m"));
-	extra.append($("<br>"));
+	if (user['alt']) {
+		extra.append($("<b>").text("Altitude: "));
+		extra.append($("<span>").text(user['alt']));
+		extra.append($("<span>").text(" m"));
+		extra.append($("<br>"));
+	}
 
-	extra.append($("<b>").text("Heading: "));
-	extra.append($("<span>").text(user['hdg']));
-	extra.append($("<span>").text(" deg"));
-	extra.append($("<br>"));
+	if (user['hdg']) {
+		extra.append($("<b>").text("Heading: "));
+		extra.append($("<span>").text(user['hdg']));
+		extra.append($("<span>").text(" deg"));
+		extra.append($("<br>"));
+	}
 	
-	extra.append($("<b>").text("Speed: "));
-	extra.append($("<span>").text(user['spd']));
-	extra.append($("<span>").text(" m/s"));
-	extra.append($("<br>"));
-	
-	
+	if (user['spd']) {
+		extra.append($("<b>").text("Speed: "));
+		extra.append($("<span>").text(user['spd']));
+		extra.append($("<span>").text(" m/s"));
+		extra.append($("<br>"));
+	}
 	
 	$(item.parentNode).append(extra);
 	
@@ -186,6 +190,7 @@ function updateSideList(data) {
 		};
 		
 	};
+	fixheight();
 }
 
 function updateTimer() {
@@ -194,7 +199,7 @@ function updateTimer() {
 		$(".refreshtimer").each(function(i){
 			$(this).text("Updating...");
 		});
-		updateFollowing();
+		//updateFollowing();
 		refreshTime = 5;
 	}
 	$(".refreshtimer").each(function(i){
@@ -225,13 +230,17 @@ function toggleAutoRefresh() {
 function fixheight() {
 	var winheight = $(window).height();
 	var usertop = parseInt($('#usermenu').css('top'), 10);
-	var totalheight = usertop + parseInt($('#usermenu').css('height'), 10);
+	var userheight = $('#usermenu').height();
+	$('#groupmenu').css('top',userheight+usertop+10);
+	var groupheight = parseInt($('#groupmenu').css('top'), 10);
+	
+	var totalheight = usertop + userheight + 10 + groupheight;
 	
 	if (totalheight > winheight) {
-		var userheight = winheight - usertop;
-		$("#usermenu").css('height',userheight);
+		var newheight = winheight - (usertop + userheight + 10) - 40;
+		$("#groupmenu_content").css('height',newheight);
 	} else {
-		$("#usermenu").css('height','auto');
+		$("#groupmenu_content").css('height','auto');
 	}
 };
 
@@ -253,7 +262,7 @@ function changefeature(a,e) {
 	$.post('/renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val()},
 	function(data) {
 		console.log(data)
-	});
+	});pda
 	e.preventDefault();
 	return false;
 }
