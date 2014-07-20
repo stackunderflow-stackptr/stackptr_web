@@ -2,10 +2,10 @@
 // @id             iitc-plugin-stackptr
 // @name           IITC plugin: StackPtr
 // @category       Layer
-// @version        0.01
+// @version        0.02
 // @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
-// @updateURL      https://ops.stackunderflow.com/static/stackptr-iitc-plugin.user.js
-// @downloadURL    https://ops.stackunderflow.com/static/stackptr-iitc-plugin.user.js
+// @updateURL      https://stackptr.com/static/stackptr-iitc-plugin.user.js
+// @downloadURL    https://stackptr.com/static/stackptr-iitc-plugin.user.js
 // @description    Work with StackPtr online service
 // @include        https://www.ingress.com/intel*
 // @include        http://www.ingress.com/intel*
@@ -13,7 +13,7 @@
 // @match          http://www.ingress.com/intel*
 // @grant          none
 // ==/UserScript==
-
+9
 
 function wrapper(plugin_info) {
 // ensure plugin framework is there, even if iitc is not yet loaded
@@ -24,11 +24,18 @@ if(typeof window.plugin !== 'function') window.plugin = function() {};
 window.plugin.stackptr = function() {};
 
 window.plugin.stackptr.settings = function() {
-	 var html = '<b>API Key :</b><input type="text" name="apikey" onchange="window.plugin.stackptr.apikey=this.value;window.plugin.stackptr.configsave()" value="' + window.plugin.stackptr.apikey + '\"></br>';
+	 
+	 if (window.plugin.stackptr.apikey == undefined){
+	 	var html = '<b>API Key :</b><input type="text" name="apikey" onchange="window.plugin.stackptr.apikey=this.value;window.plugin.stackptr.configsave()" value=""></br>';
+	 	html = html + "<br> Warning no API key set. Goto https://stackptr.com/api/ to generate an API key";
+	 } else {
+	 		 	var html = '<b>API Key :</b><input type="text" name="apikey" onchange="window.plugin.stackptr.apikey=this.value;window.plugin.stackptr.configsave()" value="' + window.plugin.stackptr.apikey + '\"></br>';
+	 }
 	 dialog({
 	 	html: html,
 	 	title: 'StackPtr settings',
 	 });
+
 }
 
 
@@ -65,11 +72,13 @@ window.plugin.stackptr.updateHidden = function(pln, status) {
 
 window.plugin.stackptr.configsave = function() {
 	localStorage['plugin-stackptr-apikey'] = window.plugin.stackptr.apikey;
-	alert("configsave");
 };
 
 window.plugin.stackptr.configload = function() {
 	window.plugin.stackptr.apikey = localStorage['plugin-stackptr-apikey'];
+	if (window.plugin.stackptr.apikey == undefined){
+		window.plugin.stackptr.settings();
+	}
 };
 
 window.plugin.stackptr.load = function() {
