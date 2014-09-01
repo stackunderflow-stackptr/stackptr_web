@@ -230,7 +230,7 @@ def utc_seconds(time):
 def userjson():
 	now = datetime.datetime.utcnow()
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
-	me = {'loc': [tu.lat, tu.lon],
+	me = {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
