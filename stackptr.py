@@ -40,7 +40,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
 db = SQLAlchemy(app)
 
 class TrackPerson(db.Model):
-	username = db.Column(db.String(80), db.ForeignKey('user.username'))
+	username = db.Column(db.String(80), db.ForeignKey('users.username'))
 	device = db.Column(db.String(128), primary_key=True)
 	lat = db.Column(db.Float(Precision=64))
 	lon = db.Column(db.Float(Precision=64))
@@ -54,7 +54,7 @@ class TrackPerson(db.Model):
 		self.username = username
 		self.device = device
 
-class User(db.Model):
+class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(128), unique=True)
@@ -83,14 +83,14 @@ class User(db.Model):
 
 class ApiKey(db.Model):
 	key = db.Column(db.String(32), primary_key=True)
-	user = db.Column(db.String(80), db.ForeignKey('user.username'))
+	user = db.Column(db.String(80), db.ForeignKey('users.username'))
 	created = db.Column(db.DateTime)
 	name = db.Column(db.String(128))	
 
 
 class Follower(db.Model):
-	follower = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
-	following = db.Column(db.String(80), db.ForeignKey('user.username'), primary_key=True)
+	follower = db.Column(db.String(80), db.ForeignKey('users.username'), primary_key=True)
+	following = db.Column(db.String(80), db.ForeignKey('users.username'), primary_key=True)
 	confirmed = db.Column(db.Integer)
 	
 	def __init__(self, follower, following):
@@ -102,13 +102,13 @@ class Object(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128))
 	group = db.Column(db.Integer, db.ForeignKey('group.id'))
-	owner = db.Column(db.String(80), db.ForeignKey('user.username'))
+	owner = db.Column(db.String(80), db.ForeignKey('users.username'))
 	json = db.Column(db.Text)
 
 class Group(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=True)
-	owner = db.Column(db.String(80), db.ForeignKey('user.username'))
+	owner = db.Column(db.String(80), db.ForeignKey('users.username'))
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
 
@@ -120,7 +120,7 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(id):
 	csrf_protect()
-	return User.query.get(int(id))
+	return Users.query.get(int(id))
 
 @login_manager.request_loader
 def load_user_from_request(request):
@@ -131,7 +131,7 @@ def load_user_from_request(request):
 		apikey = request.args.get('apikey')
 	if apikey:
 		key = ApiKey.query.filter_by(key=apikey).first()
-		return User.query.filter_by(username=key.user).first()
+		return Users.query.filter_by(username=key.user).first()
 	return None
 
 #from opsmodels import *
@@ -160,7 +160,7 @@ def login():
 	else:
 		email = request.form['email']
 		password = request.form['password']
-		registered_user = User.query.filter_by(email=email).first()
+		registered_user = Users.query.filter_by(email=email).first()
 		if not registered_user:
 			return "no such user %s" % email
 		if check_password_hash(registered_user.password, password):
