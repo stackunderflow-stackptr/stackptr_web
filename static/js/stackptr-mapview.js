@@ -22,12 +22,12 @@ $(document).ready(function() {
 	//detectRetina: true,
 	//}).addTo(map);
 	
-	var tp = "ls";
+	var tp = "tiles";
 	if(L.Browser.retina) {
-		 tp = "lr";
+		 tp = "tiles_r";
 	};
-    L.tileLayer('https://tiles.lyrk.org/'+tp+'/{z}/{x}/{y}?apikey=049cf4528ba7472b8f5189860293b96c', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, <a href="http://geodienste.lyrk.de/copyright">Lizenzinformationen</a>, Tiles by <a href="http://geodienste.lyrk.de/">Lyrk</a>',
+    L.tileLayer('https://stackptr.com/'+tp+'/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 18
     }).addTo(map);
 

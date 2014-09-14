@@ -131,6 +131,8 @@ def load_user_from_request(request):
 		apikey = request.args.get('apikey')
 	if apikey:
 		key = ApiKey.query.filter_by(key=apikey).first()
+		if key == None:
+			return None
 		return Users.query.filter_by(username=key.user).first()
 	return None
 
@@ -246,7 +248,9 @@ def userjson():
 	'extra': process_extra(tu.extra),
 	}
 	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
-							   .filter(TrackPerson.lastupd != None).all() ]
+							   .filter(TrackPerson.lastupd != None)
+							   .order_by(TrackPerson.username)
+							   .all() ]
 	
 	data = {'me': me, 'following': others}
 	
