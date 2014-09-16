@@ -39,9 +39,7 @@ function headingFormat(heading) {
 function timeFormat(time) {
 	var utc = Math.round(new Date().getTime()/1000);
 	time = utc - time;
-	if (time == -1) {
-		return 'no upd';
-	} else if (time < 60) {
+	if (time < 60) {
 		return time + 's ago'
 	} else if (time < 3600) {
 		return (time/60).toFixed(0) + 'm ago';
@@ -55,9 +53,7 @@ function timeFormat(time) {
 function opacityValue(time) {
 	var utc = Math.round(new Date().getTime()/1000);
 	time = utc - time;
-	if (time == -1) {
-		return 0.4;
-	} else if (time < 60) {
+	if (time < 60) {
 		return 1.0;
 	} else if (time < 1800) {
 		return 0.8;
