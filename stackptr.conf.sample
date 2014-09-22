@@ -1,9 +1,3 @@
-[mysql]
-host = localhost
-user = stackops
-passwd = mach34turtles
-db = stackops
-
 [app]
 secret_key = 431A16FC-B9AF-4D83-893C-DB8757D06F64
 
