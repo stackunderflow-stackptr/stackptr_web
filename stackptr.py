@@ -136,8 +136,6 @@ def load_user_from_request(request):
 		return Users.query.filter_by(username=key.user).first()
 	return None
 
-#from opsmodels import *
-
 @app.before_request
 def before_request():
 	g.user = current_user
