@@ -277,6 +277,10 @@ def update():
 		return "No lat/lon specified"
 		
 	tu = TrackPerson.query.filter_by(username = g.user.username).first()
+	if not tu:
+		tu = TrackPerson(g.user.username, g.user.username)
+		db.session.add(tu)
+		db.session.commit()
 	tu.lat = lat
 	tu.lon = lon
 	tu.alt = alt
