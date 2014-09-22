@@ -2,4 +2,5 @@
 .apdisk
 ._*
 *.apk
+*.pyc
 stackptr.conf

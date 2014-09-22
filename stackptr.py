@@ -35,9 +35,15 @@ logging.basicConfig(stream=sys.stderr)
 from werkzeug.security import *
 from flask.ext.login import login_user, logout_user, login_required, current_user, LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.script import Manager
+from flask.ext.migrate import Migrate, MigrateCommand
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 class TrackPerson(db.Model):
 	username = db.Column(db.String(80), db.ForeignKey('users.username'))
@@ -112,7 +118,8 @@ class Group(db.Model):
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
 
-db.create_all()
+if __name__ == '__main__':
+	manager.run()
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
