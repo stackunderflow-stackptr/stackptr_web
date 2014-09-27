@@ -60,6 +60,21 @@ class TrackPerson(db.Model):
 		self.username = username
 		self.device = device
 
+class TrackHistory(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	username = db.Column(db.String(80), db.ForeignKey('users.username'))
+	lat = db.Column(db.Float(Precision=64))
+	lon = db.Column(db.Float(Precision=64))
+	extra = db.Column(db.String(512))
+	time = db.Column(db.DateTime())
+	
+	def __init__(self, username, lat, lon, extra):
+		self.username = username
+		self.lat = lat
+		self.lon = lon
+		self.extra = extra
+		self.time = datetime.datetime.now()
+
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
@@ -287,8 +302,10 @@ def update():
 	tu.hdg = hdg
 	tu.spd = spd
 	tu.extra = ext
-	
 	tu.lastupd = datetime.datetime.utcnow()
+	
+	th = TrackHistory(g.user.username, lat, lon, ext)
+	db.session.add(th)
 	db.session.commit()
 	
 	return "OK"
