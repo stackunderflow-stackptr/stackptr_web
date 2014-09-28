@@ -43,9 +43,18 @@ function gotoMyLocation() {
 
 function updateFollowing() {
 	$.getJSON('users', function(data) {
+		updateMapView(data);
 		updatePlacemarks(data,placemarks,map);
 		updateSideList(data);
 	});
+}
+
+function updateMapView(data) {
+	if (gotoMe == 1) {
+		var myData = data['me'];
+		map.setView(myData['loc'], 13, {'animate': false});
+		gotoMe = 0;
+	}
 }
 
 function updatePlacemarks(data,pl,fg) {
