@@ -133,9 +133,6 @@ class Group(db.Model):
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
 
-if __name__ == '__main__':
-	manager.run()
-
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -356,3 +353,5 @@ def renamefeature():
 	# FIXME: Modification of an existing feature's geometry??
 	return "renaming feature" + request.form['id']
 
+if __name__ == '__main__':
+	manager.run()
