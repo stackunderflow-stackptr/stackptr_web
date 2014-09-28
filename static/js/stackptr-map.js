@@ -145,6 +145,42 @@ function expand_side(user, item) {
 	}
 }
 
+function acceptUser(user) {
+	$.post('/acceptuser', {'user': user}, 
+		function(data) {
+			updateFollowing();
+			console.log(data);
+		}	
+	);
+}
+
+function rejectUser(user) {
+	$.post('/rejectuser', {'user': user}, 
+		function(data) {
+			updateFollowing();
+			console.log(data);
+		}	
+	);
+}
+
+function addUser(user) {
+	$.post('/adduser', {'user': user}, 
+		function(data) {
+			updateFollowing();
+			console.log(data);
+		}	
+	);
+}
+
+function delUser(user) {
+	$.post('/deluser', {'user': user}, 
+		function(data) {
+			updateFollowing();
+			console.log(data);
+		}	
+	);
+}
+
 function updateSideList(data) {
 	$('#userlist').html('');
 	updateUser(data['me']);
@@ -190,6 +226,29 @@ function updateSideList(data) {
 		};
 		
 	};
+	
+	data['pending'].forEach(updatePendingUser);
+	function updatePendingUser(user) {
+		$("#userlist").append(
+			$("<a href='' class='list-group-item list-item-person'>")
+				.text(' '+ user['user'] + " (awaiting approval)")
+		);
+	}
+	
+	data['reqs'].forEach(updateReqsUser);
+	function updateReqsUser(user) {
+		var a = $("<a href='' class='list-group-item list-item-person'>")
+				.text(' '+ user['user'] + " wants to follow you.");
+		
+		var b = $("<div>");
+		b.append($("<a>").text("accept").click(function(e) { e.preventDefault(); acceptUser(user['user'])}));
+		b.append($("<span>").html("&nbsp;"));
+		b.append($("<a>").text("reject").click(function(e) { e.preventDefault(); rejectUser(user['user'])}));
+				
+		$("#userlist").append(a);
+		a.append(b);
+	}
+	
 	fixheight();
 }
 

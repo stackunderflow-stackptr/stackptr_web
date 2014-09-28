@@ -261,15 +261,26 @@ def userjson():
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
+	'lastupd': utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	}
-	for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
-							   .filter(TrackPerson.lastupd != None)
-							   .order_by(TrackPerson.username)
-							   .all() ]
+	#for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
+	for f,tu in db.session.query(Follower,TrackPerson)
+							.join(TrackPerson, Follower.following == TrackPerson.username)\
+							.filter(Follower.follower == g.user.username, Follower.confirmed == 1)\
+							.filter(TrackPerson.lastupd != None)
+							.order_by(TrackPerson.username)
+							.all() ]
 	
-	data = {'me': me, 'following': others}
+	pending = [ {'user' : r.following }
+	for r in Follower.query.filter(Follower.follower == g.user.username, Follower.confirmed == 0)
+						   .order_by(Follower.following).all()]
+	
+	reqs = [ {'user' : r.follower }
+	for r in Follower.query.filter(Follower.following == g.user.username, Follower.confirmed == 0)
+						   .order_by(Follower.follower).all()]
+	
+	data = {'me': me, 'following': others, 'pending': pending, 'reqs': reqs}
 	
 	# FIXME: Return last update time as a ISO8601 datetime (UTC), rather than relative time.
 	# FIXME: Return "None" instead of -1 for unknown values.
@@ -305,6 +316,67 @@ def update():
 	db.session.add(th)
 	db.session.commit()
 	
+	return "OK"
+
+@app.route('/acceptuser', methods=['POST'])
+@login_required
+def acceptuser():
+	user = request.form['user']
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	if not fobj:
+		return "no user request"
+	fobj.confirmed = 1
+	db.session.add(fobj)
+	db.session.commit()
+	return "OK"
+
+@app.route('/rejectuser', methods=['POST'])
+@login_required
+def rejectuser():
+	user = request.form['user']
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	if not fobj:
+		return "no user request"
+	fobj.confirmed = -1
+	db.session.add(fobj)
+	db.session.commit()
+	return "OK"
+
+@app.route('/adduser', methods=['POST'])
+@login_required
+def adduser():
+	user = request.form['user']
+	# first pre-accept them being able to see me
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	if not fobj:
+		fobj = Follower(user, g.user.username)
+	fobj.confirmed = 1
+	db.session.merge(fobj)
+	db.session.commit()
+	
+	# now add the request from me to them
+	fobj2 = Follower.query.filter(Follower.follower==g.user.username, Follower.follower==user).first()
+	if not fobj2:
+		fobj2 = Follower(g.user.username, user)
+		fobj2.confirmed = 0
+	else:
+		if fobj2.confirmed != 1: # if request was ignored, but don't un-add the user if already accepted
+			fobj2.confirmed = 0
+	db.session.merge(fobj2)
+	db.session.commit()
+	return "OK"
+
+@app.route('/deluser', methods=['POST'])
+@login_required
+def deluser():
+	user = request.form['user']
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	if fobj:
+		db.session.delete(fobj)
+	fobj = Follower.query.filter(Follower.follower==g.user.username, Follower.following==user).first()
+	if fobj:
+		db.session.delete(fobj)
+	db.session.commit()
 	return "OK"
 
 @app.route('/groupdata', methods=['POST'])
