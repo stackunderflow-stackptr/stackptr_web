@@ -287,7 +287,7 @@ def userjson():
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
-	}
+	} if tu else None
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
