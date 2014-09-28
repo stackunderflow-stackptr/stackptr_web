@@ -50,9 +50,12 @@ function updateFollowing() {
 
 function updatePlacemarks(data,pl,fg) {
 	var myData = data['me'];
-	webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
+	if (data['me']){
+		webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
+		updatePlacemark(myData,pl,fg);
+	}
 	var followingData = data['following'];
-	updatePlacemark(myData,pl,fg);
+	
 	followingData.forEach(function(obj) {
 		updatePlacemark(obj,pl,fg);
 	});
@@ -183,12 +186,14 @@ function delUser(user) {
 
 function updateSideList(data) {
 	$('#userlist').html('');
-	updateUser(data['me']);
+	if (data['me']){
+		updateUser(data['me']);
+	}
 	data['following'].forEach(updateUser);
 	
 	function updateUser(user) {
 		var user_loc = placemarks[user['user']].getLatLng();
-		
+		console.log(user)
 		var extra = "";
 		
 		var my_loc;
@@ -197,12 +202,12 @@ function updateSideList(data) {
 		} else { 
 			my_loc = webLocation;
 		}
-		
-		var distance = my_loc.distanceTo(user_loc);
-		var heading = Math.atan2(user_loc.lng - my_loc.lng, user_loc.lat - my_loc.lat) * 180 / Math.PI;
-		var time = user['lastupd'];
-		extra = ' ' + distanceFormat(distance) + ' ' + headingFormat(heading) + ' ' + timeFormat(time);
-		
+		if (data['me']){
+			var distance = my_loc.distanceTo(user_loc);
+			var heading = Math.atan2(user_loc.lng - my_loc.lng, user_loc.lat - my_loc.lat) * 180 / Math.PI;
+			var time = user['lastupd'];
+			extra = ' ' + distanceFormat(distance) + ' ' + headingFormat(heading) + ' ' + timeFormat(time);
+		}
 		var imgel = $('<img width="24" height="24">');
 		imgel.attr('src', user['icon']);
 		

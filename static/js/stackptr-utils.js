@@ -2,6 +2,9 @@
 // This file is for various utilities that are helpful
 
 function distanceFormat(distance) {
+	if (!distance){
+		return '';
+	}
 	if (distance > 1000) {
 		return (distance/1000).toFixed(2) + ' km';
 	} else {
