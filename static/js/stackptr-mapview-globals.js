@@ -19,3 +19,5 @@ var uploadInterval;
 var downloadInterval;
 
 var expandedUsers = [];
+
+var gotoMe = 1;
