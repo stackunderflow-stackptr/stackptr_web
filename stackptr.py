@@ -25,6 +25,7 @@ import ConfigParser
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(app.root_path, "stackptr.conf"))
 app.secret_key = config.get("app","secret_key")
+app.invite_code = config.get("app","invite_code")
 app.CSRF_ENABLED = True
 
 import logging, sys
@@ -44,6 +45,7 @@ migrate = Migrate(app, db)
 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+
 
 class TrackPerson(db.Model):
 	username = db.Column(db.String(80), db.ForeignKey('users.username'))
@@ -133,6 +135,8 @@ class Group(db.Model):
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
 
+#db.create_all()
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -165,6 +169,34 @@ def before_request():
 @login_required
 def index():
 	return render_template("map.html", current_user=g.user.username)
+
+# registration
+
+@app.route('/registration', methods=['GET','POST'])
+def registration():
+	if request.method == "GET":
+		return render_template("registration.html")
+	else:
+		username = request.form['username']
+		email = request.form['email']
+		password = request.form['password']
+		invite_code = request.form['invite']
+		#todo check these are valid email and password values
+		if invite_code != app.invite_code:
+			return "invalid invite code"
+		registered_email = Users.query.filter_by(email=email).first() #check if email already in DB
+		if registered_email:
+			return "email address already registered %s" % email
+		registered_user = Users.query.filter_by(username=username).first() # check user name is registered in DB
+		if registered_user:
+			return "username already registered %s" % username
+		else:
+			user = Users(username, email)
+			user.password = generate_password_hash(password)
+			db.session.add(user)
+			db.session.commit()
+			login_user(user,remember=True)
+			return redirect("/")
 
 ## login
 
