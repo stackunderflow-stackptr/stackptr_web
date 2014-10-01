@@ -1,20 +1,21 @@
 // stackptr-mapview.js
 // this is for stuff specific to stackptr.com, not external maps
 
-$(window).resize(fixheight);
+//window.stackptr.resize(fixheight);
    
 $(document).ready(function() {
+	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
+	window.stackptr = new StackPtr("/", map);
+	console.log("loaded")
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();
 	//$("#upload_loc").click(uploadLocation);
 	//$("#goto_loc").click(gotoMyLocation);
 	//$("#autorefresh_loc").click(toggleAutoRefresh);
-	$("#selectgroup").change(changegroup);
-	
-	
-	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
-	
+	$("#selectgroup").change(stackptr.changegroup);
+
+
 	//L.tileLayer('https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
 	//    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 	//    maxZoom: 19,
@@ -31,20 +32,25 @@ $(document).ready(function() {
         maxZoom: 18
     }).addTo(map);
 
-	setupDraw();
+	stackptr.setupDraw();
 
 
-	$("#refresh_loc").click(updateFollowing);
-	updateFollowing();
+	$("#refresh_loc").click(stackptr.updateFollowing);
+	stackptr.updateFollowing();
 	
 	$("#adduser").click(function(e) {
 		e.preventDefault();
 		$.post('/adduser', $('#adduserform').serialize(),
 			function(data) {
 				$("#addstatus").html("Server returned: " + data);
-				refreshLocation();
+				stackptr.refreshLocation();
 		});
 	});
 	
-	setupAutoRefresh();
+	stackptr.setupAutoRefresh();
 });
+
+
+togglePane  = function (pane) {
+	$(pane).toggle();
+}
