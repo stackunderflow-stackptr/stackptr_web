@@ -5,8 +5,7 @@
    
 $(document).ready(function() {
 	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
-	window.stackptr = new StackPtr("/", map);
-	console.log("loaded")
+	window.stackptr = new StackPtr("/", undefined, map);
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();

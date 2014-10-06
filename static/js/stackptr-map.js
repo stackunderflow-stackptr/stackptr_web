@@ -2,9 +2,10 @@
 // This file is for code common between the map on stackptr.com and any other map
 
 //Creates the StackPtr constructor. Everything should sit inside this constructor
-StackPtr = function (serverurl, map) {
+StackPtr = function (serverurl, key, map) {
 	this.serverurl = typeof serverurl !== 'undefined' ? serverurl : "/";
 	this.map = typeof map !== 'undefined' ? map : map;
+	this.key = key
 	StackPtr.refernce = this; // TODO work out a better way of dealing with "this" and callbacks to ajax requests. For now presuming only one stackptr instance is running
 	this.placemarks = {};	// map of placemarks
 	this.webLocation;		// last location from website
@@ -28,9 +29,18 @@ StackPtr = function (serverurl, map) {
 	this.expandedUsers = [];
 
 	this.gotoMe = 1;
+
 }
+	StackPtr.prototype.getURL = function(requrl){
+		//Simple function to work out the url of the request + the api key. Used to help external services connect while keeping the code base the same
+		if(this.key){
+			return this.serverurl + requrl + "?apikey=" + this.key
+		} else {
+			return this.serverurl + requrl
+		}
+	}
 	StackPtr.prototype.updateFollowing  = function () {
-	$.getJSON('users', function(data) {
+	$.getJSON(this.getURL( 'users'), function(data) {
 		StackPtr.refernce.updateMapView(data);
 		StackPtr.refernce.updatePlacemarks(data,StackPtr.refernce.placemarks,StackPtr.refernce.map);
 		StackPtr.refernce.updateSideList(data);
@@ -145,7 +155,7 @@ StackPtr.prototype.expand_side  = function (user, item) {
 }
 
 StackPtr.prototype.acceptUser  = function (user) {
-	$.post('/acceptuser', {'user': user}, 
+	$.post(this.getURL('acceptuser'), {'user': user}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -153,7 +163,7 @@ StackPtr.prototype.acceptUser  = function (user) {
 }
 
 StackPtr.prototype.rejectUser  = function (user) {
-	$.post('/rejectuser', {'user': user}, 
+	$.post(this.getURL('rejectuser'), {'user': user}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -161,7 +171,7 @@ StackPtr.prototype.rejectUser  = function (user) {
 }
 
 StackPtr.prototype.addUser  = function (user) {
-	$.post('/adduser', {'user': user}, 
+	$.post(this.getURL('adduser'), {'user': user}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -169,7 +179,7 @@ StackPtr.prototype.addUser  = function (user) {
 }
 
 StackPtr.prototype.delUser  = function (user) {
-	$.post('/deluser', {'user': user}, 
+	$.post(this.getURL('deluser'), {'user': user}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -252,7 +262,7 @@ StackPtr.prototype.updateTimer = function() {
 		$(".refreshtimer").each(function(i){
 			$(this).text("Updating...");
 		});
-		StackPtr.refernce.updateFollowing;
+		StackPtr.refernce.updateFollowing();
 		refreshTime = 5;
 	}
 	$(".refreshtimer").each(function(i){
@@ -261,7 +271,7 @@ StackPtr.prototype.updateTimer = function() {
 }
 
 StackPtr.prototype.setupAutoRefresh =function() {
-	downloadInterval = window.setInterval(this.updateTimer, 1000);
+	downloadInterval = window.setInterval(StackPtr.refernce.updateTimer, 1000);
 	refreshTime = 6;
 }
 
@@ -312,7 +322,7 @@ StackPtr.prototype.popoutEdit  = function (featureid, tgt) {
 }
 
 StackPtr.prototype.changefeature  = function (a,e) {
-	$.post('/renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val()},
+	$.post(this.getURL('renamefeature'), {'id': a, 'name': $("#" + a + "_textinput").val()},
 	function(data) {
 	});pda
 	e.preventDefault();
@@ -326,7 +336,7 @@ StackPtr.prototype.featureClick  = function (feature) {
 StackPtr.prototype.updateGroupData  = function () {
 //grabs the data via post request
 var group = $("#selectgroup").val();
-$.post('/groupdata', {'group': group}, function(data){StackPtr.refernce.updateDrawnItems(data,StackPtr.refernce.drawnItems,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList)}, 'json');
+$.post(this.getURL( 'groupdata'), {'group': group}, function(data){StackPtr.refernce.updateDrawnItems(data,StackPtr.refernce.drawnItems,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList)}, 'json');
 }
 
 
@@ -428,7 +438,7 @@ StackPtr.prototype.setupDraw = function() {
 		
 		//alert(layer.toGeoJSON());
 		
-		$.post('/addfeature', 
+		$.post(this.getURL('addfeature'), 
 			{'layer': '',
 			 'geojson': JSON.stringify(layer.toGeoJSON())
 			}, 
@@ -439,13 +449,13 @@ StackPtr.prototype.setupDraw = function() {
 		//drawnItems.addLayer(layer);
 	});
 	
-	map.on('draw:deleted', function(e) {
+	StackPtr.refernce.map.on('draw:deleted', function(e) {
 		
 		e.layers.eachLayer(function(deletedLayer) {
 			for (var key in StackPtr.refernce.groupData) {
 				StackPtr.refernce.groupData[key].eachLayer(function(layer) {
 					if (deletedLayer == layer) {
-						$.post('/delfeature', 
+						$.post(this.getURL('delfeature'), 
 							{'id': key,}, 
 							function(data) {
 								alert(data);
