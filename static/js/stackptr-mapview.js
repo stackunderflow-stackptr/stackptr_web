@@ -6,6 +6,7 @@
 $(document).ready(function() {
 	map = L.map('map-canvas').setView([-34.929, 138.601], 13);
 	window.stackptr = new StackPtr("/", undefined, map);
+	window.stackptr.bootstrap = true;
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();

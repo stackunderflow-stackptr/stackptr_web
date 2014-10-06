@@ -424,6 +424,7 @@ def groupdata():
 	return json.dumps(res)
 
 @app.route('/addfeature', methods=['POST'])
+@cross_origin()
 @login_required
 def addfeature():
 	feature = Object()
@@ -438,6 +439,7 @@ def addfeature():
 	return "success"
 
 @app.route('/delfeature', methods=['POST'])
+@cross_origin()
 @login_required
 def delfeature():
 	feature = Object.query.filter_by(id = int(request.form['id'])).first()
@@ -447,6 +449,7 @@ def delfeature():
 	return "deleting feature " + request.form['id']
 
 @app.route('/renamefeature', methods=['POST'])
+@cross_origin()
 @login_required
 def renamefeature():
 	feature = Object.query.filter_by(id = int(request.form['id'])).first()

@@ -12,6 +12,8 @@ StackPtr = function (serverurl, key, map) {
 	this.gpsLocation;		// my current location as a L.LatLng()
  	this.watchID;			// id of geolocation watcher
 
+ 	this.bootstrap = false;
+
 	this.locData;			// last fetched location data
 
 	this.autoRefresh = false; // do we auto-update?
@@ -155,7 +157,7 @@ StackPtr.prototype.expand_side  = function (user, item) {
 }
 
 StackPtr.prototype.acceptUser  = function (user) {
-	$.post(this.getURL('acceptuser'), {'user': user}, 
+	$.post(this.serverurl + 'acceptuser', {'user': user, 'apikey': this.key}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -163,7 +165,7 @@ StackPtr.prototype.acceptUser  = function (user) {
 }
 
 StackPtr.prototype.rejectUser  = function (user) {
-	$.post(this.getURL('rejectuser'), {'user': user}, 
+	$.post(this.serverurl + 'rejectuser', {'user': user, 'apikey': this.key}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -171,7 +173,7 @@ StackPtr.prototype.rejectUser  = function (user) {
 }
 
 StackPtr.prototype.addUser  = function (user) {
-	$.post(this.getURL('adduser'), {'user': user}, 
+	$.post(this.serverurl + 'adduser', {'user': user, 'apikey': this.key},  
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -179,7 +181,7 @@ StackPtr.prototype.addUser  = function (user) {
 }
 
 StackPtr.prototype.delUser  = function (user) {
-	$.post(this.getURL('deluser'), {'user': user}, 
+	$.post(this.serverurl + 'deluser', {'user': user, 'apikey': this.key}, 
 		function(data) {
 			StackPtr.refernce.updateFollowing();
 		}	
@@ -322,7 +324,7 @@ StackPtr.prototype.popoutEdit  = function (featureid, tgt) {
 }
 
 StackPtr.prototype.changefeature  = function (a,e) {
-	$.post(this.getURL('renamefeature'), {'id': a, 'name': $("#" + a + "_textinput").val()},
+	$.post(this.serverurl + 'renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val(), 'apikey': this.key},
 	function(data) {
 	});pda
 	e.preventDefault();
@@ -336,7 +338,7 @@ StackPtr.prototype.featureClick  = function (feature) {
 StackPtr.prototype.updateGroupData  = function () {
 //grabs the data via post request
 var group = $("#selectgroup").val();
-$.post(this.getURL( 'groupdata'), {'group': group}, function(data){StackPtr.refernce.updateDrawnItems(data,StackPtr.refernce.drawnItems,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList)}, 'json');
+$.post(this.serverurl + 'groupdata', {'group': group, 'apikey': this.key}, function(data){StackPtr.refernce.updateDrawnItems(data,StackPtr.refernce.drawnItems,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList)}, 'json');
 }
 
 
@@ -375,9 +377,7 @@ StackPtr.prototype.updateDrawnItems  = function (data, fg, removeitemcallback, a
 	
 }
 
-StackPtr.prototype.addItemToGroupsList  = function (id,data) {
-	feature=data
-	console.log(data)
+StackPtr.prototype.addItemToGroupsList  = function (id,feature) {
 	var editlink = $("<a id='feature-edit"+id+"'' href='#' onclick='' ><span class='glyphicon glyphicon-pencil pull-right'></span></a>");
 	var item = $("<a id='feature-"+id+"'' href='#' class='list-group-item list-item-draw'>")
 		.text(' '+ feature['name'] + ' ');
@@ -391,23 +391,29 @@ StackPtr.prototype.addItemToGroupsList  = function (id,data) {
 		e.preventDefault();
 		featureClick(this.groupData[id]);
 	});
-	item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger' onclick='popoutClose(event)'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
-	
+	if (this.bootstrap){
+		item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger' onclick='popoutClose(event)'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
+	}
 	$("#groupfeaturelist").append(item);
 				
 }
-
 
 StackPtr.prototype.setupDraw = function() {
 	
 	// Initialise the FeatureGroup to store editable layers
 	this.drawnItems = new L.FeatureGroup();
-	this.map.addLayer(this.drawnItems);
+	if (this.map.addControl){ // checks to see if actually using the map object or a layer
+		var mapref = this.map
+	} else {
+		var mapref = this.map._map
+	}
+	mapref.addLayer(this.drawnItems);
 	
 	var defaultShape = {
 		color: '#000',
 	}
 	// Initialise the draw control and pass it the FeatureGroup of editable layers
+
 	var drawControl = new L.Control.Draw({
 		draw: {
 			polyline: {
@@ -426,39 +432,35 @@ StackPtr.prototype.setupDraw = function() {
 	        remove: {},
 	    }
 	});
-	this.map.addControl(drawControl);
-	
-	this.map.on('draw:created', function (e) {
+
+	mapref.addControl(drawControl);
+
+	mapref.on('draw:created', function (e) {
 		var type = e.layerType,
 		layer = e.layer;
 		
-		/*if (type === 'marker') {
-			layer.bindPopup('A popup!');
-		}*/
-		
-		//alert(layer.toGeoJSON());
-		
-		$.post(this.getURL('addfeature'), 
+		$.post(StackPtr.refernce.getURL('addfeature'), 
 			{'layer': '',
-			 'geojson': JSON.stringify(layer.toGeoJSON())
+			 'geojson': JSON.stringify(layer.toGeoJSON()),
+			 'apikey': StackPtr.refernce.key
 			}, 
 			function(data) {
 			}	
 		);
 		StackPtr.refernce.changegroup();
-		//drawnItems.addLayer(layer);
 	});
 	
-	StackPtr.refernce.map.on('draw:deleted', function(e) {
+	mapref.on('draw:deleted', function(e) {
 		
 		e.layers.eachLayer(function(deletedLayer) {
 			for (var key in StackPtr.refernce.groupData) {
 				StackPtr.refernce.groupData[key].eachLayer(function(layer) {
 					if (deletedLayer == layer) {
-						$.post(this.getURL('delfeature'), 
-							{'id': key,}, 
+						$.post(StackPtr.refernce.getURL('delfeature'), 
+							{'id': key,
+							'apikey': StackPtr.refernce.key}, 
 							function(data) {
-								alert(data);
+								console.log(data);
 							}	
 						);
 					}
@@ -469,8 +471,4 @@ StackPtr.prototype.setupDraw = function() {
 		StackPtr.refernce.changegroup();
 	});
 	StackPtr.refernce.changegroup();
-}
-
-
-
-
+} 
