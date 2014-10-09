@@ -6,7 +6,7 @@ StackPtr = function (serverurl, key, map) {
 	this.serverurl = typeof serverurl !== 'undefined' ? serverurl : "/";
 	this.map = typeof map !== 'undefined' ? map : map;
 	this.key = key
-	StackPtr.refernce = this; // TODO work out a better way of dealing with "this" and callbacks to ajax requests. For now presuming only one stackptr instance is running
+	StackPtr.reference = this; // TODO work out a better way of dealing with "this" and callbacks to ajax requests. For now presuming only one stackptr instance is running
 	this.placemarks = {};	// map of placemarks
 	this.webLocation;		// last location from website
 	this.gpsLocation;		// my current location as a L.LatLng()
@@ -43,9 +43,9 @@ StackPtr = function (serverurl, key, map) {
 	}
 	StackPtr.prototype.updateFollowing  = function () {
 	$.getJSON(this.getURL( 'users'), function(data) {
-		StackPtr.refernce.updateMapView(data);
-		StackPtr.refernce.updatePlacemarks(data,StackPtr.refernce.placemarks,StackPtr.refernce.map);
-		StackPtr.refernce.updateSideList(data);
+		StackPtr.reference.updateMapView(data);
+		StackPtr.reference.updatePlacemarks(data,StackPtr.reference.placemarks,StackPtr.reference.map);
+		StackPtr.reference.updateSideList(data);
 	});
 }
 
@@ -66,7 +66,7 @@ StackPtr.prototype.updatePlacemarks  = function (data,pl,fg) {
 	var followingData = data['following'];
 	
 	followingData.forEach(function(obj) {
-		StackPtr.refernce.updatePlacemark(obj,pl,fg);
+		StackPtr.reference.updatePlacemark(obj,pl,fg);
 	});
 }
 
@@ -159,7 +159,7 @@ StackPtr.prototype.expand_side  = function (user, item) {
 StackPtr.prototype.acceptUser  = function (user) {
 	$.post(this.serverurl + 'acceptuser', {'user': user, 'apikey': this.key}, 
 		function(data) {
-			StackPtr.refernce.updateFollowing();
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
@@ -167,7 +167,7 @@ StackPtr.prototype.acceptUser  = function (user) {
 StackPtr.prototype.rejectUser  = function (user) {
 	$.post(this.serverurl + 'rejectuser', {'user': user, 'apikey': this.key}, 
 		function(data) {
-			StackPtr.refernce.updateFollowing();
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
@@ -175,7 +175,7 @@ StackPtr.prototype.rejectUser  = function (user) {
 StackPtr.prototype.addUser  = function (user) {
 	$.post(this.serverurl + 'adduser', {'user': user, 'apikey': this.key},  
 		function(data) {
-			StackPtr.refernce.updateFollowing();
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
@@ -183,7 +183,7 @@ StackPtr.prototype.addUser  = function (user) {
 StackPtr.prototype.delUser  = function (user) {
 	$.post(this.serverurl + 'deluser', {'user': user, 'apikey': this.key}, 
 		function(data) {
-			StackPtr.refernce.updateFollowing();
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
@@ -194,22 +194,22 @@ StackPtr.prototype.updateSideList  = function (data) {
 	if (data['me']){
 		this.updateSideList.updateUser(data['me']);
 	}
-	data['following'].forEach(StackPtr.refernce.updateSideList.updateUser);
-	data['pending'].forEach(StackPtr.refernce.updateSideList.updatePendingUser);
-	data['reqs'].forEach(StackPtr.refernce.updateSideList.updateReqsUser);
+	data['following'].forEach(StackPtr.reference.updateSideList.updateUser);
+	data['pending'].forEach(StackPtr.reference.updateSideList.updatePendingUser);
+	data['reqs'].forEach(StackPtr.reference.updateSideList.updateReqsUser);
 	fixheight();
 }
 StackPtr.prototype.updateSideList.updateUser = function(user) {
-		var user_loc = StackPtr.refernce.placemarks[user['user']].getLatLng();
+		var user_loc = StackPtr.reference.placemarks[user['user']].getLatLng();
 		var extra = "";
 		
 		var my_loc;
-		if (this.usesGeoLoc) {
-			my_loc = this.gpsLocation;
+		if (StackPtr.reference.usesGeoLoc) {
+			my_loc = StackPtr.reference.gpsLocation;
 		} else { 
-			my_loc = this.webLocation;
+			my_loc = StackPtr.reference.webLocation;
 		}
-		if (StackPtr.refernce.data['me']){
+		if (StackPtr.reference.data['me']){
 			var distance = my_loc.distanceTo(user_loc);
 			var heading = Math.atan2(user_loc.lng - my_loc.lng, user_loc.lat - my_loc.lat) * 180 / Math.PI;
 			var time = user['lastupd'];
@@ -222,18 +222,18 @@ StackPtr.prototype.updateSideList.updateUser = function(user) {
 		plus.click(function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			StackPtr.refernce.expand_side(user, this);
+			StackPtr.reference.expand_side(user, this);
 			});
 		
 		$("#userlist").append(
 			$("<a href='' class='list-group-item list-item-person'>")
 				.text(' '+ user['user'] + extra)
-				.click(function(e) {e.preventDefault(); StackPtr.refernce.userClick(user['user'])})
+				.click(function(e) {e.preventDefault(); StackPtr.reference.userClick(user['user'])})
 				.prepend(imgel)
 				.append(plus)
 		);
 		
-		if ($.inArray(user['user'],StackPtr.refernce.expandedUsers) != -1) {
+		if ($.inArray(user['user'],StackPtr.reference.expandedUsers) != -1) {
 			this.do_expand(user, plus[0]);
 		};
 		
@@ -264,7 +264,7 @@ StackPtr.prototype.updateTimer = function() {
 		$(".refreshtimer").each(function(i){
 			$(this).text("Updating...");
 		});
-		StackPtr.refernce.updateFollowing();
+		StackPtr.reference.updateFollowing();
 		refreshTime = 5;
 	}
 	$(".refreshtimer").each(function(i){
@@ -273,7 +273,7 @@ StackPtr.prototype.updateTimer = function() {
 }
 
 StackPtr.prototype.setupAutoRefresh =function() {
-	downloadInterval = window.setInterval(StackPtr.refernce.updateTimer, 1000);
+	downloadInterval = window.setInterval(StackPtr.reference.updateTimer, 1000);
 	refreshTime = 6;
 }
 
@@ -338,7 +338,7 @@ StackPtr.prototype.featureClick  = function (feature) {
 StackPtr.prototype.updateGroupData  = function () {
 //grabs the data via post request
 var group = $("#selectgroup").val();
-$.post(this.serverurl + 'groupdata', {'group': group, 'apikey': this.key}, function(data){StackPtr.refernce.updateDrawnItems(data,StackPtr.refernce.drawnItems,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList,StackPtr.refernce.addItemToGroupsList)}, 'json');
+$.post(this.serverurl + 'groupdata', {'group': group, 'apikey': this.key}, function(data){StackPtr.reference.updateDrawnItems(data,StackPtr.reference.drawnItems,StackPtr.reference.addItemToGroupsList,StackPtr.reference.addItemToGroupsList,StackPtr.reference.addItemToGroupsList)}, 'json');
 }
 
 
@@ -439,26 +439,26 @@ StackPtr.prototype.setupDraw = function() {
 		var type = e.layerType,
 		layer = e.layer;
 		
-		$.post(StackPtr.refernce.getURL('addfeature'), 
+		$.post(StackPtr.reference.getURL('addfeature'), 
 			{'layer': '',
 			 'geojson': JSON.stringify(layer.toGeoJSON()),
-			 'apikey': StackPtr.refernce.key
+			 'apikey': StackPtr.reference.key
 			}, 
 			function(data) {
 			}	
 		);
-		StackPtr.refernce.changegroup();
+		StackPtr.reference.changegroup();
 	});
 	
 	mapref.on('draw:deleted', function(e) {
 		
 		e.layers.eachLayer(function(deletedLayer) {
-			for (var key in StackPtr.refernce.groupData) {
-				StackPtr.refernce.groupData[key].eachLayer(function(layer) {
+			for (var key in StackPtr.reference.groupData) {
+				StackPtr.reference.groupData[key].eachLayer(function(layer) {
 					if (deletedLayer == layer) {
-						$.post(StackPtr.refernce.getURL('delfeature'), 
+						$.post(StackPtr.reference.getURL('delfeature'), 
 							{'id': key,
-							'apikey': StackPtr.refernce.key}, 
+							'apikey': StackPtr.reference.key}, 
 							function(data) {
 								console.log(data);
 							}	
@@ -468,7 +468,7 @@ StackPtr.prototype.setupDraw = function() {
 			}
 		});
 		
-		StackPtr.refernce.changegroup();
+		StackPtr.reference.changegroup();
 	});
-	StackPtr.refernce.changegroup();
+	StackPtr.reference.changegroup();
 } 
