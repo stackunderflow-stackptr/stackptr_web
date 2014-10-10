@@ -472,3 +472,12 @@ StackPtr.prototype.setupDraw = function() {
 	});
 	StackPtr.reference.changegroup();
 } 
+
+StackPtr.prototype.drawLocHistory = function(user) {
+		$.post(this.serverurl + 'lochist', {'user': user, 'apikey': this.key}, 
+		function(data) {
+			var gjlayer = L.geoJson(data);
+			StackPtr.reference.map.addLayer(gjlayer);
+		}, "json"	
+	);
+}

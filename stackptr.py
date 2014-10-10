@@ -350,6 +350,17 @@ def update():
 	
 	return "OK"
 
+@app.route('/lochist', methods=['POST', 'GET'])
+@login_required
+def lochist():
+	usr = request.form.get('user', g.user.username)
+	lh = TrackHistory.query.filter(TrackHistory.username==usr).order_by(TrackHistory.time).all()
+	
+	lhtrack = {'type': 'Feature', 'properties': {}, 'geometry': 
+		{'type': 'LineString', 'coordinates': [[l.lon, l.lat] for l in lh]}}
+	
+	return json.dumps(lhtrack)
+
 @app.route('/acceptuser', methods=['POST'])
 @login_required
 def acceptuser():
