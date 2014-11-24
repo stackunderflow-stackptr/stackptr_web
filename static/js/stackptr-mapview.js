@@ -22,13 +22,14 @@ $(document).ready(function() {
 	//detectRetina: true,
 	//}).addTo(map);
 	
-	var tp = "tiles";
+	var tp = "osm_tiles";
 	if(L.Browser.retina) {
-		 tp = "tiles_r";
+		 tp = "osm_tiles_2x";
 	};
-    L.tileLayer('https://stackptr.com/'+tp+'/{z}/{x}/{y}.png', {
+    L.tileLayer('http://tile{s}.stackcdn.com/'+tp+'/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18
+        maxZoom: 18,
+	subdomains: '123456',
     }).addTo(map);
 
 	setupDraw();
