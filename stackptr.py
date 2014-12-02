@@ -48,7 +48,7 @@ manager.add_command('db', MigrateCommand)
 
 
 class TrackPerson(db.Model):
-	username = db.Column(db.String(80), db.ForeignKey('users.username'))
+	userid = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	device = db.Column(db.String(128), primary_key=True)
 	lat = db.Column(db.Float(Precision=64))
 	lon = db.Column(db.Float(Precision=64))
@@ -58,20 +58,23 @@ class TrackPerson(db.Model):
 	extra = db.Column(db.String(512))
 	lastupd = db.Column(db.DateTime())
 	
-	def __init__(self, username, device):
-		self.username = username
+	user = db.relationship('Users', foreign_keys='Users.id',
+							primaryjoin="TrackPerson.userid==Users.id")
+	
+	def __init__(self, userid, device):
+		self.userid = userid
 		self.device = device
 
 class TrackHistory(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	username = db.Column(db.String(80), db.ForeignKey('users.username'))
+	userid = db.Column(db.Integer, db.ForeignKey('users.id'))
 	lat = db.Column(db.Float(Precision=64))
 	lon = db.Column(db.Float(Precision=64))
 	extra = db.Column(db.String(512))
 	time = db.Column(db.DateTime())
 	
-	def __init__(self, username, lat, lon, extra):
-		self.username = username
+	def __init__(self, userid, lat, lon, extra):
+		self.userid = userid
 		self.lat = lat
 		self.lon = lon
 		self.extra = extra
@@ -82,7 +85,6 @@ class Users(db.Model):
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
-    locations = db.relationship("TrackPerson", backref="user")
     
 
     def __init__(self, username, email):
@@ -106,14 +108,14 @@ class Users(db.Model):
 
 class ApiKey(db.Model):
 	key = db.Column(db.String(32), primary_key=True)
-	user = db.Column(db.String(80), db.ForeignKey('users.username'))
+	userid = db.Column(db.Integer, db.ForeignKey('users.id'))
 	created = db.Column(db.DateTime)
 	name = db.Column(db.String(128))	
 
 
 class Follower(db.Model):
-	follower = db.Column(db.String(80), db.ForeignKey('users.username'), primary_key=True)
-	following = db.Column(db.String(80), db.ForeignKey('users.username'), primary_key=True)
+	follower = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	following = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	confirmed = db.Column(db.Integer)
 	
 	def __init__(self, follower, following):
@@ -125,13 +127,12 @@ class Object(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128))
 	group = db.Column(db.Integer, db.ForeignKey('group.id'))
-	owner = db.Column(db.String(80), db.ForeignKey('users.username'))
+	ownerid = db.Column(db.Integer, db.ForeignKey('users.id'))
 	json = db.Column(db.Text)
 
 class Group(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=True)
-	owner = db.Column(db.String(80), db.ForeignKey('users.username'))
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
 
@@ -156,7 +157,7 @@ def load_user_from_request(request):
 		key = ApiKey.query.filter_by(key=apikey).first()
 		if key == None:
 			return None
-		return Users.query.filter_by(username=key.user).first()
+		return Users.query.filter_by(id=key.userid).first()
 	return None
 
 @app.before_request
@@ -231,7 +232,7 @@ def logout():
 @app.route('/api/')
 @login_required
 def api_info():
-	keys = ApiKey.query.filter_by(user = g.user.username).order_by(ApiKey.created).all()
+	keys = ApiKey.query.filter_by(userid = g.user.id).order_by(ApiKey.created).all()
 	return render_template("api.html", keys=keys)
 
 @app.route('/api/new', methods=['POST'])
@@ -239,7 +240,7 @@ def api_info():
 def api_create():
 	key = ApiKey()
 	key.key = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
-	key.user = g.user.username
+	key.userid = g.user.id
 	key.created = datetime.datetime.now()
 	key.name = request.form['description']
 	db.session.add(key)
@@ -251,7 +252,7 @@ def api_create():
 @app.route('/api/remove', methods=['POST'])
 @login_required
 def api_remove():
-	key = ApiKey.query.filter_by(key = request.form['key_id'], user=g.user.username).first()
+	key = ApiKey.query.filter_by(key = request.form['key_id'], userid=g.user.id).first()
 	db.session.delete(key)
 	db.session.commit()
 	return redirect(url_for('api_info'))
@@ -280,36 +281,37 @@ def utc_seconds(time):
 @login_required
 def userjson():
 	now = datetime.datetime.utcnow()
-	tu = TrackPerson.query.filter_by(username = g.user.username).first()
+	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
+	
 	me = {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
+	'user': tu.user[0].username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user[0].email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	} if tu else None
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
+	'user': tu.user[0].username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user[0].email).hexdigest() + '?s=64&d=retro',
 	'lastupd': utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	}
 	#for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
 	for f,tu in db.session.query(Follower,TrackPerson)
-							.join(TrackPerson, Follower.following == TrackPerson.username)\
-							.filter(Follower.follower == g.user.username, Follower.confirmed == 1)\
+							.join(TrackPerson, Follower.following == TrackPerson.userid)\
+							.filter(Follower.follower == g.user.id, Follower.confirmed == 1)\
 							.filter(TrackPerson.lastupd != None)
-							.order_by(TrackPerson.username)
+							.order_by(TrackPerson.userid)
 							.all() ]
 	
 	pending = [ {'user' : r.following }
-	for r in Follower.query.filter(Follower.follower == g.user.username, Follower.confirmed == 0)
+	for r in Follower.query.filter(Follower.follower == g.user.id, Follower.confirmed == 0)
 						   .order_by(Follower.following).all()]
 	
 	reqs = [ {'user' : r.follower }
-	for r in Follower.query.filter(Follower.following == g.user.username, Follower.confirmed == 0)
+	for r in Follower.query.filter(Follower.following == g.user.id, Follower.confirmed == 0)
 						   .order_by(Follower.follower).all()]
 	
 	data = {'me': me, 'following': others, 'pending': pending, 'reqs': reqs}
@@ -331,9 +333,9 @@ def update():
 	if None in (lat, lon):
 		return "No lat/lon specified"
 		
-	tu = TrackPerson.query.filter_by(username = g.user.username).first()
+	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
 	if not tu:
-		tu = TrackPerson(g.user.username, g.user.username)
+		tu = TrackPerson(g.user.id, g.user.username)
 		db.session.add(tu)
 		db.session.commit()
 	tu.lat = lat
@@ -344,7 +346,7 @@ def update():
 	tu.extra = ext
 	tu.lastupd = datetime.datetime.utcnow()
 	
-	th = TrackHistory(g.user.username, lat, lon, ext)
+	th = TrackHistory(g.user.id, lat, lon, ext)
 	db.session.add(th)
 	db.session.commit()
 	
