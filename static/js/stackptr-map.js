@@ -1,76 +1,76 @@
 // stackptr-map.js
 // This file is for code common between the map on stackptr.com and any other map
 
+//Creates the StackPtr constructor. Everything should sit inside this constructor
+StackPtr = function (serverurl, key, map) {
+	this.serverurl = typeof serverurl !== 'undefined' ? serverurl : "/";
+	this.map = typeof map !== 'undefined' ? map : map;
+	this.key = key
+	StackPtr.reference = this; // TODO work out a better way of dealing with "this" and callbacks to ajax requests. For now presuming only one stackptr instance is running
+	this.placemarks = {};	// map of placemarks
+	this.webLocation;		// last location from website
+	this.gpsLocation;		// my current location as a L.LatLng()
+ 	this.watchID;			// id of geolocation watcher
 
-/*
-function updateGPS(position) {
-	$("#loc").html("Lat: " + position.coords.latitude +
-				"<br>Lon: " + position.coords.longitude);
-	
-	gpsLocation = new L.LatLng(position.coords.latitude, position.coords.longitude);
-	placemarks[myData['user']].setLatLng(gpsLocation);
-	updateSideList();		
-};
+ 	this.bootstrap = false;
 
-function errorGPS(err) {
-	$('#loc').html("GPS Error: " + err.message + " (" + err.code + ")");
-};
+	this.locData;			// last fetched location data
 
-function startGPS() {
-	watchID = navigator.geolocation.watchPosition(updateGPS, errorGPS, { enableHighAccuracy: true });
-};
+	this.autoRefresh = false; // do we auto-update?
+	this.usesGeoLoc = false;
 
-function uploadLocation() {
-	$.post('/update', {lat: gpsLocation.lat, lon: gpsLocation.lng},
-				function(data) {
-					$("#loc").html("Server returned: " + data);
-				});
-	return true;
-};
+	this.groupData = {};		// group placemarks
+	this.groupInfo = {};
+	this.drawnItems;			// FeatureGroup of drawn items
 
-function gotoMyLocation() {
-	event.preventDefault();
-	map.panTo(gpsLocation);
-	map.setZoom(16);
-};
-*/
+	this.refreshTime;		// seconds left for refresh counter
 
-// update following users
+	this.uploadInterval;
+	this.downloadInterval;
 
-/*function downloadFollowingAPI(apikey) {
-	$.getJSON
-}*/
+	this.expandedUsers = [];
 
-function updateFollowing() {
-	$.getJSON('users', function(data) {
-		updateMapView(data);
-		updatePlacemarks(data,placemarks,map);
-		updateSideList(data);
+	this.gotoMe = 1;
+
+}
+	StackPtr.prototype.getURL = function(requrl){
+		//Simple function to work out the url of the request + the api key. Used to help external services connect while keeping the code base the same
+		if(this.key){
+			return this.serverurl + requrl + "?apikey=" + this.key
+		} else {
+			return this.serverurl + requrl
+		}
+	}
+	StackPtr.prototype.updateFollowing  = function () {
+	$.getJSON(this.getURL( 'users'), function(data) {
+		StackPtr.reference.updateMapView(data);
+		StackPtr.reference.updatePlacemarks(data,StackPtr.reference.placemarks,StackPtr.reference.map);
+		StackPtr.reference.updateSideList(data);
 	});
 }
 
-function updateMapView(data) {
-	if (gotoMe == 1) {
+StackPtr.prototype.updateMapView  = function (data) {
+	if (this.gotoMe == 1 && data['me']) {
 		var myData = data['me'];
-		map.setView(myData['loc'], 13, {'animate': false});
-		gotoMe = 0;
+		this.map.setView(myData['loc'], 13, {'animate': false});
+		this.gotoMe = 0;
 	}
 }
 
-function updatePlacemarks(data,pl,fg) {
+StackPtr.prototype.updatePlacemarks  = function (data,pl,fg) {
 	var myData = data['me'];
 	if (data['me']){
-		webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
-		updatePlacemark(myData,pl,fg);
+		this.webLocation = new L.LatLng(myData['loc'][0], myData['loc'][1]);
+		this.updatePlacemark(myData,pl,fg);
 	}
 	var followingData = data['following'];
 	
 	followingData.forEach(function(obj) {
-		updatePlacemark(obj,pl,fg);
+		StackPtr.reference.updatePlacemark(obj,pl,fg);
 	});
 }
 
-function updatePlacemark(data,pl,fg) {
+StackPtr.prototype.updatePlacemark  = function (data,pl,fg) {
 	var uLoc = new L.LatLng(data['loc'][0], data['loc'][1]);
 	if (data['user'] in pl) {
 		pl[data['user']].setLatLng(uLoc);
@@ -91,13 +91,13 @@ function updatePlacemark(data,pl,fg) {
 	};
 }
 
-function userClick(user) {
-	map.panTo(placemarks[user].getLatLng());
+StackPtr.prototype.userClick  = function (user) {
+	this.map.panTo(this.placemarks[user].getLatLng());
 	//placemarks[user].openPopup();
-	map.setZoom(16);
+	this.map.setZoom(16);
 };
 
-function do_expand(user, item) {
+StackPtr.prototype.do_expand  = function (user, item) {
 	var extra = $("<span class='extra'></span>");
 	
 	if (user['extra']['bat']) {
@@ -136,82 +136,80 @@ function do_expand(user, item) {
 	}
 	
 	$(item.parentNode).append(extra);
-	
 	$(item).removeClass("glyphicon-plus");
 	$(item).addClass("glyphicon-minus");
 }
 
-function do_unexpand(user, item) {
+StackPtr.prototype.do_unexpand  = function (user, item) {
 	$(item).removeClass("glyphicon-minus");
 	$(item).addClass("glyphicon-plus");
 	$(item.parentNode).find(".extra").remove();
 }
 
-function expand_side(user, item) {
-	if ($.inArray(user['user'],expandedUsers) == -1) {
-		expandedUsers.push(user['user']);
-		do_expand(user, item);
+StackPtr.prototype.expand_side  = function (user, item) {
+	if ($.inArray(user['user'],this.expandedUsers) == -1) {
+		this.expandedUsers.push(user['user']);
+		this.do_expand(user, item);
 	} else {
-		expandedUsers.splice($.inArray(user['user'], expandedUsers),1);
-		do_unexpand(user,item);
+		this.expandedUsers.splice($.inArray(user['user'], this.expandedUsers),1);
+		this.do_unexpand(user,item);
 	}
 }
 
-function acceptUser(user) {
-	$.post('/acceptuser', {'user': user}, 
+StackPtr.prototype.acceptUser  = function (user) {
+	$.post(this.serverurl + 'acceptuser', {'user': user, 'apikey': this.key}, 
 		function(data) {
-			updateFollowing();
-			console.log(data);
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
 
-function rejectUser(user) {
-	$.post('/rejectuser', {'user': user}, 
+StackPtr.prototype.rejectUser  = function (user) {
+	$.post(this.serverurl + 'rejectuser', {'user': user, 'apikey': this.key}, 
 		function(data) {
-			updateFollowing();
-			console.log(data);
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
 
-function addUser(user) {
-	$.post('/adduser', {'user': user}, 
+StackPtr.prototype.addUser  = function (user) {
+	$.post(this.serverurl + 'adduser', {'user': user, 'apikey': this.key},  
 		function(data) {
-			updateFollowing();
-			console.log(data);
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
 
-function delUser(user) {
-	$.post('/deluser', {'user': user}, 
+StackPtr.prototype.delUser  = function (user) {
+	$.post(this.serverurl + 'deluser', {'user': user, 'apikey': this.key}, 
 		function(data) {
-			updateFollowing();
-			console.log(data);
+			StackPtr.reference.updateFollowing();
 		}	
 	);
 }
 
-function updateSideList(data) {
+StackPtr.prototype.updateSideList  = function (data) {
+	this.data = data;
 	$('#userlist').html('');
 	if (data['me']){
-		updateUser(data['me']);
+		this.updateSideList.updateUser(data['me']);
 	}
-	data['following'].forEach(updateUser);
-	
-	function updateUser(user) {
-		var user_loc = placemarks[user['user']].getLatLng();
-		console.log(user)
+	data['following'].forEach(StackPtr.reference.updateSideList.updateUser);
+	data['pending'].forEach(StackPtr.reference.updateSideList.updatePendingUser);
+	data['reqs'].forEach(StackPtr.reference.updateSideList.updateReqsUser);
+	fixheight();
+}
+StackPtr.prototype.updateSideList.updateUser = function(user) {
+		var user_loc = StackPtr.reference.placemarks[user['user']].getLatLng();
 		var extra = "";
 		
 		var my_loc;
-		if (usesGeoLoc) {
-			my_loc = gpsLocation;
+		if (StackPtr.reference.usesGeoLoc) {
+			my_loc = StackPtr.reference.gpsLocation;
 		} else { 
-			my_loc = webLocation;
+			my_loc = StackPtr.reference.webLocation;
 		}
-		if (data['me']){
+		if (StackPtr.reference.data['me']){
 			var distance = my_loc.distanceTo(user_loc);
 			var heading = Math.atan2(user_loc.lng - my_loc.lng, user_loc.lat - my_loc.lat) * 180 / Math.PI;
 			var time = user['lastupd'];
@@ -224,55 +222,49 @@ function updateSideList(data) {
 		plus.click(function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			expand_side(user, this);
+			StackPtr.reference.expand_side(user, this);
 			});
 		
 		$("#userlist").append(
 			$("<a href='' class='list-group-item list-item-person'>")
 				.text(' '+ user['user'] + extra)
-				.click(function(e) {e.preventDefault(); userClick(user['user'])})
+				.click(function(e) {e.preventDefault(); StackPtr.reference.userClick(user['user'])})
 				.prepend(imgel)
 				.append(plus)
 		);
 		
-		if ($.inArray(user['user'],expandedUsers) != -1) {
-			do_expand(user, plus[0]);
+		if ($.inArray(user['user'],StackPtr.reference.expandedUsers) != -1) {
+			this.do_expand(user, plus[0]);
 		};
 		
 	};
-	
-	data['pending'].forEach(updatePendingUser);
-	function updatePendingUser(user) {
-		$("#userlist").append(
-			$("<a href='' class='list-group-item list-item-person'>")
-				.text(' '+ user['user'] + " (awaiting approval)")
-		);
-	}
-	
-	data['reqs'].forEach(updateReqsUser);
-	function updateReqsUser(user) {
-		var a = $("<a href='' class='list-group-item list-item-person'>")
-				.text(' '+ user['user'] + " wants to follow you.");
-		
-		var b = $("<div>");
-		b.append($("<a>").text("accept").click(function(e) { e.preventDefault(); acceptUser(user['user'])}));
-		b.append($("<span>").html("&nbsp;"));
-		b.append($("<a>").text("reject").click(function(e) { e.preventDefault(); rejectUser(user['user'])}));
-				
-		$("#userlist").append(a);
-		a.append(b);
-	}
-	
-	fixheight();
+StackPtr.prototype.updateSideList.updatePendingUser = function(user) {
+	$("#userlist").append(
+		$("<a href='' class='list-group-item list-item-person'>")
+			.text(' '+ user['user'] + " (awaiting approval)")
+	);
 }
 
-function updateTimer() {
+StackPtr.prototype.updateSideList.updateReqsUser = function(user) {
+	var a = $("<a href='' class='list-group-item list-item-person'>")
+			.text(' '+ user['user'] + " wants to follow you.");
+	
+	var b = $("<div>");
+	b.append($("<a>").text("accept").click(function(e) { e.preventDefault(); acceptUser(user['user'])}));
+	b.append($("<span>").html("&nbsp;"));
+	b.append($("<a>").text("reject").click(function(e) { e.preventDefault(); rejectUser(user['user'])}));
+			
+	$("#userlist").append(a);
+	a.append(b);
+}
+
+StackPtr.prototype.updateTimer = function() {
 	refreshTime--;
 	if (refreshTime <= 0) {
 		$(".refreshtimer").each(function(i){
 			$(this).text("Updating...");
 		});
-		updateFollowing();
+		StackPtr.reference.updateFollowing();
 		refreshTime = 5;
 	}
 	$(".refreshtimer").each(function(i){
@@ -280,8 +272,8 @@ function updateTimer() {
 	});
 }
 
-function setupAutoRefresh() {
-	downloadInterval = window.setInterval(updateTimer, 1000);
+StackPtr.prototype.setupAutoRefresh =function() {
+	downloadInterval = window.setInterval(StackPtr.reference.updateTimer, 1000);
 	refreshTime = 6;
 }
 
@@ -300,7 +292,7 @@ function toggleAutoRefresh() {
 	}
 }*/
 
-function fixheight() {
+this.fixheight = function() {
 	var winheight = $(window).height();
 	var usertop = parseInt($('#usermenu').css('top'), 10);
 	var userheight = $('#usermenu').height();
@@ -317,82 +309,79 @@ function fixheight() {
 	}
 };
 
-function popoutClose(e) {
+StackPtr.prototype.popoutClose  = function (e) {
 	e.preventDefault();
 	$('.popover').remove();
 }
 
-function popoutEdit(featureid, tgt) {
+StackPtr.prototype.popoutEdit  = function (featureid, tgt) {
 	$('.popover').remove();
 	tgt.popover('toggle');
 	
-	$("#" + featureid + "_textinput").val(groupInfo[featureid]['name']); // and 'owner'
+	$("#" + featureid + "_textinput").val(this.groupInfo[featureid]['name']); // and 'owner'
 	$("#" + featureid + "_description").val("description");
 	return false;
 }
 
-function changefeature(a,e) {
-	$.post('/renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val()},
+StackPtr.prototype.changefeature  = function (a,e) {
+	$.post(this.serverurl + 'renamefeature', {'id': a, 'name': $("#" + a + "_textinput").val(), 'apikey': this.key},
 	function(data) {
-		console.log(data)
 	});pda
 	e.preventDefault();
 	return false;
 }
 
-function featureClick(feature) {
-	map.fitBounds(feature.getBounds());
-	
-	console.log("panning");
+StackPtr.prototype.featureClick  = function (feature) {
+	this.map.fitBounds(feature.getBounds());
 };
 
-function updateGroupData() {
+StackPtr.prototype.updateGroupData  = function () {
 //grabs the data via post request
 var group = $("#selectgroup").val();
-$.post('/groupdata', {'group': group}, function(data){updateDrawnItems(data,drawnItems,addItemToGroupsList,addItemToGroupsList,addItemToGroupsList)}, 'json');
+$.post(this.serverurl + 'groupdata', {'group': group, 'apikey': this.key}, function(data){StackPtr.reference.updateDrawnItems(data,StackPtr.reference.drawnItems,StackPtr.reference.addItemToGroupsList,StackPtr.reference.addItemToGroupsList,StackPtr.reference.addItemToGroupsList)}, 'json');
 }
 
 
-function changegroup(){
+StackPtr.prototype.changegroup = function(){
 	//changes currently selected group
-	updateGroupData();
+	this.updateGroupData();
 }
 
-function updateDrawnItems(data, fg, removeitemcallback, additemcallback, updateitemcallback){
+StackPtr.prototype.updateDrawnItems  = function (data, fg, removeitemcallback, additemcallback, updateitemcallback) {
 	//remove items not in groupdata
-	for(item in groupData){
+	for(item in this.groupData){
 		if (!(item in data)){
-			fg.removeLayer(groupData[item])
-			delete groupData[item]
+			fg.removeLayer(this.groupData[item])
+			delete this.groupData[item]
 			removeitemcallback(item,data[item]);
 		}
 	}
 	for (item in data){
 		feature = data[item]
-		groupInfo[item] = data[item]
-		if (item in groupData){
+		this.groupInfo[item] = data[item]
+		if (item in this.groupData){
 			//TODO check if actually updated or something rather than just deleting and readding all the items
-			fg.removeLayer(groupData[item])
+			fg.removeLayer(this.groupData[item])
 			var gjlayer = L.geoJson(feature['json']);
 			fg.addLayer(gjlayer);
-			groupData[item] = gjlayer;
+			this.groupData[item] = gjlayer;
 			updateitemcallback(item,data[item]);
 		} else {
 
 			var gjlayer = L.geoJson(feature['json']);
 			fg.addLayer(gjlayer);
-			groupData[item] = gjlayer;
+			this.groupData[item] = gjlayer;
 			additemcallback(item,data[item]);
 		}
 	}
 	
 }
 
-function addItemToGroupsList(id,data){
-	feature=data
+StackPtr.prototype.addItemToGroupsList  = function (id,feature) {
 	var editlink = $("<a id='feature-edit"+id+"'' href='#' onclick='' ><span class='glyphicon glyphicon-pencil pull-right'></span></a>");
 	var item = $("<a id='feature-"+id+"'' href='#' class='list-group-item list-item-draw'>")
 		.text(' '+ feature['name'] + ' ');
+
 	editlink.click(function(e) {
 		e.stopImmediatePropagation();
 		popoutEdit(id, item);
@@ -400,28 +389,31 @@ function addItemToGroupsList(id,data){
 	item.append(editlink);
 	item.click(function(e) {
 		e.preventDefault();
-		featureClick(groupData[id]);
+		featureClick(this.groupData[id]);
 	});
-	item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger' onclick='popoutClose(event)'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
-	
+	if (this.bootstrap){
+		item.popover({'content': "<form class='form-horizontal'><div class='control-group'><label class='control-label' for='textinput'>Title</label><div class='controls'><input id='" + id +  "_textinput' name='" + id +  "_textinput' type='text' class='input-medium'></div></div><div class='control-group'><label class='control-label' for='description'>Description</label><div class='controls'><textarea id='" + id + "_description' name=" + id + "_description'></textarea></div></div><div class='control-group'><label class='control-label' for='submit'></label><div class='controls'><button id='submit' name='submit' class='btn btn-success' onclick='changefeature(" + id + ",event)'>Submit</button><button id='cancel' name='cancel' class='btn btn-danger' onclick='popoutClose(event)'>Cancel</button></div></div></form>", 'placement': 'left', 'container': 'body', 'html': true, 'trigger': 'manual'});
+	}
 	$("#groupfeaturelist").append(item);
 				
 }
 
-
-
-
-
-function setupDraw() {
+StackPtr.prototype.setupDraw = function() {
 	
 	// Initialise the FeatureGroup to store editable layers
-	drawnItems = new L.FeatureGroup();
-	map.addLayer(drawnItems);
+	this.drawnItems = new L.FeatureGroup();
+	if (this.map.addControl){ // checks to see if actually using the map object or a layer
+		var mapref = this.map
+	} else {
+		var mapref = this.map._map
+	}
+	mapref.addLayer(this.drawnItems);
 	
 	var defaultShape = {
 		color: '#000',
 	}
 	// Initialise the draw control and pass it the FeatureGroup of editable layers
+
 	var drawControl = new L.Control.Draw({
 		draw: {
 			polyline: {
@@ -436,45 +428,39 @@ function setupDraw() {
 			circle: false,
 		},
 	    edit: {
-	        featureGroup: drawnItems,
+	        featureGroup: this.drawnItems,
 	        remove: {},
 	    }
 	});
-	map.addControl(drawControl);
-	
-	map.on('draw:created', function (e) {
+
+	mapref.addControl(drawControl);
+
+	mapref.on('draw:created', function (e) {
 		var type = e.layerType,
 		layer = e.layer;
 		
-		/*if (type === 'marker') {
-			layer.bindPopup('A popup!');
-		}*/
-		
-		//alert(layer.toGeoJSON());
-		
-		$.post('/addfeature', 
+		$.post(StackPtr.reference.getURL('addfeature'), 
 			{'layer': '',
-			 'geojson': JSON.stringify(layer.toGeoJSON())
+			 'geojson': JSON.stringify(layer.toGeoJSON()),
+			 'apikey': StackPtr.reference.key
 			}, 
 			function(data) {
-				console.log(data);
 			}	
 		);
-		changegroup();
-		//drawnItems.addLayer(layer);
+		StackPtr.reference.changegroup();
 	});
 	
-	map.on('draw:deleted', function(e) {
-		console.log("draw:deleted");
+	mapref.on('draw:deleted', function(e) {
 		
 		e.layers.eachLayer(function(deletedLayer) {
-			for (var key in groupData) {
-				groupData[key].eachLayer(function(layer) {
+			for (var key in StackPtr.reference.groupData) {
+				StackPtr.reference.groupData[key].eachLayer(function(layer) {
 					if (deletedLayer == layer) {
-						$.post('/delfeature', 
-							{'id': key,}, 
+						$.post(StackPtr.reference.getURL('delfeature'), 
+							{'id': key,
+							'apikey': StackPtr.reference.key}, 
 							function(data) {
-								alert(data);
+								console.log(data);
 							}	
 						);
 					}
@@ -482,13 +468,16 @@ function setupDraw() {
 			}
 		});
 		
-		changegroup();
+		StackPtr.reference.changegroup();
 	});
-	changegroup();
-}
+	StackPtr.reference.changegroup();
+} 
 
-
-
-function togglePane(pane) {
-	$(pane).toggle();
+StackPtr.prototype.drawLocHistory = function(user) {
+		$.post(this.serverurl + 'lochist', {'user': user, 'apikey': this.key}, 
+		function(data) {
+			var gjlayer = L.geoJson(data);
+			StackPtr.reference.map.addLayer(gjlayer);
+		}, "json"	
+	);
 }
