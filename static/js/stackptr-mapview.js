@@ -26,7 +26,7 @@ $(document).ready(function() {
 	if(L.Browser.retina) {
 		 tp = "osm_tiles_2x";
 	};
-    L.tileLayer('http://tile{s}.stackcdn.com/'+tp+'/{z}/{x}/{y}.png', {
+    L.tileLayer('https://tile{s}.stackcdn.com/'+tp+'/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 18,
 	subdomains: '123456',
