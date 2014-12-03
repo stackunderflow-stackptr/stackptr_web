@@ -114,8 +114,8 @@ class ApiKey(db.Model):
 
 
 class Follower(db.Model):
-	follower = db.Column(db.Integer, db.ForeignKey('Users.id'), primary_key=True)
-	following = db.Column(db.Integer, db.ForeignKey('Users.id'), primary_key=True)
+	follower = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	following = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	confirmed = db.Column(db.Integer)
 	
 	def __init__(self, follower, following):
@@ -143,8 +143,16 @@ class Group(db.Model):
 	name = db.Column(db.String(128), unique=True)
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
+	
+	members = db.relationship('GroupMember', primaryjoin="Group.id==GroupMember.groupid")
 
-
+class GroupMember(db.Model):
+	groupid = db.Column(db.Integer, db.ForeignKey('group.id'), primary_key=True)
+	userid = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	role = db.Column(db.Integer)
+	
+	def __init__(self):
+		pass
 
 #db.create_all()
 
@@ -295,7 +303,8 @@ def userjson():
 	
 	me = {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.user.username,
+	'user': tu.userid,
+	'username': tu.user.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
@@ -304,7 +313,8 @@ def userjson():
 	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.user.username,
+	'user': tu.userid,
+	'username': tu.user.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
