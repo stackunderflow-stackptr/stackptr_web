@@ -58,7 +58,7 @@ class TrackPerson(db.Model):
 	extra = db.Column(db.String(512))
 	lastupd = db.Column(db.DateTime())
 	
-	user = db.relationship('Users', foreign_keys='Users.id',
+	user = db.relationship('Users', foreign_keys=userid, lazy='joined',
 							primaryjoin="TrackPerson.userid==Users.id")
 	
 	def __init__(self, userid, device):
@@ -114,14 +114,19 @@ class ApiKey(db.Model):
 
 
 class Follower(db.Model):
-	follower = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-	following = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	follower = db.Column(db.Integer, db.ForeignKey('Users.id'), primary_key=True)
+	following = db.Column(db.Integer, db.ForeignKey('Users.id'), primary_key=True)
 	confirmed = db.Column(db.Integer)
 	
 	def __init__(self, follower, following):
 		self.follower = follower
 		self.following = following
 		confirmed = 0
+	
+	follower_user = db.relationship('Users', foreign_keys=follower, lazy='joined',
+					primaryjoin="Follower.follower==Users.id")
+	following_user = db.relationship('Users', foreign_keys=following, lazy='joined',
+					primaryjoin="Follower.following==Users.id")
 
 class Object(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -129,12 +134,17 @@ class Object(db.Model):
 	group = db.Column(db.Integer, db.ForeignKey('group.id'))
 	ownerid = db.Column(db.Integer, db.ForeignKey('users.id'))
 	json = db.Column(db.Text)
+	
+	owner = db.relationship('Users', foreign_keys=ownerid, lazy='joined',
+					primaryjoin="Object.ownerid==Users.id")
 
 class Group(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=True)
 	description = db.Column(db.Text)
 	status = db.Column(db.Integer)
+
+
 
 #db.create_all()
 
@@ -285,26 +295,27 @@ def userjson():
 	
 	me = {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.user[0].username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user[0].email).hexdigest() + '?s=64&d=retro',
+	'user': tu.user.username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	} if tu else None
 	
+	
 	others = [ {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.user[0].username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user[0].email).hexdigest() + '?s=64&d=retro',
+	'user': tu.user.username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	}
-	#for tu in TrackPerson.query.filter(TrackPerson.username != g.user.username)\
 	for f,tu in db.session.query(Follower,TrackPerson)
 							.join(TrackPerson, Follower.following == TrackPerson.userid)\
 							.filter(Follower.follower == g.user.id, Follower.confirmed == 1)\
 							.filter(TrackPerson.lastupd != None)
 							.order_by(TrackPerson.userid)
 							.all() ]
+	
 	
 	pending = [ {'user' : r.following }
 	for r in Follower.query.filter(Follower.follower == g.user.id, Follower.confirmed == 0)
@@ -355,8 +366,8 @@ def update():
 @app.route('/lochist', methods=['POST', 'GET'])
 @login_required
 def lochist():
-	usr = request.form.get('user', g.user.username)
-	lh = TrackHistory.query.filter(TrackHistory.username==usr).order_by(TrackHistory.time).all()
+	usr = request.form.get('uid', g.user.id)
+	lh = TrackHistory.query.filter(TrackHistory.userid==usr).order_by(TrackHistory.time).all()
 	
 	lhtrack = {'type': 'Feature', 'properties': {}, 'geometry': 
 		{'type': 'LineString', 'coordinates': [[l.lon, l.lat] for l in lh]}}
@@ -366,8 +377,8 @@ def lochist():
 @app.route('/acceptuser', methods=['POST'])
 @login_required
 def acceptuser():
-	user = request.form['user']
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	user = request.form['uid']
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if not fobj:
 		return "no user request"
 	fobj.confirmed = 1
@@ -378,8 +389,8 @@ def acceptuser():
 @app.route('/rejectuser', methods=['POST'])
 @login_required
 def rejectuser():
-	user = request.form['user']
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	user = request.form['uid']
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if not fobj:
 		return "no user request"
 	fobj.confirmed = -1
@@ -390,19 +401,19 @@ def rejectuser():
 @app.route('/adduser', methods=['POST'])
 @login_required
 def adduser():
-	user = request.form['user']
+	user = request.form['uid']
 	# first pre-accept them being able to see me
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if not fobj:
-		fobj = Follower(user, g.user.username)
+		fobj = Follower(user, g.user.id)
 	fobj.confirmed = 1
 	db.session.merge(fobj)
 	db.session.commit()
 	
 	# now add the request from me to them
-	fobj2 = Follower.query.filter(Follower.follower==g.user.username, Follower.follower==user).first()
+	fobj2 = Follower.query.filter(Follower.follower==g.user.id, Follower.follower==user).first()
 	if not fobj2:
-		fobj2 = Follower(g.user.username, user)
+		fobj2 = Follower(g.user.id, user)
 		fobj2.confirmed = 0
 	else:
 		if fobj2.confirmed != 1: # if request was ignored, but don't un-add the user if already accepted
@@ -414,15 +425,17 @@ def adduser():
 @app.route('/deluser', methods=['POST'])
 @login_required
 def deluser():
-	user = request.form['user']
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.username).first()
+	user = request.form['uid']
+	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if fobj:
 		db.session.delete(fobj)
-	fobj = Follower.query.filter(Follower.follower==g.user.username, Follower.following==user).first()
+	fobj = Follower.query.filter(Follower.follower==g.user.id, Follower.following==user).first()
 	if fobj:
 		db.session.delete(fobj)
 	db.session.commit()
 	return "OK"
+
+###########
 
 @app.route('/groupdata', methods=['POST'])
 @cross_origin()
@@ -443,7 +456,7 @@ def addfeature():
 	feature = Object()
 	feature.name = "Untitled"
 	feature.group = 1
-	feature.owner = g.user.username
+	feature.owner = g.user.id
 	feature.json = request.form['geojson']
 	db.session.add(feature)
 	db.session.commit()
