@@ -311,9 +311,8 @@ def userjson():
 	} if tu else None
 	
 	
-	others = [ {'loc': [tu.lat, tu.lon],
+	others = {tu.userid: {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.userid,
 	'username': tu.user.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': utc_seconds(tu.lastupd),
@@ -324,9 +323,8 @@ def userjson():
 							.filter(Follower.follower == g.user.id, Follower.confirmed == 1)\
 							.filter(TrackPerson.lastupd != None)
 							.order_by(TrackPerson.userid)
-							.all() ]
-	
-	
+							.all() }
+		
 	pending = [ {'user' : r.following }
 	for r in Follower.query.filter(Follower.follower == g.user.id, Follower.confirmed == 0)
 						   .order_by(Follower.following).all()]

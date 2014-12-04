@@ -12,7 +12,7 @@ var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment']).con
 	//	 tp = "osm_tiles_2x";
 	//};
 
-app.controller("StackPtrMap", [ '$scope', '$http', function($scope, $http) {
+app.controller("StackPtrMap", [ '$scope', '$http', '$interval', function($scope, $http, $interval) {
     angular.extend($scope, {
         defaults: {
     maxZoom: 14,
@@ -28,17 +28,39 @@ app.controller("StackPtrMap", [ '$scope', '$http', function($scope, $http) {
         subdomains: '1234',
     },
     center: {
-        lat: 0,
-        lng: 0,
-        zoom: 0
+        lat: -34.929,
+        lng: 138.601,
+        zoom: 12,
     }
 }
     });
-
+    
+    $scope.markers = {};
 	$scope.userList = {};
-	var resp = $http.get("/users");
-	resp.success(function(data, status, headers, config) {
-		$scope.userList = data['following'];
+
+	$interval(function() {
+		var resp = $http.get("/users");
+		resp.success(function(data, status, headers, config) {
+			$scope.userList = data['following'];
+		});
+	}, 1000);
+	
+	$scope.$watchCollection('userList', function(added,removed) {
+		var markerList = {};
+		for (user in added) {
+			var userObj = $scope.userList[user];
+			var marker = {
+				lat: userObj.loc[0],
+				lng: userObj.loc[1],
+				icon: {
+					iconUrl: userObj.icon,
+					iconSize: [32,32],
+					iconAnchor: [16,16],
+				},
+			};
+			markerList[$scope.userList[user].username] = marker;
+		}
+		angular.extend($scope, {markers: markerList});
 	});
 	
 
