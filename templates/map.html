@@ -19,10 +19,15 @@
 {% block extra_js %}
 	<script type="text/javascript" src="/static/js/leaflet.js"></script>
 	<script type="text/javascript" src="/static/js/leaflet.draw.js"></script>
+	<script type="text/javascript" src="/static/js/angular-leaflet-directive.min.js"></script>
+	<script type="text/javascript" src="/static/js/moment.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-moment.min.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-utils.js"></script>
-	<script type="text/javascript" src="/static/js/stackptr-map.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-mapview.js"></script>
 {% endblock extra_js %}
+
+{% block htmldef %}ng-app="StackPtr"{% endblock %}
+{% block bodydef %}ng-controller="StackPtrMap"{% endblock %}
 
 {% block content %}
 <nav class="navbar navbar-fixed-top navbar-inverse semitransparent" role="navigation">
@@ -39,6 +44,7 @@
 		<li><a class="refreshtimer"></a></li>
 		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Todo List</a></li>
 		<li><a>Logged in as: {{ current_user }}</a></li>
+		<li><a>test [[ 4 * 3 ]]</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
 	
@@ -77,6 +83,11 @@
 	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body">
 		<div class="list-group" id="userlist">
+			<a href="" class="list-group-item list-item-person" ng-repeat="user in userList">
+				<img width="24" height="24" ng-src="[[user.icon]]">
+				[[user.username]] <!-- [[user.hdg]] --> <span am-time-ago="user.lastupd" am-preprocess="unix"></span>
+				<span class="glyphicon glyphicon-plus pull-right"></span><br>
+			</a>
 		</div>
 		<!--
 		<form class="form-horizontal" role="form" method="POST" action="/adduser" id="adduserform">
@@ -113,10 +124,8 @@
 	</div>
 </div>
 
-
-
 <div class="fill">
-	   <div id="map-canvas" height="100%"></leaflet>
+		<leaflet defaults="defaults" height="100%"></leaflet>
 </div>
 
 {% endblock content %}
