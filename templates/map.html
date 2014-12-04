@@ -41,10 +41,9 @@
 		<li><a href="/api/">Manage API keys</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
-		<li><a class="refreshtimer"></a></li>
+		<li><a class="refreshtimer">Updating in [[counter]] seconds</a></li>
 		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Todo List</a></li>
 		<li><a>Logged in as: {{ current_user }}</a></li>
-		<li><a>test [[ 4 * 3 ]]</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
 	
@@ -56,7 +55,7 @@
 				<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 				<li><a href="/api/">Manage API keys</a></li>
 				<li class="divider"></li>
-				<li><a class="refreshtimer"></a></li>
+				<li><a class="refreshtimer">Updating in [[counter]] seconds</a></li>
 				<li class="divider"></li>
 				<li><a>Logged in as: {{ current_user }}</a></li>
 				<li><a href="/logout">Log out</a></li>
@@ -113,8 +112,7 @@
 			<div class="form-group">
 				<div class="col-lg-12">
 					<select class="form-control" name="groupname" id="selectgroup">
-						<option>Ingress</option>
-						<option>test</option>
+						<option value="[[id]]" ng-repeat="(id,name) in grouplist">[[name]]</option>
 					</select>
 				</div>
 			</div>
@@ -125,7 +123,7 @@
 </div>
 
 <div class="fill">
-		<leaflet defaults="defaults" markers="markers" height="100%"></leaflet>
+		<leaflet defaults="defaults" geojson="geojson" height="100%"></leaflet>
 </div>
 
 {% endblock content %}

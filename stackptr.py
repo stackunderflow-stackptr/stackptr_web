@@ -445,6 +445,15 @@ def deluser():
 
 ###########
 
+@app.route('/grouplist')
+@cross_origin()
+@login_required
+def grouplist():
+	gl = Group.query.all()
+	res = {item.id: item.name for item in gl}
+	return json.dumps(res)
+	#todo: only return groups to which the user is a member
+
 @app.route('/groupdata', methods=['POST'])
 @cross_origin()
 @login_required
@@ -452,7 +461,7 @@ def groupdata():
 	res = {}
 	gd = Object.query.filter_by(group = 1).all()
 	for item in gd:
-		res[item.id] = {'name': item.name, 'owner': item.owner, 'json': json.loads(item.json)}
+		res[item.id] = {'name': item.name, 'owner': item.owner.username, 'json': json.loads(item.json)}
 	
 	# FIXME: Other groups?
 	return json.dumps(res)
