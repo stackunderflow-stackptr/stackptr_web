@@ -476,24 +476,30 @@ def groupdata():
 def addfeature():
 	feature = Object()
 	feature.name = "Untitled"
-	feature.group = 1
-	feature.owner = g.user.id
+	feature.group = int(request.form['group'])
+	feature.ownerid = g.user.id
 	feature.json = request.form['geojson']
 	db.session.add(feature)
 	db.session.commit()
 	# FIXME: Return the object ID of the element created.
 	# FIXME: Allow passing the name and group ID of the object.
-	return "success"
+	
+	js = json.loads(feature.json)
+	js['id'] = feature.id
+	res = {feature.id : {'name': feature.name, 'owner': feature.owner.username, 'json': js}}
+		
+	return json.dumps([{'type': 'groupdata', 'data': res}])
 
 @app.route('/delfeature', methods=['POST'])
 @cross_origin()
 @login_required
 def delfeature():
-	feature = Object.query.filter_by(id = int(request.form['id'])).first()
+	fid = int(request.form['id'])
+	feature = Object.query.filter_by(id = fid).first()
 	db.session.delete(feature)
 	db.session.commit()
 	# FIXME: Use HTTP status codes to indicate success/failure.
-	return "deleting feature " + request.form['id']
+	return json.dumps([{'type': 'groupdata', 'data': {fid: None}}])
 
 @app.route('/renamefeature', methods=['POST'])
 @cross_origin()

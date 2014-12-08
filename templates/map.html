@@ -19,9 +19,13 @@
 {% block extra_js %}
 	<script type="text/javascript" src="/static/js/leaflet.js"></script>
 	<script type="text/javascript" src="/static/js/angular-leaflet-directive.js"></script>
+	<script type="text/javascript" src="/static/js/angular-animate.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-sanitize.min.js"></script>
 	<script type="text/javascript" src="/static/js/leaflet.draw.js"></script>
 	<script type="text/javascript" src="/static/js/moment.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-moment.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-strap.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-strap.tpl.min.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-utils.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-mapview.js"></script>
 {% endblock extra_js %}
@@ -81,13 +85,21 @@
 <div class="panel panel-primary" id="usermenu">
 	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body">
+		
+		<img width="32" height="32" class="user-icon" ng-repeat="user in userList" ng-src="[[user.icon]]"
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>[[user.lastupd]]">
+		
+		<!--
 		<div class="list-group" id="userlist">
-			<a href="" class="list-group-item list-item-person" ng-repeat="user in userList">
+			<a href="" class="list-group-item list-item-person" ng-repeat="user in userList" bs-tooltip="tooltip" data-placement="left">
 				<img width="24" height="24" ng-src="[[user.icon]]">
-				[[user.username]] <!-- [[user.hdg]] --> <span am-time-ago="user.lastupd" am-preprocess="unix"></span>
+				 !-- [[user.hdg]] -- 
 				<span class="glyphicon glyphicon-plus pull-right"></span><br>
 			</a>
 		</div>
+		-->
+		
 		<!--
 		<form class="form-horizontal" role="form" method="POST" action="/adduser" id="adduserform">
 			<div class="form-group">
@@ -117,14 +129,53 @@
 				</div>
 			</div>
 		</form>
-		<div class="list-group" id="groupfeaturelist">
-		<a id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata"> [[item.name]] [[item.owner]]
-				<span class="glyphicon glyphicon-pencil pull-right"></span>
-		</a>
 		
+		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
+		<span id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata" bs-collapse-toggle>  [[item.name]]
+				<span class="glyphicon glyphicon-pencil pull-right"></span>
+				
+					<div class="panel-collapse" bs-collapse-target>
+						<div class="panel-body">
+							Owner: [[ item.owner ]]
+						</div>
+					</div>
+		</span>
 		</div>
+		
+		
+		<!--
+		<div class="panel-group" ng-model="activePanel" bs-collapse>
+			<div class="panel panel-default" ng-repeat="item in groupdata">
+				<div class="panel-heading list-item-draw" bs-collapse-toggle>
+							[[item.name]]
+					</div>
+					<div class="panel-collapse" bs-collapse-target>
+						<div class="panel-body">
+							[[ item.owner ]]
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		-->
+
 	</div>
 </div>
+
+<!-- 
+    <button type="button" class="btn btn-lg btn-primary" data-placement="top-right" title="[[popover.title]]" data-content="[[popover.content]]" data-trigger="focus" bs-popover>Click to toggle popover
+
+-->
+
+<!--
+
+<button type="button" class="btn btn-lg btn-primary" data-placement="bottom" data-animation="am-flip-x" bs-tooltip="tooltip">Click to toggle popover
+  <br>
+  <small>(using an object)</small>
+</button>
+
+-->
+
 
 <div class="fill">
 		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" height="100%"></leaflet>

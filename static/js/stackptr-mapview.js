@@ -3,12 +3,13 @@
 
 //window.stackptr.resize(fixheight);
 
-var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment']).config(function($interpolateProvider){
+var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap']).config(function($interpolateProvider){
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
 app.run(function($http) {
 	$http.defaults.headers.post['X-CSRFToken'] = $('meta[name=csrf-token]').attr('content');
+	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 });
 
 
@@ -131,12 +132,21 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
               map.addLayer(drawnItems);
               map.on('draw:created', function (e) {
                 var layer = e.layer;
-                drawnItems.addLayer(layer);
-                console.log(JSON.stringify(layer.toGeoJSON()));
-                
+                //drawnItems.addLayer(layer);
+                //console.log(JSON.stringify(layer.toGeoJSON()));
+				var resp = $http.post('/addfeature', $.param({
+					group: '1',
+					geojson: JSON.stringify(layer.toGeoJSON()),
+				}));
+				resp.success($scope.processData);
+				//resp.success(function(d,s,h,c) {console.log(d)});
               });
            });
            
+
+	$scope.tooltip = {title: 'Hello Tooltip This is a multiline message!', checked: false};
+	
+	$scope.activePanel = -1;
 
 }]);
 
@@ -150,6 +160,7 @@ $(document).ready(function() {
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();
+	
 	//$("#upload_loc").click(uploadLocation);
 	//$("#goto_loc").click(gotoMyLocation);
 	//$("#autorefresh_loc").click(toggleAutoRefresh);
