@@ -18,8 +18,8 @@
 
 {% block extra_js %}
 	<script type="text/javascript" src="/static/js/leaflet.js"></script>
+	<script type="text/javascript" src="/static/js/angular-leaflet-directive.js"></script>
 	<script type="text/javascript" src="/static/js/leaflet.draw.js"></script>
-	<script type="text/javascript" src="/static/js/angular-leaflet-directive.min.js"></script>
 	<script type="text/javascript" src="/static/js/moment.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-moment.min.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-utils.js"></script>
@@ -118,12 +118,16 @@
 			</div>
 		</form>
 		<div class="list-group" id="groupfeaturelist">
+		<a id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata"> [[item.name]] [[item.owner]]
+				<span class="glyphicon glyphicon-pencil pull-right"></span>
+		</a>
+		
 		</div>
 	</div>
 </div>
 
 <div class="fill">
-		<leaflet defaults="defaults" geojson="geojson" height="100%"></leaflet>
+		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" height="100%"></leaflet>
 </div>
 
 {% endblock content %}

@@ -301,15 +301,14 @@ def userjson():
 	now = datetime.datetime.utcnow()
 	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
 	
-	me = {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
+	me = {'type': 'user-me', 'data': {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'user': tu.userid,
 	'username': tu.user.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
-	} if tu else None
-	
+	} if tu else None}
 	
 	others = {tu.userid: {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
@@ -324,7 +323,11 @@ def userjson():
 							.filter(TrackPerson.lastupd != None)
 							.order_by(TrackPerson.userid)
 							.all() }
-		
+	
+	others2 = {'type': 'user', 'data': others}
+	
+	return json.dumps([me, others2])
+	
 	pending = [ {'user' : r.following }
 	for r in Follower.query.filter(Follower.follower == g.user.id, Follower.confirmed == 0)
 						   .order_by(Follower.following).all()]
@@ -335,7 +338,6 @@ def userjson():
 	
 	data = {'me': me, 'following': others, 'pending': pending, 'reqs': reqs}
 	
-	# FIXME: Return last update time as a ISO8601 datetime (UTC), rather than relative time.
 	# FIXME: Return "None" instead of -1 for unknown values.
 	return json.dumps(data)
 
@@ -451,7 +453,7 @@ def deluser():
 def grouplist():
 	gl = Group.query.all()
 	res = {item.id: item.name for item in gl}
-	return json.dumps(res)
+	return json.dumps([{'type': 'grouplist', 'data': res}])
 	#todo: only return groups to which the user is a member
 
 @app.route('/groupdata', methods=['POST'])
@@ -461,10 +463,12 @@ def groupdata():
 	res = {}
 	gd = Object.query.filter_by(group = 1).all()
 	for item in gd:
-		res[item.id] = {'name': item.name, 'owner': item.owner.username, 'json': json.loads(item.json)}
+		js = json.loads(item.json)
+		js['id'] = item.id
+		res[item.id] = {'name': item.name, 'owner': item.owner.username, 'json': js}
 	
 	# FIXME: Other groups?
-	return json.dumps(res)
+	return json.dumps([{'type': 'groupdata', 'data': res}])
 
 @app.route('/addfeature', methods=['POST'])
 @cross_origin()
