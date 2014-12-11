@@ -43,6 +43,8 @@ logging.basicConfig(stream=sys.stderr)
 #import twisted.web.server# import Site
 #import twisted.web.wsgi# import WSGIResource
 
+import crossbarconnect
+
 from werkzeug.security import *
 from flask.ext.login import login_user, logout_user, login_required, current_user, LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -410,7 +412,9 @@ def update():
 	'extra': process_extra(tu.extra),
 	}}
 	
-	publish('com.example.on_visit', "user", msg = msg)
+	#publish('com.example.on_visit', "user", msg = msg)
+	client = crossbarconnect.Client("http://127.0.0.1:9000/")
+	client.publish("com.example.on_visit", "user", msg=msg)
 	
 	return "OK"
 
