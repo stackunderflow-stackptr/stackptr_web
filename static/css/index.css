@@ -26,6 +26,7 @@ body {
 	z-index: 99;
 	background-color: rgba(0,0,0,0.8);
 	font-family: Helvetica, Arial, sans-serif;
+	color: #FFF;
 	/*overflow: scroll;*/
 }
 
@@ -92,4 +93,40 @@ body {
 
 .user-icon {
 	margin: 2px;
+}
+
+.label {
+	display: block;
+	margin-top: 2px;
+}
+
+.userme-label {
+	color: #FFF;
+}
+
+
+
+
+.icon_type {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background-image: url('images/spritesheet-2x.png');
+	background-size: 270px 30px;
+}
+
+.icon_LineString {
+	background-position: -2px -4px;
+}
+
+.icon_Polygon {
+	background-position: -31px -2px;
+}
+
+.icon_rectangle {
+	background-position: -62px -4px;
+}
+
+.icon_Point {
+	background-position: -122px -4px;
 }

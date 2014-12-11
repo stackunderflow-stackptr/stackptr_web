@@ -3,20 +3,28 @@
 
 //window.stackptr.resize(fixheight);
 
-var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap']).config(function($interpolateProvider){
+var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp']).config(function($interpolateProvider){
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
-app.run(function($http) {
+app.config(function ($wampProvider) {
+     $wampProvider.init({
+        url: 'ws://127.0.0.1:8080/ws',
+        realm: 'realm1'
+        //Any other AutobahnJS options
+     });
+ });
+
+app.run(function($http,$wamp) {
 	$http.defaults.headers.post['X-CSRFToken'] = $('meta[name=csrf-token]').attr('content');
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
+	$wamp.open();
 });
 
-
-app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', function($scope, $http, $interval, leafletData) {
+app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '$wamp', function($scope, $http, $interval, leafletData, $wamp ) {
 	angular.extend($scope, {
 		defaults: {
-			maxZoom: 14,
+			maxZoom: 18,
 			minZoom: 1,
 			doubleClickZoom: true,
 			scrollWheelZoom: true,
@@ -28,14 +36,11 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
 				maxZoom: 18,
 				subdomains: '123456',
 			},
-			center: {
-				lat: -24,
-				lng: 138,
-				zoom: 5,
-				//lat: 37.26,
-				//lng: 138.86,
-				//zoom: 4
-			},
+		},
+		center: {
+			lat: -24,
+			lng: 138,
+			zoom: 5,
 		},
 		controls: {
 			draw: {},
@@ -44,14 +49,22 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
 	});
 	
 	
-	$scope.processData = function(data, status, headers, config) {
-		for (msg in data) {
-			var item = data[msg];
-			if (item.type == 'user') {
+	$scope.markers = {};
+	$scope.userList = {};
+	$scope.grouplist = {};
+	$scope.groupdata = {};
+	$scope.userListEmpty = false;
+	
+	$scope.processItem = function(item) {
+		console.log(item);
+		if (item.type == 'user') {
+				$scope.userListEmpty = true;
 				for (user in item.data) {
 					$scope.userList[user] = item.data[user];
+					$scope.userListEmpty = false;
 				}
 			} else if (item.type == 'user-me') {
+				$scope.userMe = item.data;
 			} else if (item.type == 'grouplist') {
 				for (group in item.data) {
 					$scope.grouplist[group] = item.data[group];
@@ -63,22 +76,36 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
 			} else {
 				console.log(item);
 			}
+	}
+	
+	$scope.processData = function(data, status, headers, config) {
+		for (msg in data) {
+			var item = data[msg];
+			$scope.processItem(item);
 		}
 	};
-	
-	
-	$scope.markers = {};
-	$scope.userList = {};
+
 	
 	$scope.counter = 0;
 	
-	$interval(function() {
+	$scope.update = function() {
 		if (--$scope.counter < 0) {
 			$scope.counter = 5;
+			
 			var resp = $http.get("/users");
 			resp.success($scope.processData);
+			
+			var resp = $http.get("/grouplist");
+			resp.success($scope.processData);
+			
+			var resp = $http.post('/groupdata', $.param({group: 1}));
+			resp.success($scope.processData);
+			
 		};
-	}, 1000);
+	};
+	
+	$scope.update();
+	//$interval($scope.update, 1000);
 	
 	$scope.$watchCollection('userList', function(added,removed) {
 		var markerList = {};
@@ -98,15 +125,6 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
 		angular.extend($scope, {markers: markerList});
 	});
 	
-	
-	$scope.grouplist = {};
-	var resp = $http.get("/grouplist");
-	resp.success($scope.processData);
-	
-	$scope.groupdata = {};
-	var resp = $http.post('/groupdata', $.param({group: 1}));
-	resp.success($scope.processData);
-	
 	$scope.layers = {}
 	$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
@@ -114,7 +132,7 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
 			var item = $scope.groupdata[itemid];
 			$scope.features.push(item.json);
 		}
-		console.log($scope.features);
+		//console.log($scope.features);
 		
 		angular.extend($scope, {
 			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
@@ -147,9 +165,57 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', f
 	$scope.tooltip = {title: 'Hello Tooltip This is a multiline message!', checked: false};
 	
 	$scope.activePanel = -1;
+	
+	$scope.renameGroupItem = function($event) {
+		var formdata = $($event.target.form).serialize();
+		var resp = $http.post('/renamefeature', formdata);
+		resp.success($scope.processData);
+	};
+	
+	$scope.gotoItem = function(item) {
+		var items = $scope.geojson.data.features;
+		for (i in items) {
+			if (items[i].id == item) {
+				var bounds = L.bounds(items[i].geometry.coordinates);
+			}
+		}
+		
+	}
+	
+	$scope.$on("$wamp.open", function (event, session) {
+        console.log('We are connected to the WAMP Router!'); 
+    });
+
+    $scope.$on("$wamp.close", function (event, data) {
+        $scope.reason = data.reason;
+        $scope.details = data.details;
+    });
+    
+    
+   $wamp.subscribe('com.example.on_visit', function(type, data) {
+   		console.log(type);
+   		console.log(data);
+		$scope.processItem({type: type[0], data: data.msg});
+		$scope.processItem({type: type[0], data: data.msg});
+   });
+
 
 }]);
 
+app.filter('updateRange', function () {
+  return function (items, agemin, agemax) {
+  	var curTime = Math.round(new Date().getTime()/1000);
+    var filtered = [];
+    for (id in items) {
+    	var item = items[id]
+		var updateTime = curTime - item.lastupd;
+      if ((updateTime >= agemin) && ((updateTime < agemax) || (agemax == -1))) {
+        filtered.push(item);
+      }
+    }
+    return filtered;
+  };
+});
 
 $(document).ready(function() {
 	//map = L.map('map-canvas').setView([-34.929, 138.601], 13);

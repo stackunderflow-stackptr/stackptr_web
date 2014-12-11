@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+
+####################
+# Imports
+####################
+
 from flask import *
 from flask_wtf import *
 from flask_cors import *
 
 app = Flask(__name__)
-application = app
 
 csrf = CsrfProtect()
 csrf.init_app(app)
@@ -31,13 +35,29 @@ app.CSRF_ENABLED = True
 import logging, sys
 logging.basicConfig(stream=sys.stderr)
 
-#import MySQLdb, MySQLdb.cursors
+#import crochet
+#crochet.setup()
+
+#import twisted.python# import log
+#import twisted.internet# import reactor
+#import twisted.web.server# import Site
+#import twisted.web.wsgi# import WSGIResource
 
 from werkzeug.security import *
 from flask.ext.login import login_user, logout_user, login_required, current_user, LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
+
+from autobahn.wamp import types
+from autobahn.twisted.util import sleep
+from autobahn.twisted import wamp, websocket
+from twisted.internet.defer import returnValue
+from autobahn.twisted.wamp import Application
+
+####################
+# Config
+####################
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
 db = SQLAlchemy(app)
@@ -46,6 +66,9 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
+####################
+# DB Models
+####################
 
 class TrackPerson(db.Model):
 	userid = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
@@ -154,7 +177,11 @@ class GroupMember(db.Model):
 	def __init__(self):
 		pass
 
-#db.create_all()
+
+####################
+# Web Server
+####################
+
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -308,7 +335,11 @@ def userjson():
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
-	} if tu else None}
+	} if tu else { 'user': g.user.id,
+	'username': g.user.username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(g.user.email).hexdigest() + '?s=64&d=retro',
+	'lastupd': -1,
+	}}
 	
 	others = {tu.userid: {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
@@ -370,6 +401,16 @@ def update():
 	th = TrackHistory(g.user.id, lat, lon, ext)
 	db.session.add(th)
 	db.session.commit()
+	
+	msg = {tu.userid: {'loc': [tu.lat, tu.lon],
+	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
+	'username': tu.user.username,
+	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
+	'lastupd': utc_seconds(tu.lastupd),
+	'extra': process_extra(tu.extra),
+	}}
+	
+	publish('com.example.on_visit', "user", msg = msg)
 	
 	return "OK"
 
@@ -511,7 +552,48 @@ def renamefeature():
 	db.session.commit()
 	# FIXME: Use HTTP status codes to indicate success/failure.
 	# FIXME: Modification of an existing feature's geometry??
-	return "renaming feature" + request.form['id']
+	js = json.loads(feature.json)
+	js['id'] = feature.id
+	res = {feature.id : {'name': feature.name, 'owner': feature.owner.username, 'json': js}}
+	return json.dumps([{'type': 'groupdata', 'data': res}])
 
-if __name__ == '__main__':
-	manager.run()
+
+@app.route('/client')
+def client():
+	return render_template("client.html")
+
+####################
+# WS Server
+####################
+
+#wapp = Application()
+
+#@crochet.wait_for(timeout = 1)
+#def publish(topic, *args, **kwargs):
+#   return wapp.session.publish(topic, *args, **kwargs)
+
+
+#if __name__ == '__main__':
+#	#manager.run()
+
+#	logging.basicConfig(stream = sys.stderr, level = logging.DEBUG)
+	
+#	@crochet.run_in_reactor
+#	def start_wamp():
+#		wapp.run("ws://localhost:9000", "realm1", standalone = True, start_reactor = False)
+#
+#	start_wamp()
+#	
+#	app.run(port = 8080)
+#	
+#	#wsFactory = WampServerFactory("ws://localhost:8080", debug = debug, debugCodePaths = debug)
+#	#wsFactory.protocol = StackPtrProtocol
+#	#wsFactory.setProtocolOptions(allowHixie76 = True) # needed if Hixie76 is to be supported
+#	#wsResource = WebSocketResource(wsFactory)
+#	#wsgiResource = WSGIResource(reactor, reactor.getThreadPool(), app)
+#	#rootResource = WSGIRootResource(wsgiResource, {'ws': wsResource})
+#	#site = Site(rootResource)
+#	#site.protocol = HTTPChannelHixie76Aware # needed if Hixie76 is to be supported
+#	
+#	#reactor.listenTCP(8080, site)
+#	#reactor.run()

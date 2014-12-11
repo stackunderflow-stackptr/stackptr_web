@@ -26,6 +26,8 @@
 	<script type="text/javascript" src="/static/js/angular-moment.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-strap.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-strap.tpl.min.js"></script>
+	<script type="text/javascript" src="/static/js/autobahn.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-wamp.min.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-utils.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-mapview.js"></script>
 {% endblock extra_js %}
@@ -46,8 +48,6 @@
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
 		<li><a class="refreshtimer">Updating in [[counter]] seconds</a></li>
-		<li><a href="https://docs.google.com/document/d/1Odpxs_EBL9PXIKDKCWjwrP8RWntRPIWtgzHKxoOS0W8/edit?usp=sharing">Todo List</a></li>
-		<li><a>Logged in as: {{ current_user }}</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
 	
@@ -86,10 +86,40 @@
 	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body">
 		
-		<img width="32" height="32" class="user-icon" ng-repeat="user in userList" ng-src="[[user.icon]]"
-			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>[[user.lastupd]]">
+		<img width="32" height="32" class="user-icon" ng-src="[[userMe.icon]]" ng-click="center.lat = userMe.loc[0]; center.lng = userMe.loc[1]; center.zoom = 16">
+		<span class="userme-label">[[userMe.username]]<span ng-if="userMe.lastupd > 0">, </span><span am-time-ago="userMe.lastupd" am-preprocess="unix" ng-if="userMe.lastupd > 0">,</span></span>
 		
+		<div ng-if="userMe.lastupd < 0">Your position has never been updated, insert information about mobile clients here...</div>
+				
+		<div ng-if="userListEmpty">Your user list is empty. Click the + to add someone.</div>
+		
+		<span ng-if="(hUsers = (userList | updateRange:0:3600)).length"><div class="label" >&lt;1h ago</div></span>
+		
+		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			ng-click="center.lat = user.loc[0]; center.lng = user.loc[1]; center.zoom = 16">
+		
+		<span ng-if="(dUsers = (userList | updateRange:3600:86400)).length"><div class="label">&lt;1d ago</div></span>
+		
+		<img width="32" height="32" class="user-icon" ng-repeat="user in dUsers" ng-src="[[user.icon]]" 
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			ng-click="center.lat = user.loc[0]; center.lng = user.loc[1]; center.zoom = 16">
+		
+		<span ng-if="(wUsers = (userList | updateRange:86400:604800)).length"><div class="label">&lt;1w ago</div></span>
+
+		<img width="32" height="32" class="user-icon" ng-repeat="user in wUsers" ng-src="[[user.icon]]" 
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			ng-click="center.lat = user.loc[0]; center.lng = user.loc[1]; center.zoom = 16">
+		
+		<span ng-if="(oUsers = (userList | updateRange:604800:-1)).length"><div class="label">&gt;1w ago</div></span>
+
+		<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers" ng-src="[[user.icon]]" 
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			ng-click="center.lat = user.loc[0]; center.lng = user.loc[1]; center.zoom = 16">
 		<!--
 		<div class="list-group" id="userlist">
 			<a href="" class="list-group-item list-item-person" ng-repeat="user in userList" bs-tooltip="tooltip" data-placement="left">
@@ -131,13 +161,27 @@
 		</form>
 		
 		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
-		<span id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata" bs-collapse-toggle>  [[item.name]]
-				<span class="glyphicon glyphicon-pencil pull-right"></span>
+		<span id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata">
+				<span class="icon_type icon_[[item.json.geometry.type]]">&nbsp;</span>
+			  <a ng-click="gotoItem(item.json.id)">[[item.name]]</a>
+				<span class="glyphicon glyphicon-pencil pull-right" bs-collapse-toggle></span>
 				
 					<div class="panel-collapse" bs-collapse-target>
-						<div class="panel-body">
-							Owner: [[ item.owner ]]
-						</div>
+							<br>
+							<form class="input-group input-group-sm">
+								<input type="text" name="name" class="form-control" value="[[item.name]]">
+								<input type="hidden" name="id" value="[[item.json.id]]">
+								<span class="input-group-btn">
+									<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
+								</span>
+							</form>
+														
+							<b>Owner</b>: [[ item.owner ]]<br>
+							<b>Type</b>: [[item.json.geometry.type]]<br>
+							<b>ID</b>: [[item.json.id]]<br>
+							
+
+							
 					</div>
 		</span>
 		</div>
@@ -178,7 +222,7 @@
 
 
 <div class="fill">
-		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" height="100%"></leaflet>
+		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" height="100%"></leaflet>
 </div>
 
 {% endblock content %}
