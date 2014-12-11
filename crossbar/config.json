@@ -10,7 +10,7 @@
 		 },
 		 "realms": [
 			{
-			   "name": "realm1",
+			   "name": "stackptr",
 			   "roles": [
 				  {
 					 "name": "anonymous",
@@ -47,6 +47,9 @@
 				  "ws": {
 					 "type": "websocket"
 				  }
+			   },
+			   "options": {
+			   		"access_log": true
 			   }
 			},
 			
@@ -60,7 +63,7 @@
 					"paths": {
 						"/": {
 							"type": "pusher",
-							"realm": "realm1",
+							"realm": "stackptr",
 							"role": "anonymous",
 							"options": {
 								"require_ip": ["127.0.0.1"]

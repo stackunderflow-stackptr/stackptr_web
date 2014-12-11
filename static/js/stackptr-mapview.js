@@ -10,7 +10,7 @@ var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngA
 app.config(function ($wampProvider) {
      $wampProvider.init({
         url: 'ws://127.0.0.1:8080/ws',
-        realm: 'realm1'
+        realm: 'stackptr'
         //Any other AutobahnJS options
      });
  });
