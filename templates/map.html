@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="/static/js/angular-strap.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-strap.tpl.min.js"></script>
 	<script type="text/javascript" src="/static/js/autobahn.min.js"></script>
-	<script type="text/javascript" src="/static/js/angular-wamp.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-wamp.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-utils.js"></script>
 	<script type="text/javascript" src="/static/js/stackptr-mapview.js"></script>
 {% endblock extra_js %}
@@ -47,7 +47,7 @@
 		<li><a href="/api/">Manage API keys</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
-		<li><a class="refreshtimer">Updating in [[counter]] seconds</a></li>
+		<li><a class="refreshtimer">[[status]]</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
 	
@@ -59,7 +59,7 @@
 				<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 				<li><a href="/api/">Manage API keys</a></li>
 				<li class="divider"></li>
-				<li><a class="refreshtimer">Updating in [[counter]] seconds</a></li>
+				<li><a class="refreshtimer">[[status]]</a></li>
 				<li class="divider"></li>
 				<li><a>Logged in as: {{ current_user }}</a></li>
 				<li><a href="/logout">Log out</a></li>
@@ -93,7 +93,15 @@
 				
 		<div ng-if="userListEmpty">Your user list is empty. Click the + to add someone.</div>
 		
-		<span ng-if="(hUsers = (userList | updateRange:0:3600)).length"><div class="label" >&lt;1h ago</div></span>
+		<span ng-if="(hUsers = (userList | updateRange:0:60)).length"><div class="label" >&lt;1m ago</div></span>
+		
+		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			ng-click="center.lat = user.loc[0]; center.lng = user.loc[1]; center.zoom = 16">
+		
+
+		<span ng-if="(hUsers = (userList | updateRange:60:3600)).length"><div class="label" >&lt;1h ago</div></span>
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"

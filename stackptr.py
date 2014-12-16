@@ -62,7 +62,10 @@ from autobahn.twisted.wamp import Application
 ####################
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
-db = SQLAlchemy(app)
+
+from models import *
+db.init_app(app)
+
 migrate = Migrate(app, db)
 
 manager = Manager(app)
@@ -72,112 +75,7 @@ manager.add_command('db', MigrateCommand)
 # DB Models
 ####################
 
-class TrackPerson(db.Model):
-	userid = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-	device = db.Column(db.String(128), primary_key=True)
-	lat = db.Column(db.Float(Precision=64))
-	lon = db.Column(db.Float(Precision=64))
-	alt = db.Column(db.Float())
-	hdg = db.Column(db.Float())
-	spd = db.Column(db.Float())
-	extra = db.Column(db.String(512))
-	lastupd = db.Column(db.DateTime())
-	
-	user = db.relationship('Users', foreign_keys=userid, lazy='joined',
-							primaryjoin="TrackPerson.userid==Users.id")
-	
-	def __init__(self, userid, device):
-		self.userid = userid
-		self.device = device
-
-class TrackHistory(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	userid = db.Column(db.Integer, db.ForeignKey('users.id'))
-	lat = db.Column(db.Float(Precision=64))
-	lon = db.Column(db.Float(Precision=64))
-	extra = db.Column(db.String(512))
-	time = db.Column(db.DateTime())
-	
-	def __init__(self, userid, lat, lon, extra):
-		self.userid = userid
-		self.lat = lat
-		self.lon = lon
-		self.extra = extra
-		self.time = datetime.datetime.now()
-
-class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    email = db.Column(db.String(128), unique=True)
-    password = db.Column(db.String(128))
-    
-
-    def __init__(self, username, email):
-        self.username = username
-        self.email = email
-
-    def is_authenticated(self):
-        return True
- 
-    def is_active(self):
-        return True
- 
-    def is_anonymous(self):
-        return False
- 
-    def get_id(self):
-        return unicode(self.id)
- 
-    def __repr__(self):
-        return 'User %r' % (self.username)
-
-class ApiKey(db.Model):
-	key = db.Column(db.String(32), primary_key=True)
-	userid = db.Column(db.Integer, db.ForeignKey('users.id'))
-	created = db.Column(db.DateTime)
-	name = db.Column(db.String(128))	
-
-
-class Follower(db.Model):
-	follower = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-	following = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-	confirmed = db.Column(db.Integer)
-	
-	def __init__(self, follower, following):
-		self.follower = follower
-		self.following = following
-		confirmed = 0
-	
-	follower_user = db.relationship('Users', foreign_keys=follower, lazy='joined',
-					primaryjoin="Follower.follower==Users.id")
-	following_user = db.relationship('Users', foreign_keys=following, lazy='joined',
-					primaryjoin="Follower.following==Users.id")
-
-class Object(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(128))
-	group = db.Column(db.Integer, db.ForeignKey('group.id'))
-	ownerid = db.Column(db.Integer, db.ForeignKey('users.id'))
-	json = db.Column(db.Text)
-	
-	owner = db.relationship('Users', foreign_keys=ownerid, lazy='joined',
-					primaryjoin="Object.ownerid==Users.id")
-
-class Group(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(128), unique=True)
-	description = db.Column(db.Text)
-	status = db.Column(db.Integer)
-	
-	members = db.relationship('GroupMember', primaryjoin="Group.id==GroupMember.groupid")
-
-class GroupMember(db.Model):
-	groupid = db.Column(db.Integer, db.ForeignKey('group.id'), primary_key=True)
-	userid = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-	role = db.Column(db.Integer)
-	
-	def __init__(self):
-		pass
+# moved
 
 
 ####################
@@ -304,6 +202,40 @@ def api_remove():
 	db.session.commit()
 	return redirect(url_for('api_info'))
 
+## websocket auth
+
+@app.route('/ws_uid', methods=['POST'])
+@login_required
+def ws_uid():
+	return str(g.user.id)
+
+@app.route('/ws_token', methods=['POST'])
+@login_required
+def ws_token():
+	at = AuthTicket()
+	at.key = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+	at.userid = g.user.id
+	at.created = datetime.datetime.now()
+	db.session.add(at)
+	db.session.commit()
+	
+	# remove old tokens
+	return str(at.key)
+
+@app.route('/ws_follow', methods=['GET', 'POST'])
+@login_required
+def ws_follow():
+	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
+		
+	others = [tu.userid
+	for f,tu in db.session.query(Follower,TrackPerson)
+							.join(TrackPerson, Follower.following == TrackPerson.userid)\
+							.filter(Follower.follower == g.user.id, Follower.confirmed == 1)\
+							.filter(TrackPerson.lastupd != None)
+							.order_by(TrackPerson.userid)
+							.all() ]
+	return json.dumps(others)
+
 ## test
 @app.route('/test')
 @login_required
@@ -414,7 +346,7 @@ def update():
 	
 	#publish('com.example.on_visit', "user", msg = msg)
 	client = crossbarconnect.Client("http://127.0.0.1:9000/")
-	client.publish("com.example.on_visit", "user", msg=msg)
+	client.publish("com.stackptr.user.%i" % g.user.id, "user", msg=msg)
 	
 	return "OK"
 
@@ -577,8 +509,8 @@ def client():
 #   return wapp.session.publish(topic, *args, **kwargs)
 
 
-#if __name__ == '__main__':
-#	#manager.run()
+if __name__ == '__main__':
+	manager.run()
 
 #	logging.basicConfig(stream = sys.stderr, level = logging.DEBUG)
 	

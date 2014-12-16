@@ -10,15 +10,16 @@ var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngA
 app.config(function ($wampProvider) {
      $wampProvider.init({
         url: 'ws://127.0.0.1:8080/ws',
-        realm: 'stackptr'
+        realm: 'stackptr',
+        authmethods: ["ticket"],
         //Any other AutobahnJS options
      });
  });
 
-app.run(function($http,$wamp) {
+app.run(function($http) {
 	$http.defaults.headers.post['X-CSRFToken'] = $('meta[name=csrf-token]').attr('content');
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
-	$wamp.open();
+
 });
 
 app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '$wamp', function($scope, $http, $interval, leafletData, $wamp ) {
@@ -87,6 +88,7 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 
 	
 	$scope.counter = 0;
+	$scope.status = "Connecting to server...";
 	
 	$scope.update = function() {
 		if (--$scope.counter < 0) {
@@ -182,22 +184,53 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 		
 	}
 	
+	
+	var resp = $http.post('/ws_uid', "");
+	resp.success(function(rdata, status, headers, config) {
+		console.log(rdata);
+		$wamp.connection._options.authid = rdata;
+		$wamp.open();
+	});
+		
+	
+	
+	$scope.$on("$wamp.onchallenge", function (event, data) {
+		console.log(data);
+    if (data.method === "ticket"){
+        var resp = $http.post('/ws_token', "");
+		resp.success(function(rdata, status, headers, config) {
+			console.log(rdata);
+			return data.promise.resolve(rdata);
+		});
+        
+     } 
+     
+		
+	});
+	
 	$scope.$on("$wamp.open", function (event, session) {
         console.log('We are connected to the WAMP Router!'); 
+        $scope.status = "Connected";
     });
 
     $scope.$on("$wamp.close", function (event, data) {
+    	$scope.status = "Disconnected: " + data.reason;
         $scope.reason = data.reason;
         $scope.details = data.details;
     });
     
+    $scope.processWS = function(type, data) {
+		$scope.processItem({type: type[0], data: data.msg});
+   	};
     
-   $wamp.subscribe('com.example.on_visit', function(type, data) {
-   		console.log(type);
-   		console.log(data);
-		$scope.processItem({type: type[0], data: data.msg});
-		$scope.processItem({type: type[0], data: data.msg});
-   });
+    var resp = $http.post('/ws_follow', "");
+	resp.success(function(rdata, status, headers, config) {
+		console.log(rdata);
+		for (i in rdata) {
+			$wamp.subscribe('com.stackptr.user.' + rdata[i], $scope.processWS);
+		}
+	});
+   
 
 
 }]);

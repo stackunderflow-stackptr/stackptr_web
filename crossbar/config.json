@@ -12,17 +12,49 @@
 			{
 			   "name": "stackptr",
 			   "roles": [
-				  {
+			   {
+                     "name": "authenticator",
+                     "permissions": [
+                        {
+                           "uri": "com.stackptr.authenticate",
+                           "register": true
+                        }
+                     ]
+                  },{
+                     "name": "authorizer",
+                     "permissions": [
+                        {
+                           "uri": "com.stackptr.authorizer",
+                           "register": true
+                        }
+                     ]
+                  },{
 					 "name": "anonymous",
 					 "permissions": [
 						{
 						   "uri": "*",
-						   "publish": true,
-						   "subscribe": true,
-						   "call": true,
-						   "register": true
+						   "publish": false,
+						   "subscribe": false,
+						   "call": false,
+						   "register": false
 						}
 					 ]
+				  },
+				  {
+					 "name": "stackptr",
+					 "permissions": [
+						{
+						   "uri": "com.stackptr.*",
+						   "publish": true,
+						   "subscribe": false,
+						   "call": false,
+						   "register": false
+						}
+					 ]
+				  },
+				  {
+				  	"name": "user",
+				  	"authorizer": "com.stackptr.authorizer"
 				  }
 			   ]
 			}
@@ -44,12 +76,20 @@
 				  	"type": "static",
 				  	"directory": "../static/"
 				  },
-				  "ws": {
-					 "type": "websocket"
-				  }
+                  "ws": {
+                     "type": "websocket",
+                     "auth": {
+                        "ticket": {
+                           "type": "dynamic",
+                           "authenticator": "com.stackptr.authenticate"
+                        }
+
+                     }
+                  }
 			   },
 			   "options": {
-			   		"access_log": true
+			   		"access_log": true,
+			   		"debug": true
 			   }
 			},
 			
@@ -64,7 +104,7 @@
 						"/": {
 							"type": "pusher",
 							"realm": "stackptr",
-							"role": "anonymous",
+							"role": "stackptr",
 							"options": {
 								"require_ip": ["127.0.0.1"]
 							}
@@ -73,7 +113,21 @@
 			
 			}
 			
-		 ]
+		 ],
+		 "components": [
+            {
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrAuthenticator",
+               "realm": "stackptr",
+               "role": "authenticator"
+            },{
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrAuthorizer",
+               "realm": "stackptr",
+               "role": "authorizer"
+            }
+         ]
+
 	  }
    ]
 }
