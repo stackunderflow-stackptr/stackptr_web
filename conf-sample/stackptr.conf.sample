@@ -1,5 +1,5 @@
 [app]
-secret_key = 431A16FC-B9AF-4D83-893C-DB8757D06F64
+secret_key = keep-this-value-secret
 
 [database]
-uri = postgresql://stackptr:mach34turtles@127.0.0.1/stackptr
+uri = postgresql://username:password@host/database
