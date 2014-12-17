@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 ####################
 # Imports
 ####################
@@ -35,14 +34,6 @@ app.CSRF_ENABLED = True
 import logging, sys
 logging.basicConfig(stream=sys.stderr)
 
-#import crochet
-#crochet.setup()
-
-#import twisted.python# import log
-#import twisted.internet# import reactor
-#import twisted.web.server# import Site
-#import twisted.web.wsgi# import WSGIResource
-
 import crossbarconnect
 
 from werkzeug.security import *
@@ -50,12 +41,6 @@ from flask.ext.login import login_user, logout_user, login_required, current_use
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
-
-from autobahn.wamp import types
-from autobahn.twisted.util import sleep
-from autobahn.twisted import wamp, websocket
-from twisted.internet.defer import returnValue
-from autobahn.twisted.wamp import Application
 
 ####################
 # Config
@@ -72,16 +57,8 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 ####################
-# DB Models
+# Login
 ####################
-
-# moved
-
-
-####################
-# Web Server
-####################
-
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -109,7 +86,10 @@ def load_user_from_request(request):
 def before_request():
 	g.user = current_user
 
-## index
+####################
+# Index
+####################
+
 
 @app.route('/')
 @login_required
@@ -202,7 +182,9 @@ def api_remove():
 	db.session.commit()
 	return redirect(url_for('api_info'))
 
-## websocket auth
+####################
+# WebSocket functions
+####################
 
 @app.route('/ws_uid', methods=['POST'])
 @login_required
@@ -236,13 +218,10 @@ def ws_follow():
 							.all() ]
 	return json.dumps(others)
 
-## test
-@app.route('/test')
-@login_required
-def test():
-	return str(g.user.username)
 
-## data
+####################
+# Data
+####################
 
 def process_extra(extra):
 	try:
@@ -452,14 +431,12 @@ def groupdata():
 @login_required
 def addfeature():
 	feature = Object()
-	feature.name = "Untitled"
+	feature.name = request.form.get('name',"Untitled")
 	feature.group = int(request.form['group'])
 	feature.ownerid = g.user.id
 	feature.json = request.form['geojson']
 	db.session.add(feature)
 	db.session.commit()
-	# FIXME: Return the object ID of the element created.
-	# FIXME: Allow passing the name and group ID of the object.
 	
 	js = json.loads(feature.json)
 	js['id'] = feature.id
@@ -473,10 +450,13 @@ def addfeature():
 def delfeature():
 	fid = int(request.form['id'])
 	feature = Object.query.filter_by(id = fid).first()
-	db.session.delete(feature)
-	db.session.commit()
-	# FIXME: Use HTTP status codes to indicate success/failure.
-	return json.dumps([{'type': 'groupdata', 'data': {fid: None}}])
+	if feature:
+		#FIXME: check permissions
+		db.session.delete(feature)
+		db.session.commit()
+		# FIXME: Use HTTP status codes to indicate success/failure.
+		return json.dumps([{'type': 'groupdata', 'data': {fid: None}}])
+	return "failed"
 
 @app.route('/renamefeature', methods=['POST'])
 @cross_origin()
@@ -494,42 +474,6 @@ def renamefeature():
 	return json.dumps([{'type': 'groupdata', 'data': res}])
 
 
-@app.route('/client')
-def client():
-	return render_template("client.html")
-
-####################
-# WS Server
-####################
-
-#wapp = Application()
-
-#@crochet.wait_for(timeout = 1)
-#def publish(topic, *args, **kwargs):
-#   return wapp.session.publish(topic, *args, **kwargs)
-
 
 if __name__ == '__main__':
 	manager.run()
-
-#	logging.basicConfig(stream = sys.stderr, level = logging.DEBUG)
-	
-#	@crochet.run_in_reactor
-#	def start_wamp():
-#		wapp.run("ws://localhost:9000", "realm1", standalone = True, start_reactor = False)
-#
-#	start_wamp()
-#	
-#	app.run(port = 8080)
-#	
-#	#wsFactory = WampServerFactory("ws://localhost:8080", debug = debug, debugCodePaths = debug)
-#	#wsFactory.protocol = StackPtrProtocol
-#	#wsFactory.setProtocolOptions(allowHixie76 = True) # needed if Hixie76 is to be supported
-#	#wsResource = WebSocketResource(wsFactory)
-#	#wsgiResource = WSGIResource(reactor, reactor.getThreadPool(), app)
-#	#rootResource = WSGIRootResource(wsgiResource, {'ws': wsResource})
-#	#site = Site(rootResource)
-#	#site.protocol = HTTPChannelHixie76Aware # needed if Hixie76 is to be supported
-#	
-#	#reactor.listenTCP(8080, site)
-#	#reactor.run()
