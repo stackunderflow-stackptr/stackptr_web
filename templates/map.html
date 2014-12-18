@@ -41,7 +41,6 @@
 		<img src="/static/logo2.png" id="logo" height="50px">
 	</div>
 	<ul class="nav navbar-nav hidden-sm hidden-xs">
-		<!-- <li><a onclick="togglePane('#gpsmenu')">Update</a></li> -->
 		<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
 		<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 		<li><a href="/api/">Manage API keys</a></li>
@@ -170,64 +169,27 @@
 		
 		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
 		<span id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata">
-				<span class="icon_type icon_[[item.json.geometry.type]]">&nbsp;</span>
-			  <a ng-click="gotoItem(item.json.id)">[[item.name]]</a>
-				<span class="glyphicon glyphicon-pencil pull-right" bs-collapse-toggle></span>
-				
-					<div class="panel-collapse" bs-collapse-target>
-							<br>
-							<form class="input-group input-group-sm">
-								<input type="text" name="name" class="form-control" value="[[item.name]]">
-								<input type="hidden" name="id" value="[[item.json.id]]">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
-								</span>
-							</form>
-														
-							<b>Owner</b>: [[ item.owner ]]<br>
-							<b>Type</b>: [[item.json.geometry.type]]<br>
-							<b>ID</b>: [[item.json.id]]<br>
-							
-
-							
-					</div>
+			<span class="icon_type icon_[[item.json.geometry.type]]">&nbsp;</span>
+			<a ng-click="gotoItem(item.json.id)">[[item.name]]</a>
+			<span class="glyphicon glyphicon-pencil pull-right" bs-collapse-toggle></span>
+			<div class="panel-collapse" bs-collapse-target>
+				<br>
+				<form class="input-group input-group-sm">
+					<input type="text" name="name" class="form-control" value="[[item.name]]">
+					<input type="hidden" name="id" value="[[item.json.id]]">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
+					</span>
+				</form>
+				<b>Owner</b>: [[ item.owner ]]<br>
+				<b>Type</b>: [[item.json.geometry.type]]<br>
+				<b>ID</b>: [[item.json.id]]<br>
+			</div>
 		</span>
 		</div>
-		
-		
-		<!--
-		<div class="panel-group" ng-model="activePanel" bs-collapse>
-			<div class="panel panel-default" ng-repeat="item in groupdata">
-				<div class="panel-heading list-item-draw" bs-collapse-toggle>
-							[[item.name]]
-					</div>
-					<div class="panel-collapse" bs-collapse-target>
-						<div class="panel-body">
-							[[ item.owner ]]
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		-->
 
 	</div>
 </div>
-
-<!-- 
-    <button type="button" class="btn btn-lg btn-primary" data-placement="top-right" title="[[popover.title]]" data-content="[[popover.content]]" data-trigger="focus" bs-popover>Click to toggle popover
-
--->
-
-<!--
-
-<button type="button" class="btn btn-lg btn-primary" data-placement="bottom" data-animation="am-flip-x" bs-tooltip="tooltip">Click to toggle popover
-  <br>
-  <small>(using an object)</small>
-</button>
-
--->
-
 
 <div class="fill">
 		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" height="100%"></leaflet>

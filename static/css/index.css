@@ -7,16 +7,6 @@ body {
 	padding: 0;
 }
 
-#wrapper {
-	position: relative;
-}
-
-#map-canvas {
-		position: absolute;
-		height: 100%;
-		width: 100%;
-}
-
 
 #usermenu {
 	position: absolute;
@@ -103,9 +93,6 @@ body {
 .userme-label {
 	color: #FFF;
 }
-
-
-
 
 .icon_type {
 	display: inline-block;

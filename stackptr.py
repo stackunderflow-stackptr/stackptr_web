@@ -49,9 +49,9 @@ from flask.ext.migrate import Migrate, MigrateCommand
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
 
 from models import *
-db.init_app(app)
+db = SQLAlchemy(app)
 
-migrate = Migrate(app, db)
+migrate = Migrate(app, db) # todo: make migrate work again
 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
@@ -66,7 +66,7 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(id):
 	csrf_protect()
-	return Users.query.get(int(id))
+	return db.session.query(Users).get(int(id))
 
 @login_manager.request_loader
 def load_user_from_request(request):
@@ -76,10 +76,10 @@ def load_user_from_request(request):
 	else:
 		apikey = request.args.get('apikey')
 	if apikey:
-		key = ApiKey.query.filter_by(key=apikey).first()
+		key = db.session.query(ApiKey).filter_by(key=apikey).first()
 		if key == None:
 			return None
-		return Users.query.filter_by(id=key.userid).first()
+		return db.session.query(Users).filter_by(id=key.userid).first()
 	return None
 
 @app.before_request
@@ -110,10 +110,10 @@ def registration():
 		#todo check these are valid email and password values
 		if invite_code != app.invite_code:
 			return "invalid invite code"
-		registered_email = Users.query.filter_by(email=email).first() #check if email already in DB
+		registered_email = db.session.query(Users).filter_by(email=email).first() #check if email already in DB
 		if registered_email:
 			return "email address already registered %s" % email
-		registered_user = Users.query.filter_by(username=username).first() # check user name is registered in DB
+		registered_user = db.session.query(Users).filter_by(username=username).first() # check user name is registered in DB
 		if registered_user:
 			return "username already registered %s" % username
 		else:
@@ -137,7 +137,7 @@ def login():
 	else:
 		email = request.form['email']
 		password = request.form['password']
-		registered_user = Users.query.filter_by(email=email).first()
+		registered_user = db.session.query(Users).filter_by(email=email).first()
 		if not registered_user:
 			return "no such user %s" % email
 		if check_password_hash(registered_user.password, password):
@@ -157,7 +157,7 @@ def logout():
 @app.route('/api/')
 @login_required
 def api_info():
-	keys = ApiKey.query.filter_by(userid = g.user.id).order_by(ApiKey.created).all()
+	keys = db.session.query(ApiKey).filter_by(userid = g.user.id).order_by(ApiKey.created).all()
 	return render_template("api.html", keys=keys)
 
 @app.route('/api/new', methods=['POST'])
@@ -177,7 +177,7 @@ def api_create():
 @app.route('/api/remove', methods=['POST'])
 @login_required
 def api_remove():
-	key = ApiKey.query.filter_by(key = request.form['key_id'], userid=g.user.id).first()
+	key = db.session.query(ApiKey).filter_by(key = request.form['key_id'], userid=g.user.id).first()
 	db.session.delete(key)
 	db.session.commit()
 	return redirect(url_for('api_info'))
@@ -207,7 +207,7 @@ def ws_token():
 @app.route('/ws_follow', methods=['GET', 'POST'])
 @login_required
 def ws_follow():
-	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
+	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
 		
 	others = [tu.userid
 	for f,tu in db.session.query(Follower,TrackPerson)
@@ -239,7 +239,7 @@ def utc_seconds(time):
 @login_required
 def userjson():
 	now = datetime.datetime.utcnow()
-	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
+	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
 	
 	me = {'type': 'user-me', 'data': {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
@@ -273,11 +273,11 @@ def userjson():
 	return json.dumps([me, others2])
 	
 	pending = [ {'user' : r.following }
-	for r in Follower.query.filter(Follower.follower == g.user.id, Follower.confirmed == 0)
+	for r in db.session.query(Follower).filter(Follower.follower == g.user.id, Follower.confirmed == 0)
 						   .order_by(Follower.following).all()]
 	
 	reqs = [ {'user' : r.follower }
-	for r in Follower.query.filter(Follower.following == g.user.id, Follower.confirmed == 0)
+	for r in db.session.query(Follower).filter(Follower.following == g.user.id, Follower.confirmed == 0)
 						   .order_by(Follower.follower).all()]
 	
 	data = {'me': me, 'following': others, 'pending': pending, 'reqs': reqs}
@@ -298,7 +298,7 @@ def update():
 	if None in (lat, lon):
 		return "No lat/lon specified"
 		
-	tu = TrackPerson.query.filter_by(userid = g.user.id).first()
+	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
 	if not tu:
 		tu = TrackPerson(g.user.id, g.user.username)
 		db.session.add(tu)
@@ -333,7 +333,7 @@ def update():
 @login_required
 def lochist():
 	usr = request.form.get('uid', g.user.id)
-	lh = TrackHistory.query.filter(TrackHistory.userid==usr).order_by(TrackHistory.time).all()
+	lh = db.session.query(TrackHistory).filter(TrackHistory.userid==usr).order_by(TrackHistory.time).all()
 	
 	lhtrack = {'type': 'Feature', 'properties': {}, 'geometry': 
 		{'type': 'LineString', 'coordinates': [[l.lon, l.lat] for l in lh]}}
@@ -344,7 +344,7 @@ def lochist():
 @login_required
 def acceptuser():
 	user = request.form['uid']
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
+	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if not fobj:
 		return "no user request"
 	fobj.confirmed = 1
@@ -356,7 +356,7 @@ def acceptuser():
 @login_required
 def rejectuser():
 	user = request.form['uid']
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
+	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if not fobj:
 		return "no user request"
 	fobj.confirmed = -1
@@ -369,7 +369,7 @@ def rejectuser():
 def adduser():
 	user = request.form['uid']
 	# first pre-accept them being able to see me
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
+	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if not fobj:
 		fobj = Follower(user, g.user.id)
 	fobj.confirmed = 1
@@ -377,7 +377,7 @@ def adduser():
 	db.session.commit()
 	
 	# now add the request from me to them
-	fobj2 = Follower.query.filter(Follower.follower==g.user.id, Follower.follower==user).first()
+	fobj2 = db.session.query(Follower).filter(Follower.follower==g.user.id, Follower.follower==user).first()
 	if not fobj2:
 		fobj2 = Follower(g.user.id, user)
 		fobj2.confirmed = 0
@@ -392,10 +392,10 @@ def adduser():
 @login_required
 def deluser():
 	user = request.form['uid']
-	fobj = Follower.query.filter(Follower.follower==user, Follower.following==g.user.id).first()
+	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
 	if fobj:
 		db.session.delete(fobj)
-	fobj = Follower.query.filter(Follower.follower==g.user.id, Follower.following==user).first()
+	fobj = db.session.query(Follower).filter(Follower.follower==g.user.id, Follower.following==user).first()
 	if fobj:
 		db.session.delete(fobj)
 	db.session.commit()
@@ -407,7 +407,7 @@ def deluser():
 @cross_origin()
 @login_required
 def grouplist():
-	gl = Group.query.all()
+	gl = db.session.query(Group).all()
 	res = {item.id: item.name for item in gl}
 	return json.dumps([{'type': 'grouplist', 'data': res}])
 	#todo: only return groups to which the user is a member
@@ -417,7 +417,7 @@ def grouplist():
 @login_required
 def groupdata():
 	res = {}
-	gd = Object.query.filter_by(group = 1).all()
+	gd = db.session.query(Object).filter_by(group = 1).all()
 	for item in gd:
 		js = json.loads(item.json)
 		js['id'] = item.id
@@ -449,7 +449,7 @@ def addfeature():
 @login_required
 def delfeature():
 	fid = int(request.form['id'])
-	feature = Object.query.filter_by(id = fid).first()
+	feature = db.session.query(Object).filter_by(id = fid).first()
 	if feature:
 		#FIXME: check permissions
 		db.session.delete(feature)
@@ -462,7 +462,7 @@ def delfeature():
 @cross_origin()
 @login_required
 def renamefeature():
-	feature = Object.query.filter_by(id = int(request.form['id'])).first()
+	feature = db.session.query(Object).filter_by(id = int(request.form['id'])).first()
 	feature.name = request.form['name']
 	#feature.description
 	db.session.commit()
