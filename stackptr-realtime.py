@@ -2,6 +2,7 @@ from twisted.internet.defer import inlineCallbacks
 
 from autobahn.twisted.wamp import ApplicationSession
 from autobahn.wamp.exception import ApplicationError
+from autobahn.wamp.types import RegisterOptions
 
 from models import *
 from sqlalchemy import *
@@ -42,6 +43,8 @@ class StackPtrAuthenticator(ApplicationSession):
 		except Exception as e:
 			print("could not register authenticator: %s" % e)
 
+
+
 class StackPtrAuthorizer(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
@@ -51,18 +54,52 @@ class StackPtrAuthorizer(ApplicationSession):
 		except Exception as e:
 			print("could not register authenticator: %s" % e)
 	
-	def authorize(self, session, uri, action):		
-		user = session['authid']
-		reqpath = ".".join(uri.split(".")[:3])
-		requser = uri.split(".")[3]
-		
-		if (action == 'subscribe' and reqpath == 'com.stackptr.user'):		
-			res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
-			if res:
-				#print "accepted sub request: %s %s %s" % (session, uri, action)
+	def authorize(self, session, uri, action):
+		try:
+			user = session['authid']
+			reqpath = ".".join(uri.split(".")[:3])
+			requser = uri.split(".")[3]
+			
+			if (action == 'subscribe' and reqpath == 'com.stackptr.user'):		
+				res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
+				if res:
+					#print "accepted sub request: %s %s %s" % (session, uri, action)
+					return True
+				else:
+					print "rejected sub request: %s %s %s" % (session, uri, action)
+					return False
+			elif (action == 'call' and reqpath == "com.stackptr.api"):
+				print "grant api"
 				return True
 			else:
-				print "rejected sub request: %s %s %s" % (session, uri, action)
+				print "rejected invalid action: %s %s %s" % (session, uri, action)
 				return False
-		print "rejected invalid action: %s %s %s" % (session, uri, action)
-		return False
+			
+			return False
+		except Exception as e:
+			print e
+			raise e
+
+
+class StackPtrAPI(ApplicationSession):
+	@inlineCallbacks
+	def onJoin(self, details):
+		def userList(details):
+			try:
+				users = [tu.userid
+				for f,tu in db.session.query(Follower,TrackPerson)
+										.join(TrackPerson, Follower.following == TrackPerson.userid)\
+										.filter(Follower.follower == details.authid, Follower.confirmed == 1)\
+										.filter(TrackPerson.lastupd != None)
+										.order_by(TrackPerson.userid)
+										.all() ]
+				return users
+			except Exception as e:
+				print e
+				raise e
+		
+		try:
+			yield self.register(userList, 'com.stackptr.api.userlist', options=RegisterOptions(details_arg='details', discloseCaller=True))
+			print "userlist registered"
+		except Exception as e:
+			print "could not register userlist: %s" % e

@@ -201,23 +201,8 @@ def ws_token():
 	db.session.add(at)
 	db.session.commit()
 	
-	# remove old tokens
+	# fixme: remove old tokens
 	return str(at.key)
-
-@app.route('/ws_follow', methods=['GET', 'POST'])
-@login_required
-def ws_follow():
-	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
-		
-	others = [tu.userid
-	for f,tu in db.session.query(Follower,TrackPerson)
-							.join(TrackPerson, Follower.following == TrackPerson.userid)\
-							.filter(Follower.follower == g.user.id, Follower.confirmed == 1)\
-							.filter(TrackPerson.lastupd != None)
-							.order_by(TrackPerson.userid)
-							.all() ]
-	return json.dumps(others)
-
 
 ####################
 # Data

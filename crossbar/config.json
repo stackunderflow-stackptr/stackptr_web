@@ -29,6 +29,14 @@
                         }
                      ]
                   },{
+                     "name": "api",
+                     "permissions": [
+                        {
+                           "uri": "com.stackptr.api.*",
+                           "register": true
+                        }
+                     ]
+                  },{
 					 "name": "anonymous",
 					 "permissions": [
 						{
@@ -125,6 +133,11 @@
                "classname": "stackptr-realtime.StackPtrAuthorizer",
                "realm": "stackptr",
                "role": "authorizer"
+            },{
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrAPI",
+               "realm": "stackptr",
+               "role": "api"
             }
          ]
 

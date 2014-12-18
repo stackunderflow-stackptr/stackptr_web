@@ -211,6 +211,12 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	$scope.$on("$wamp.open", function (event, session) {
         console.log('We are connected to the WAMP Router!'); 
         $scope.status = "Connected";
+        $wamp.call('com.stackptr.api.userlist').then(function(res) {
+    		console.log(res);
+    		for (i in res) {
+				$wamp.subscribe('com.stackptr.user.' + res[i], $scope.processWS);
+			}
+    	});
     });
 
     $scope.$on("$wamp.close", function (event, data) {
@@ -222,16 +228,6 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
     $scope.processWS = function(type, data) {
 		$scope.processItem({type: type[0], data: data.msg});
    	};
-    
-    var resp = $http.post('/ws_follow', "");
-	resp.success(function(rdata, status, headers, config) {
-		console.log(rdata);
-		for (i in rdata) {
-			$wamp.subscribe('com.stackptr.user.' + rdata[i], $scope.processWS);
-		}
-	});
-   
-
 
 }]);
 
