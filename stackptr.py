@@ -51,7 +51,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
 from models import *
 db = SQLAlchemy(app)
 
-migrate = Migrate(app, db) # todo: make migrate work again
+migrate = Migrate(app, Base)
 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
