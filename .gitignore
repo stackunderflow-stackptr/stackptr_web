@@ -4,3 +4,6 @@
 *.apk
 *.pyc
 stackptr.conf
+env
+*~
+*.db3

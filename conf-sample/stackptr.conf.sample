@@ -2,4 +2,8 @@
 secret_key = keep-this-value-secret
 
 [database]
+; PostgreSQL
 uri = postgresql://username:password@host/database
+
+; SQLite3
+uri = sqlite:///stackptr.db3
