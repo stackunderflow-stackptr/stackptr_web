@@ -1,16 +1,20 @@
-from twisted.internet.defer import inlineCallbacks
-
+#from __future__ import absolute_import
 from autobahn.twisted.wamp import ApplicationSession
 from autobahn.wamp.exception import ApplicationError
 from autobahn.wamp.types import RegisterOptions
-
+from ConfigParser import ConfigParser
 from models import *
+from os import chdir
+from os.path import abspath, dirname
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
+from twisted.internet.defer import inlineCallbacks
 
-import ConfigParser
-config = ConfigParser.ConfigParser()
-config.read("../stackptr.conf")
+# Bootstrap the correct directory
+chdir(dirname(abspath(dirname(__name__))))
+
+config = ConfigParser()
+config.read('./stackptr.conf')
 
 
 db = create_engine(config.get("database", "uri"))

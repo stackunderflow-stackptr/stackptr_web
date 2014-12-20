@@ -1,5 +1,6 @@
 alembic
 autobahn
+crossbar
 crossbarconnect
 flask
 flask-cors

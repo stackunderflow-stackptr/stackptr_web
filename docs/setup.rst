@@ -32,11 +32,10 @@ Then create the database::
 
   $ ./env/bin/python stackptr.py db update
 
-You can then run the development server with::
+  $ ./env/bin/crossbar start --cbdir crossbar/
 
-  $ ./env/bin/python stackptr.py runserver -r -p 8000
+This will cause the development server to run on port 8080.
 
-This will cause the development server to run on port 8000.
 
 Connecting an API client
 ------------------------
