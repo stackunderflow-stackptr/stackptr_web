@@ -28,7 +28,7 @@ import ConfigParser
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(app.root_path, "stackptr.conf"))
 app.secret_key = config.get("app","secret_key")
-app.invite_code = config.get("app","invite_code")
+app.invite_code = config.get("app","invite_code", None)
 app.CSRF_ENABLED = True
 
 import logging, sys
@@ -100,6 +100,8 @@ def index():
 
 @app.route('/registration', methods=['GET','POST'])
 def registration():
+	if app.invite_code is None:
+		return "invites disabled"
 	if request.method == "GET":
 		return render_template("registration.html")
 	else:

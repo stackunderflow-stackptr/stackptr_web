@@ -1,0 +1,15 @@
+alembic
+autobahn
+crossbar
+crossbarconnect
+flask
+flask-cors
+flask-login
+flask-migrate
+flask-script
+flask-sqlalchemy
+flask-wtf
+pytz
+sqlalchemy
+twisted
+
