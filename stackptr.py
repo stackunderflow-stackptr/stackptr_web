@@ -282,7 +282,8 @@ def update():
 	
 	if None in (lat, lon):
 		return "No lat/lon specified"
-		
+	
+	#update TrackPerson
 	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
 	if not tu:
 		tu = TrackPerson(g.user.id, g.user.username)
@@ -296,9 +297,13 @@ def update():
 	tu.extra = ext
 	tu.lastupd = datetime.datetime.utcnow()
 	
+	#add to TrackHistory
+	
 	th = TrackHistory(g.user.id, lat, lon, ext)
 	db.session.add(th)
 	db.session.commit()
+	
+	#push message to realtime
 	
 	msg = {tu.userid: {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
@@ -308,9 +313,17 @@ def update():
 	'extra': process_extra(tu.extra),
 	}}
 	
-	#publish('com.example.on_visit', "user", msg = msg)
+	
+	#lookup list of followers
+	allowed_ids = db.session.query(Follower,WAMPSession)\
+					.join(WAMPSession, Follower.follower == WAMPSession.user)\
+					.filter(Follower.confirmed == 1, Follower.following == g.user.id)\
+					.all()
+	
+	allowed_list = [a[1].sessionid for a in allowed_ids]
+
 	client = crossbarconnect.Client("http://127.0.0.1:9000/")
-	client.publish("com.stackptr.user.%i" % g.user.id, "user", msg=msg)
+	client.publish("com.stackptr.user.%i" % g.user.id, "user", msg=msg, options={'eligible': allowed_list})
 	
 	return "OK"
 

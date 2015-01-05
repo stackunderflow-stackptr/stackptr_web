@@ -37,6 +37,14 @@
                         }
                      ]
                   },{
+                     "name": "sessionmonitor",
+                     "permissions": [
+                        {
+                           "uri": "wamp.metaevent.session.*",
+                           "subscribe": true
+                        }
+                     ]
+                  },{
 					 "name": "anonymous",
 					 "permissions": [
 						{
@@ -138,6 +146,11 @@
                "classname": "stackptr-realtime.StackPtrAPI",
                "realm": "stackptr",
                "role": "api"
+            },{
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrSessionMonitor",
+               "realm": "stackptr",
+               "role": "sessionmonitor"
             }
          ]
 

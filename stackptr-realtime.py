@@ -30,6 +30,7 @@ class StackPtrAuthenticator(ApplicationSession):
 					db.session.delete(res)
 					db.session.commit()
 					#fixme: check date
+					print "authenticated"
 					return 'user'
 				else:
 					raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
@@ -85,6 +86,7 @@ class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
 		def userList(details):
+			#print details
 			try:
 				users = [tu.userid
 				for f,tu in db.session.query(Follower,TrackPerson)
@@ -103,3 +105,34 @@ class StackPtrAPI(ApplicationSession):
 			print "userlist registered"
 		except Exception as e:
 			print "could not register userlist: %s" % e
+
+class StackPtrSessionMonitor(ApplicationSession):
+	@inlineCallbacks
+	def onJoin(self, details):
+		def on_session_join(details):
+			session = WAMPSession()
+			session.user = int(details['authid'])
+			session.sessionid = int(details['session'])
+			db.session.add(session)
+			db.session.commit()
+			print "session added: %i" % session.sessionid
+		
+		def on_session_leave(details):
+			try:
+				sessionid = int(details['session'])
+				session = db.session.query(WAMPSession).filter(WAMPSession.sessionid==sessionid).first()
+				db.session.delete(session)
+				db.session.commit()
+				print "session removed: %i" % sessionid
+			except Exception as e:
+				print e
+				raise e
+		
+		try:
+			print "removed %i old sessions" % db.session.query(WAMPSession).delete()
+			db.session.commit()
+			yield self.subscribe(on_session_join, 'wamp.metaevent.session.on_join')
+			yield self.subscribe(on_session_leave, 'wamp.metaevent.session.on_leave')
+			print "sessionmonitor registered"
+		except Exception as e:
+			print "could not register sessionmonitor: %s" % e
