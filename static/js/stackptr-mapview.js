@@ -52,9 +52,13 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	
 	$scope.markers = {};
 	$scope.userList = {};
+	$scope.userPending = {};
+	$scope.userReqs = {};
 	$scope.grouplist = {};
 	$scope.groupdata = {};
 	$scope.userListEmpty = false;
+	$scope.pendingListEmpty = false;
+	$scope.reqsListEmpty = false;
 	
 	$scope.processItem = function(item) {
 		console.log(item);
@@ -66,6 +70,18 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 				}
 			} else if (item.type == 'user-me') {
 				$scope.userMe = item.data;
+			} else if (item.type == 'user-pending') {
+				$scope.pendingListEmpty = true;
+				for (user in item.data) {
+					$scope.userPending[user] = item.data[user];
+					$scope.pendingListEmpty = false;
+				}
+			} else if (item.type == 'user-request') {
+				$scope.reqsListEmpty = true;
+				for (user in item.data) {
+					$scope.userReqs[user] = item.data[user];
+					$scope.reqsListEmpty = false;
+				}
 			} else if (item.type == 'grouplist') {
 				for (group in item.data) {
 					$scope.grouplist[group] = item.data[group];
@@ -80,6 +96,7 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	}
 	
 	$scope.processData = function(data, status, headers, config) {
+		console.log(data);
 		for (msg in data) {
 			var item = data[msg];
 			$scope.processItem(item);
@@ -106,7 +123,7 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 		};
 	};
 	
-	$scope.update();
+	//$scope.update();
 	//$interval($scope.update, 1000);
 	
 	$scope.$watchCollection('userList', function(added,removed) {
@@ -163,11 +180,27 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
               });
            });
            
-
-	$scope.tooltip = {title: 'Hello Tooltip This is a multiline message!', checked: false};
 	
 	$scope.activePanel = -1;
+
+	$scope.addUser = function($event) {
+		var formdata = $($event.target.form).serialize();
+		var resp = $http.post('/adduser', formdata);
+		//alert(resp);
+		resp.success($scope.processData);
+	};
 	
+	$scope.delUser = function(uid) {
+			//var resp = $http.get("/deluser");
+			//resp.success($scope.processData);
+			
+			var resp = $http.post('/deluser', $.param({uid: uid}));
+			resp.success($scope.processData);
+			
+			return 1;
+	}
+	
+
 	$scope.renameGroupItem = function($event) {
 		var formdata = $($event.target.form).serialize();
 		var resp = $http.post('/renamefeature', formdata);
@@ -209,14 +242,18 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	});
 	
 	$scope.$on("$wamp.open", function (event, session) {
-        console.log('We are connected to the WAMP Router!'); 
         $scope.status = "Connected";
-        $wamp.call('com.stackptr.api.userlist').then(function(res) {
+        
+        $wamp.call('com.stackptr.api.idlist').then(function(res) {
     		console.log(res);
     		for (i in res) {
 				$wamp.subscribe('com.stackptr.user.' + res[i], $scope.processWS);
 			}
     	});
+
+        $wamp.call('com.stackptr.api.userList').then($scope.processData);
+        $wamp.call('com.stackptr.api.groupList').then($scope.processData);
+    	
     });
 
     $scope.$on("$wamp.close", function (event, data) {
@@ -284,4 +321,9 @@ $(document).ready(function() {
 
 togglePane  = function (pane) {
 	$(pane).toggle();
+}
+
+function delUserClick(item,uid) {
+	var $scope = angular.element(item).scope();
+	$scope.delUser(uid);
 }

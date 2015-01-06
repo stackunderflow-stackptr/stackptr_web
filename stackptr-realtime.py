@@ -9,6 +9,7 @@ from os.path import abspath, dirname
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from twisted.internet.defer import inlineCallbacks
+import stackptr_core
 
 # Bootstrap the correct directory
 chdir(dirname(abspath(dirname(__name__))))
@@ -89,7 +90,7 @@ class StackPtrAuthorizer(ApplicationSession):
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
-		def userList(details):
+		def idList(details):
 			#print details
 			try:
 				users = [tu.userid
@@ -104,8 +105,21 @@ class StackPtrAPI(ApplicationSession):
 				print e
 				raise e
 		
+		def userList(details):
+			try:
+				guser = db.session.query(Users).filter(Users.id == details.authid).first()
+				return stackptr_core.userList(guser, db=db)
+			except Exception as e:
+				print e
+				raise e
+		
+		def groupList(details):
+			return stackptr_core.groupList(db=db)
+		
 		try:
-			yield self.register(userList, 'com.stackptr.api.userlist', options=RegisterOptions(details_arg='details', discloseCaller=True))
+			yield self.register(idList, 'com.stackptr.api.idlist', options=RegisterOptions(details_arg='details', discloseCaller=True))
+			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details', discloseCaller=True))
+			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details', discloseCaller=True))
 			print "userlist registered"
 		except Exception as e:
 			print "could not register userlist: %s" % e

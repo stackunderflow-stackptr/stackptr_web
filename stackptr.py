@@ -42,6 +42,8 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 
+import stackptr_core
+
 ####################
 # Config
 ####################
@@ -210,66 +212,11 @@ def ws_token():
 # Data
 ####################
 
-def process_extra(extra):
-	try:
-		return json.loads(str(extra))
-	except ValueError:
-		return {}
-
-def utc_seconds(time):
-	epoch = datetime.datetime(1970, 1, 1)
-	diff = (time - epoch).total_seconds()
-	return int(diff)
-
 @app.route('/users')
 @cross_origin()
 @login_required
 def userjson():
-	now = datetime.datetime.utcnow()
-	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
-	
-	me = {'type': 'user-me', 'data': {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
-	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.userid,
-	'username': tu.user.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
-	'extra': process_extra(tu.extra),
-	} if tu else { 'user': g.user.id,
-	'username': g.user.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(g.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': -1,
-	}}
-	
-	others = {tu.userid: {'loc': [tu.lat, tu.lon],
-	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'username': tu.user.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': utc_seconds(tu.lastupd),
-	'extra': process_extra(tu.extra),
-	}
-	for f,tu in db.session.query(Follower,TrackPerson)
-							.join(TrackPerson, Follower.following == TrackPerson.userid)\
-							.filter(Follower.follower == g.user.id, Follower.confirmed == 1)\
-							.filter(TrackPerson.lastupd != None)
-							.order_by(TrackPerson.userid)
-							.all() }
-	
-	others2 = {'type': 'user', 'data': others}
-	
-	return json.dumps([me, others2])
-	
-	pending = [ {'user' : r.following }
-	for r in db.session.query(Follower).filter(Follower.follower == g.user.id, Follower.confirmed == 0)
-						   .order_by(Follower.following).all()]
-	
-	reqs = [ {'user' : r.follower }
-	for r in db.session.query(Follower).filter(Follower.following == g.user.id, Follower.confirmed == 0)
-						   .order_by(Follower.follower).all()]
-	
-	data = {'me': me, 'following': others, 'pending': pending, 'reqs': reqs}
-	
-	# FIXME: Return "None" instead of -1 for unknown values.
+	data = stackptr_core.userList(g.user, db=db)
 	return json.dumps(data)
 
 @app.route('/update', methods=['POST'])
@@ -344,62 +291,25 @@ def lochist():
 @login_required
 def acceptuser():
 	user = request.form['uid']
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
-	if not fobj:
-		return "no user request"
-	fobj.confirmed = 1
-	db.session.add(fobj)
-	db.session.commit()
-	return "OK"
+	return stackptr_core.acceptUser(user, db=db)
 
 @app.route('/rejectuser', methods=['POST'])
 @login_required
 def rejectuser():
 	user = request.form['uid']
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
-	if not fobj:
-		return "no user request"
-	fobj.confirmed = -1
-	db.session.add(fobj)
-	db.session.commit()
-	return "OK"
+	return stackptr_core.rejectUser(user, db=db)
 
 @app.route('/adduser', methods=['POST'])
 @login_required
 def adduser():
-	user = request.form['uid']
-	# first pre-accept them being able to see me
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
-	if not fobj:
-		fobj = Follower(user, g.user.id)
-	fobj.confirmed = 1
-	db.session.merge(fobj)
-	db.session.commit()
-	
-	# now add the request from me to them
-	fobj2 = db.session.query(Follower).filter(Follower.follower==g.user.id, Follower.follower==user).first()
-	if not fobj2:
-		fobj2 = Follower(g.user.id, user)
-		fobj2.confirmed = 0
-	else:
-		if fobj2.confirmed != 1: # if request was ignored, but don't un-add the user if already accepted
-			fobj2.confirmed = 0
-	db.session.merge(fobj2)
-	db.session.commit()
-	return "OK"
+	user = request.form['user']
+	return stackptr_core.addUser(user, guser=g.user, db=db)
 
 @app.route('/deluser', methods=['POST'])
 @login_required
 def deluser():
 	user = request.form['uid']
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==g.user.id).first()
-	if fobj:
-		db.session.delete(fobj)
-	fobj = db.session.query(Follower).filter(Follower.follower==g.user.id, Follower.following==user).first()
-	if fobj:
-		db.session.delete(fobj)
-	db.session.commit()
-	return "OK"
+	return stackptr_core.delUser(user, guser=g.user, db=db)
 
 ###########
 
@@ -407,10 +317,7 @@ def deluser():
 @cross_origin()
 @login_required
 def grouplist():
-	gl = db.session.query(Group).all()
-	res = {item.id: item.name for item in gl}
-	return json.dumps([{'type': 'grouplist', 'data': res}])
-	#todo: only return groups to which the user is a member
+	return json.dumps(stackptr_core.groupList(db=db))
 
 @app.route('/groupdata', methods=['POST'])
 @cross_origin()

@@ -82,7 +82,10 @@
 </div>
 
 <div class="panel panel-primary" id="usermenu">
-	<div class="panel-heading">Tracked Users <a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
+	<div class="panel-heading">Tracked Users 
+	<a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a>
+		
+	</div>
 	<div class="panel-body">
 		
 		<img width="32" height="32" class="user-icon" ng-src="[[userMe.icon]]" ng-click="center.lat = userMe.loc[0]; center.lng = userMe.loc[1]; center.zoom = 16">
@@ -127,6 +130,20 @@
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
 			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
 			ng-click="center.lat = user.loc[0]; center.lng = user.loc[1]; center.zoom = 16">
+		
+		<span ng-if="!pendingListEmpty"><div class="label">Outgoing Requests</div></span>
+		
+		<img width="32" height="32" class="user-icon" ng-repeat="user in userPending" ng-src="[[user.icon]]" 
+			data-trigger="click" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br><a onClick='delUserClick(this,[[user.id]])'>Cancel Request</a>">
+		
+		<span ng-if="!reqsListEmpty"><div class="label">Incoming Requests</div></span>
+		
+		<img width="32" height="32" class="user-icon" ng-repeat="user in userReqs" ng-src="[[user.icon]]" 
+			data-trigger="click" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br><a ng-click='alert(1)'>Accept</a>">
+		
+		
 		<!--
 		<div class="list-group" id="userlist">
 			<a href="" class="list-group-item list-item-person" ng-repeat="user in userList" bs-tooltip="tooltip" data-placement="left">
@@ -151,6 +168,16 @@
 		</form>
 		<div id="addstatus"></div>
 		-->
+		<br><br>
+		&nbsp;<span class="glyphicon glyphicon-plus">&nbsp;</span>
+		
+		<form class="input-group input-group-sm">
+			<input type="text" name="user" class="form-control" value="">
+			<span class="input-group-btn">
+				<button class="btn btn-default" type="button" ng-click="addUser($event)">Add</button>
+			</span>
+		</form>	
+		
 	</div>
 </div>
 
