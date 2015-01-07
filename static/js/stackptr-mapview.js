@@ -325,6 +325,10 @@ app.filter('updateRange', function () {
     for (id in items) {
     	var item = items[id]
 		var updateTime = curTime - item.lastupd;
+		// fixme: client/server time mismatch
+		if (updateTime < 0) {
+			updateTime = 0;
+		}
       if ((updateTime >= agemin) && ((updateTime < agemax) || (agemax == -1))) {
         filtered.push(item);
       }
