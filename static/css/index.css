@@ -21,6 +21,7 @@ body {
 }
 
 #groupmenu {
+	display: none;
 	position: absolute;
 	top: 320px;
 	right: 0px;
