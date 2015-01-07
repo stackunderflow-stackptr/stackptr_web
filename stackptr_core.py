@@ -12,6 +12,8 @@ def process_extra(extra):
 		return {}
 
 def utc_seconds(time):
+	if time == None:
+		return 0
 	epoch = datetime.datetime(1970, 1, 1)
 	diff = (time - epoch).total_seconds()
 	return int(diff)
@@ -28,30 +30,28 @@ def userList(guser, db=None):
 	
 	me = {'type': 'user-me', 'data': {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'user': tu.userid,
+	'id': tu.userid,
 	'username': tu.user.username,
 	'icon': gravatar(tu.user.email),
 	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
-	} if tu else { 'user': guser.id,
-	'username': guser.username,
-	'icon': gravatar(guser.email),
-	'lastupd': -1,
 	}}
 	
-	others_list = {tu.userid: {'loc': [tu.lat, tu.lon],
+	others_list = {tu.userid: {'loc': [tu.lat if tu.lat else -1, tu.lon if tu.lon else -1],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'username': tu.user.username,
 	'icon': gravatar(tu.user.email),
+	'id': tu.userid,
 	'lastupd': utc_seconds(tu.lastupd),
 	'extra': process_extra(tu.extra),
 	}
 	for f,tu in db.session.query(Follower,TrackPerson)
 							.join(TrackPerson, Follower.following == TrackPerson.userid)\
 							.filter(Follower.follower == guser.id, Follower.confirmed == 1)\
-							.filter(TrackPerson.lastupd != None)
+							#.filter(TrackPerson.lastupd != None)
 							.order_by(TrackPerson.userid)
 							.all() }
+	
 	
 	others = {'type': 'user', 'data': others_list}
 	
@@ -66,7 +66,7 @@ def userList(guser, db=None):
 	
 	reqs_list = {r.following: {'username': r.follower_user.username,
 								'icon': gravatar(r.follower_user.email),
-								'id': r.following} 
+								'id': r.follower} 
 								for r in db.session.query(Follower)\
 								.filter(Follower.following == guser.id, Follower.confirmed == 0)
 						   		.order_by(Follower.follower).all()}
@@ -90,7 +90,7 @@ def groupList(db=None):
 
 
 ############
-def acceptUser(user, db=None):
+def acceptUser(user, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
 	if not fobj:
 		return "no user request"
@@ -98,15 +98,7 @@ def acceptUser(user, db=None):
 	db.session.add(fobj)
 	db.session.commit()
 	return "OK"
-
-def rejectUser(user, db=None):
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
-	if not fobj:
-		return "no user request"
-	fobj.confirmed = -1
-	db.session.add(fobj)
-	db.session.commit()
-	return "OK"
+	#todo: send user update to accepted user
 
 def addUser(user, guser=None, db=None):
 	#lookup userid for name
@@ -135,15 +127,41 @@ def addUser(user, guser=None, db=None):
 			fobj2.confirmed = 0
 	db.session.merge(fobj2)
 	db.session.commit()
+	
+	# return the pending user to the requesting client if we just confirmed it
+	if fobj2.confirmed == 0: # unconfirmed request just made
+		puser = db.session.query(Users).filter(Users.id==fobj2.following).first()
+		# yes, that should just be the following_user object on fobj2...
+		print "puser %s" % puser
+		pending = {puser.id: {'username': puser.username,
+								'icon': gravatar(puser.email),
+								'id': puser.id}}
+		pending_msg = [{'type': 'user-pending', 'data': pending}]
+		return pending_msg
+	
+	
+	# send a user and request object to com.stackptr.user targeted at the user just added
+	#todo
 	return "OK"
 
 def delUser(user, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
 	if fobj:
 		db.session.delete(fobj)
-	fobj = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.following==user).first()
+		print "delete 1"
+	fobj2 = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.following==user).first()
 	if fobj:
-		db.session.delete(fobj)
+		db.session.delete(fobj2)
+		print "delete 2"
 	db.session.commit()
-	return "OK"
+	
+	# remove from users, pending users, and request users
+	msg = {user: None}
+	retmsg = [{'type': 'user', 'data': msg},
+			  {'type': 'user-pending', 'data': msg},
+			  {'type': 'user-request', 'data': msg}]
+	return retmsg
+	
+	#send a message to that user
+	#todo
 

@@ -11,6 +11,8 @@ from sqlalchemy.orm import sessionmaker
 from twisted.internet.defer import inlineCallbacks
 import stackptr_core
 
+import traceback
+
 # Bootstrap the correct directory
 chdir(dirname(abspath(dirname(__name__))))
 
@@ -40,7 +42,7 @@ class StackPtrAuthenticator(ApplicationSession):
 				else:
 					raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
 			except Exception as e:
-				print e
+				print traceback.format_exc()
 				raise e
 		
 		try:
@@ -64,16 +66,19 @@ class StackPtrAuthorizer(ApplicationSession):
 		try:
 			user = session['authid']
 			reqpath = ".".join(uri.split(".")[:3])
-			requser = uri.split(".")[3]
+			#requser = uri.split(".")[3]
 			
-			if (action == 'subscribe' and reqpath == 'com.stackptr.user'):		
-				res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
-				if res:
-					#print "accepted sub request: %s %s %s" % (session, uri, action)
-					return True
-				else:
-					print "rejected sub request: %s %s %s" % (session, uri, action)
-					return False
+			if (action == 'subscribe' and uri == 'com.stackptr.user'):
+				return true
+			elif (action == 'subscribe' and uri == 'com.stackptr.alert'):
+				return true
+				#res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
+				#if res:
+				#	#print "accepted sub request: %s %s %s" % (session, uri, action)
+				#	return True
+				#else:
+				#	print "rejected sub request: %s %s %s" % (session, uri, action)
+				#	return False
 			elif (action == 'call' and reqpath == "com.stackptr.api"):
 				print "grant api"
 				return True
@@ -83,7 +88,7 @@ class StackPtrAuthorizer(ApplicationSession):
 			
 			return False
 		except Exception as e:
-			print e
+			print traceback.format_exc()
 			raise e
 
 
@@ -102,7 +107,7 @@ class StackPtrAPI(ApplicationSession):
 										.all() ]
 				return users
 			except Exception as e:
-				print e
+				print traceback.format_exc()
 				raise e
 		
 		def userList(details):
@@ -110,7 +115,7 @@ class StackPtrAPI(ApplicationSession):
 				guser = db.session.query(Users).filter(Users.id == details.authid).first()
 				return stackptr_core.userList(guser, db=db)
 			except Exception as e:
-				print e
+				print traceback.format_exc()
 				raise e
 		
 		def groupList(details):
@@ -143,7 +148,7 @@ class StackPtrSessionMonitor(ApplicationSession):
 				db.session.commit()
 				print "session removed: %i" % sessionid
 			except Exception as e:
-				print e
+				print traceback.format_exc()
 				raise e
 		
 		try:

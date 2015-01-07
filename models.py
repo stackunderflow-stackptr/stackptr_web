@@ -91,6 +91,7 @@ class Follower(Base):
 					primaryjoin="Follower.follower==Users.id")
 	following_user = relationship('Users', foreign_keys=following, lazy='joined',
 					primaryjoin="Follower.following==Users.id")
+	PrimaryKeyConstraint('follower', 'following', name='follow_pk')
 
 class Object(Base):
 	__tablename__ = "object"

@@ -125,6 +125,9 @@ def registration():
 			user.password = generate_password_hash(password)
 			db.session.add(user)
 			db.session.commit()
+			tp = TrackPerson(user.id,username)
+			db.session.add(tp)
+			db.session.commit()
 			login_user(user,remember=True)
 			return redirect("/")
 
@@ -258,8 +261,9 @@ def update():
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'username': tu.user.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'lastupd': utc_seconds(tu.lastupd),
-	'extra': process_extra(tu.extra),
+	'id': tu.userid,
+	'lastupd': stackptr_core.utc_seconds(tu.lastupd),
+	'extra': stackptr_core.process_extra(tu.extra),
 	}}
 	
 	
@@ -272,7 +276,7 @@ def update():
 	allowed_list = [a[1].sessionid for a in allowed_ids]
 
 	client = crossbarconnect.Client("http://127.0.0.1:9000/")
-	client.publish("com.stackptr.user.%i" % g.user.id, "user", msg=msg, options={'eligible': allowed_list})
+	client.publish("com.stackptr.user", "user", msg=msg, options={'eligible': allowed_list})
 	
 	return "OK"
 
@@ -291,25 +295,19 @@ def lochist():
 @login_required
 def acceptuser():
 	user = request.form['uid']
-	return stackptr_core.acceptUser(user, db=db)
-
-@app.route('/rejectuser', methods=['POST'])
-@login_required
-def rejectuser():
-	user = request.form['uid']
-	return stackptr_core.rejectUser(user, db=db)
+	return stackptr_core.acceptUser(user, guser=g.user, db=db)
 
 @app.route('/adduser', methods=['POST'])
 @login_required
 def adduser():
 	user = request.form['user']
-	return stackptr_core.addUser(user, guser=g.user, db=db)
+	return json.dumps(stackptr_core.addUser(user, guser=g.user, db=db))
 
 @app.route('/deluser', methods=['POST'])
 @login_required
 def deluser():
 	user = request.form['uid']
-	return stackptr_core.delUser(user, guser=g.user, db=db)
+	return json.dumps(stackptr_core.delUser(user, guser=g.user, db=db))
 
 ###########
 

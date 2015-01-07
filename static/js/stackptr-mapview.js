@@ -62,26 +62,38 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	
 	$scope.processItem = function(item) {
 		console.log(item);
-		if (item.type == 'user') {
-				$scope.userListEmpty = true;
+			if (item.type == 'user') {
 				for (user in item.data) {
-					$scope.userList[user] = item.data[user];
-					$scope.userListEmpty = false;
+					if (item.data[user] == null) {
+						delete $scope.userList[user];
+						delete $scope.markers[user];
+					} else {
+						$scope.userList[user] = item.data[user];
+						$scope.updateMarker(item.data[user]);
+					}
 				}
+				$scope.userListEmpty = (Object.keys($scope.userList).length) == 0;
 			} else if (item.type == 'user-me') {
 				$scope.userMe = item.data;
+				$scope.updateMarker(item.data);
 			} else if (item.type == 'user-pending') {
-				$scope.pendingListEmpty = true;
 				for (user in item.data) {
-					$scope.userPending[user] = item.data[user];
-					$scope.pendingListEmpty = false;
+					if (item.data[user] == null) {
+						delete $scope.userPending[user];
+					} else {
+						$scope.userPending[user] = item.data[user];
+					}
 				}
+				$scope.pendingListEmpty = (Object.keys($scope.userPending).length) == 0;
 			} else if (item.type == 'user-request') {
-				$scope.reqsListEmpty = true;
 				for (user in item.data) {
-					$scope.userReqs[user] = item.data[user];
-					$scope.reqsListEmpty = false;
+					if (item.data[user] == null) {
+						delete $scope.userReqs[user];
+					} else {
+						$scope.userReqs[user] = item.data[user];
+					}
 				}
+				$scope.reqsListEmpty = (Object.keys($scope.userReqs).length) == 0;
 			} else if (item.type == 'grouplist') {
 				for (group in item.data) {
 					$scope.grouplist[group] = item.data[group];
@@ -107,42 +119,68 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	$scope.counter = 0;
 	$scope.status = "Connecting to server...";
 	
-	$scope.update = function() {
-		if (--$scope.counter < 0) {
-			$scope.counter = 5;
-			
-			var resp = $http.get("/users");
-			resp.success($scope.processData);
-			
-			var resp = $http.get("/grouplist");
-			resp.success($scope.processData);
-			
-			var resp = $http.post('/groupdata', $.param({group: 1}));
-			resp.success($scope.processData);
-			
-		};
-	};
+	//$scope.update = function() {
+	//	if (--$scope.counter < 0) {
+	//		$scope.counter = 5;
+	//		
+	//		var resp = $http.get("/users");
+	//		resp.success($scope.processData);
+	//		
+	//		var resp = $http.get("/grouplist");
+	//		resp.success($scope.processData);
+	//		
+	//		var resp = $http.post('/groupdata', $.param({group: 1}));
+	//		resp.success($scope.processData);
+	//		
+	//	};
+	//};
 	
 	//$scope.update();
 	//$interval($scope.update, 1000);
 	
-	$scope.$watchCollection('userList', function(added,removed) {
-		var markerList = {};
-		for (user in added) {
-			var userObj = $scope.userList[user];
-			var marker = {
-				lat: userObj.loc[0],
-				lng: userObj.loc[1],
+	$scope.clickMarker = function(user) {
+		$scope.center.lat = user.loc[0];
+		$scope.center.lng = user.loc[1];
+		$scope.center.zoom = 16;
+		$scope.markers[user.id].focus = true;
+	}
+	
+	$scope.updateMarker = function(userObj) {
+		//var userObj = $scope.userList[user];
+		
+		if ($scope.markers[userObj.id] == null) {
+			$scope.markers[userObj.id] = {
 				icon: {
 					iconUrl: userObj.icon,
 					iconSize: [32,32],
 					iconAnchor: [16,16],
 				},
+				message: "<a onClick='delUserClick(this," + userObj.id + ")'>Delete user</a>",
+				focus: false,
 			};
-			markerList[$scope.userList[user].username] = marker;
 		}
-		angular.extend($scope, {markers: markerList});
-	});
+		$scope.markers[userObj.id].lat = userObj.loc[0];
+		$scope.markers[userObj.id].lng = userObj.loc[1];
+	}
+	
+	//$scope.$watchCollection('userList', function(added,removed) {
+	//	var markerList = {};
+	//	for (user in added) {
+	//		console.log("added: " + user)
+	//		var userObj = $scope.userList[user];
+	//		var marker = {
+	//			lat: userObj.loc[0],
+	//			lng: userObj.loc[1],
+	//			icon: {
+	//				iconUrl: userObj.icon,
+	//				iconSize: [32,32],
+	//				iconAnchor: [16,16],
+	//			},
+	//		};
+	//		markerList[$scope.userList[user].username] = marker;
+	//	}
+	//	angular.extend($scope, {markers: markerList});
+	//});
 	
 	$scope.layers = {}
 	$scope.$watchCollection('groupdata', function(added, removed) {
@@ -199,6 +237,16 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 			
 			return 1;
 	}
+
+	$scope.acceptUser = function(uid) {
+			//var resp = $http.get("/deluser");
+			//resp.success($scope.processData);
+			
+			var resp = $http.post('/acceptuser', $.param({uid: uid}));
+			resp.success($scope.processData);
+			
+			return 1;
+	}
 	
 
 	$scope.renameGroupItem = function($event) {
@@ -244,12 +292,14 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	$scope.$on("$wamp.open", function (event, session) {
         $scope.status = "Connected";
         
-        $wamp.call('com.stackptr.api.idlist').then(function(res) {
-    		console.log(res);
-    		for (i in res) {
-				$wamp.subscribe('com.stackptr.user.' + res[i], $scope.processWS);
-			}
-    	});
+        //$wamp.call('com.stackptr.api.idlist').then(function(res) {
+    	//	console.log(res);
+    	//	for (i in res) {
+		//		$wamp.subscribe('com.stackptr.user.' + res[i], $scope.processWS);
+		//	}
+    	//});
+    	
+    	$wamp.subscribe('com.stackptr.user', $scope.processWS);
 
         $wamp.call('com.stackptr.api.userList').then($scope.processData);
         $wamp.call('com.stackptr.api.groupList').then($scope.processData);
@@ -324,6 +374,11 @@ togglePane  = function (pane) {
 }
 
 function delUserClick(item,uid) {
-	var $scope = angular.element(item).scope();
+	var $scope = angular.element($('body')).scope();
 	$scope.delUser(uid);
+}
+
+function acceptUserClick(item,uid) {
+	var $scope = angular.element($('body')).scope();
+	$scope.acceptUser(uid);
 }
