@@ -126,7 +126,7 @@
 		<span ng-if="(oUsers = (userList | updateRange:604800:-1)).length"><div class="label">&gt;1w ago</div></span>
 
 		<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers" ng-src="[[user.icon]]" 
-			data-trigger="click" bs-tooltip data-placement="left" data-html="true"
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
 			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
 			ng-click="clickMarker(user)">
 		
