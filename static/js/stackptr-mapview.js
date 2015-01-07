@@ -377,6 +377,8 @@ togglePane  = function (pane) {
 	$(pane).toggle();
 }
 
+togglePane("#groupmenu");
+
 function delUserClick(item,uid) {
 	var $scope = angular.element($('body')).scope();
 	$scope.delUser(uid);
