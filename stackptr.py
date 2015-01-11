@@ -274,6 +274,15 @@ def update():
 					.all()
 	
 	allowed_list = [a[1].sessionid for a in allowed_ids]
+	
+	
+	#also send to the user themself
+	
+	user_ids = db.session.query(WAMPSession)\
+			   .filter(WAMPSession.user == g.user.id)\
+			   .all()
+	
+	allowed_list += [a.sessionid for a in user_ids]
 
 	client = crossbarconnect.Client("http://127.0.0.1:9000/")
 	client.publish("com.stackptr.user", "user", msg=msg, options={'eligible': allowed_list})
