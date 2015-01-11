@@ -257,24 +257,31 @@ def update():
 	
 	#push message to realtime
 	
-	msg = {tu.userid: {'loc': [tu.lat, tu.lon],
+	usrdata = {'loc': [tu.lat, tu.lon],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'username': tu.user.username,
 	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
 	'id': tu.userid,
 	'lastupd': stackptr_core.utc_seconds(tu.lastupd),
 	'extra': stackptr_core.process_extra(tu.extra),
-	}}
+	}
+	
+	msg = {tu.userid: usrdata}
 	
 	
 	#lookup list of followers
 	allowed_ids = db.session.query(Follower,WAMPSession)\
 					.join(WAMPSession, Follower.follower == WAMPSession.user)\
 					.filter(Follower.confirmed == 1, Follower.following == g.user.id)\
+					.filter(Follower.follower != g.user.id)\
 					.all()
-	
+		
 	allowed_list = [a[1].sessionid for a in allowed_ids]
 	
+	# Crossbar bug: if allowed_list is empty, message is sent to everyone (!)
+	if allowed_list != []:
+		client = crossbarconnect.Client("http://127.0.0.1:9000/")
+		client.publish("com.stackptr.user", "user", msg=msg, options={'eligible': allowed_list})
 	
 	#also send to the user themself
 	
@@ -282,10 +289,11 @@ def update():
 			   .filter(WAMPSession.user == g.user.id)\
 			   .all()
 	
-	allowed_list += [a.sessionid for a in user_ids]
-
-	client = crossbarconnect.Client("http://127.0.0.1:9000/")
-	client.publish("com.stackptr.user", "user", msg=msg, options={'eligible': allowed_list})
+	allowed_list = [a.sessionid for a in user_ids]
+		
+	if allowed_list != []:
+		client = crossbarconnect.Client("http://127.0.0.1:9000/")
+		client.publish("com.stackptr.user", "user-me", msg=usrdata, options={'eligible': allowed_list})
 	
 	return "OK"
 
