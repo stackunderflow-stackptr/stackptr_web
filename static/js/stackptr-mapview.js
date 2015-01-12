@@ -9,7 +9,7 @@ var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngA
 
 app.config(function ($wampProvider) {
      $wampProvider.init({
-        url: 'wss://stackptr.com/ws',
+        url: (window.location.protocol == 'https:' ? 'wss://' : 'ws://' ) + window.location.host + '/ws',
         realm: 'stackptr',
         authmethods: ["ticket"],
         //Any other AutobahnJS options
