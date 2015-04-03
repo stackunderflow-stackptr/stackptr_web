@@ -46,6 +46,12 @@
 		<li><a href="/api/">Manage API keys</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">[[tiles.name]] <span class="caret"></span></a>
+				<ul class="dropdown-menu" role="menu">
+					<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
+				</ul>
+		</li>
 		<li><a class="refreshtimer">[[status]]</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
@@ -57,6 +63,8 @@
 				<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
 				<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 				<li><a href="/api/">Manage API keys</a></li>
+				<li class="divider"></li>
+				<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
 				<li class="divider"></li>
 				<li><a class="refreshtimer">[[status]]</a></li>
 				<li class="divider"></li>
@@ -219,7 +227,7 @@
 </div>
 
 <div class="fill">
-		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" height="100%"></leaflet>
+		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" tiles="tiles" height="100%"></leaflet>
 </div>
 
 {% endblock content %}
