@@ -22,6 +22,10 @@ app.run(function($http) {
 
 app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'leafletData', '$wamp', function($scope, $cookies, $http, $interval, leafletData, $wamp) {
 	
+	$scope.tiles = {
+		name: ""
+	}
+	
 	$scope.tileservers = {
 		stackptr: {
 			name: 'StackPtr Default Style',
