@@ -92,6 +92,20 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		})
 	}
 	
+	$scope.$watch('center', function(i) {
+		$cookies.last_lat = i.lat;
+		$cookies.last_lng = i.lng;
+		$cookies.last_zoom = i.zoom;
+	})
+	
+	$scope.getLastPos = function() {
+		if ($cookies.last_lat != undefined && $cookies.last_lng != undefined && $cookies.last_zoom != undefined) {
+			return {lat: parseFloat($cookies.last_lat), lng: parseFloat($cookies.last_lng), zoom: parseInt($cookies.last_zoom)}
+		} else {
+			return {lat: -24, lng: 138, zoom: 5}
+		}
+	}
+	
 	angular.extend($scope, {
 		defaults: {
 			maxZoom: 18,
@@ -101,11 +115,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			attributionControl: true,
 		},
 		tiles: $scope.getTileServer(),
-		center: {
-			lat: -24,
-			lng: 138,
-			zoom: 5,
-		},
+		center: $scope.getLastPos(),
 		controls: {
 			draw: {},
 			edit: {featureGroup: L.featureGroup()},
