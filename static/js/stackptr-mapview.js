@@ -76,7 +76,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.getTileServer = function() {
 		//debugger;
 		var default_tileserver = $scope.tileservers['stackptr']
-		var cookie_ts_name = $cookies.tileserver
+		var cookie_ts_name = $cookies.get('tileserver')
 		if (cookie_ts_name == undefined) return default_tileserver
 		
 		var cookie_ts = $scope.tileservers[cookie_ts_name]
@@ -86,21 +86,26 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	
 	$scope.setTileServer = function(ev) {
 		var new_ts_name = ev[0][0];
-		$cookies.tileserver = new_ts_name;
+		$cookies.put('tileserver', new_ts_name);
 		angular.extend($scope, {
 			tiles: $scope.getTileServer()
 		})
 	}
 	
 	$scope.$watch('center', function(i) {
-		$cookies.last_lat = i.lat;
-		$cookies.last_lng = i.lng;
-		$cookies.last_zoom = i.zoom;
+		$cookies.put('last_lat', i.lat);
+		$cookies.put('last_lng', i.lng);
+		$cookies.put('last_zoom', i.zoom);
 	})
 	
+	$cookies.has = function(key) {
+		return $cookies.get(key) != undefined;
+	}
+	
 	$scope.getLastPos = function() {
-		if ($cookies.last_lat != undefined && $cookies.last_lng != undefined && $cookies.last_zoom != undefined) {
-			return {lat: parseFloat($cookies.last_lat), lng: parseFloat($cookies.last_lng), zoom: parseInt($cookies.last_zoom)}
+		debugger;
+		if ($cookies.has('last_lat') && $cookies.has('last_lng') && $cookies.has('last_zoom')) {
+			return {lat: parseFloat($cookies.get('last_lat')), lng: parseFloat($cookies.get('last_lng')), zoom: parseInt($cookies.get('last_zoom'))}
 		} else {
 			return {lat: -24, lng: 138, zoom: 5}
 		}
