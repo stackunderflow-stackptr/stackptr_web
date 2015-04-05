@@ -74,7 +74,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 		
 	$scope.getTileServer = function() {
-		//debugger;
 		var default_tileserver = $scope.tileservers['stackptr']
 		var cookie_ts_name = $cookies.get('tileserver')
 		if (cookie_ts_name == undefined) return default_tileserver
@@ -103,7 +102,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 	
 	$scope.getLastPos = function() {
-		debugger;
 		if ($cookies.has('last_lat') && $cookies.has('last_lng') && $cookies.has('last_zoom')) {
 			return {lat: parseFloat($cookies.get('last_lat')), lng: parseFloat($cookies.get('last_lng')), zoom: parseInt($cookies.get('last_zoom'))}
 		} else {
