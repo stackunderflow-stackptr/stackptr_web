@@ -107,35 +107,35 @@
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 
 		<span ng-if="(hUsers = (userList | updateRange:60:3600)).length"><div class="label" >&lt;1h ago</div></span>
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="(dUsers = (userList | updateRange:3600:86400)).length"><div class="label">&lt;1d ago</div></span>
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in dUsers" ng-src="[[user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="(wUsers = (userList | updateRange:86400:604800)).length"><div class="label">&lt;1w ago</div></span>
 
 		<img width="32" height="32" class="user-icon" ng-repeat="user in wUsers" ng-src="[[user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="(oUsers = (userList | updateRange:604800:-1)).length"><div class="label">&gt;1w ago</div></span>
 
 		<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers" ng-src="[[user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="!pendingListEmpty"><div class="label">Outgoing Requests</div></span>
