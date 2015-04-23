@@ -91,11 +91,12 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		})
 	}
 	
-	$scope.$watch('center', function(i) {
+	$scope.$on('leafletDirectiveMap.moveend', function(event){
+		var i = $scope.center;
 		$cookies.put('last_lat', i.lat);
 		$cookies.put('last_lng', i.lng);
 		$cookies.put('last_zoom', i.zoom);
-	})
+    });
 	
 	$cookies.has = function(key) {
 		return $cookies.get(key) != undefined;
@@ -123,6 +124,12 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			draw: {},
 			edit: {featureGroup: L.featureGroup()},
 		},
+		events: {
+			map: {
+				enable: ['moveend'],
+				logic: 'emit'
+			}
+		}
 	});
 	
 	
