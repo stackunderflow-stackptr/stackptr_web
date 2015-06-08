@@ -234,7 +234,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	
 	//$scope.$watchCollection('userList', function(added,removed) {
 	//	var markerList = {};
-	//	for (user in added) {
+	//	for (user in added) {  // FIXME: forEach
 	//		console.log("added: " + user)
 	//		var userObj = $scope.userList[user];
 	//		var marker = {
@@ -363,7 +363,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
         
         //$wamp.call('com.stackptr.api.idlist').then(function(res) {
     	//	console.log(res);
-    	//	for (i in res) {
+    	//	for (i in res) {  // FIXME: forEach!
 		//		$wamp.subscribe('com.stackptr.user.' + res[i], $scope.processWS);
 		//	}
     	//});
