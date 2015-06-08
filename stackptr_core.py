@@ -37,7 +37,7 @@ def userList(guser, db=None):
 	'extra': process_extra(tu.extra),
 	}}
 	
-	others_list = {tu.userid: {'loc': [tu.lat if tu.lat else -1, tu.lon if tu.lon else -1],
+	others_list = [{'loc': [tu.lat if tu.lat else -1, tu.lon if tu.lon else -1],
 	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
 	'username': tu.user.username,
 	'icon': gravatar(tu.user.email),
@@ -50,26 +50,26 @@ def userList(guser, db=None):
 							.filter(Follower.follower == guser.id, Follower.confirmed == 1)\
 							#.filter(TrackPerson.lastupd != None)
 							.order_by(TrackPerson.userid)
-							.all() }
+							.all() ]
 	
 	
 	others = {'type': 'user', 'data': others_list}
 	
-	pending_list = {p.following: {'username': p.following_user.username,
-								'icon': gravatar(p.following_user.email),
-								'id': p.following} 
-								for p in db.session.query(Follower)\
-								.filter(Follower.follower == guser.id, Follower.confirmed == 0)\
-						   		.order_by(Follower.following).all()}
+	pending_list = [{'username': p.following_user.username,
+					'icon': gravatar(p.following_user.email),
+					'id': p.following} 
+					for p in db.session.query(Follower)\
+					.filter(Follower.follower == guser.id, Follower.confirmed == 0)\
+			   		.order_by(Follower.following).all()]
 	
 	pending = {'type': 'user-pending', 'data': pending_list}
 	
-	reqs_list = {r.following: {'username': r.follower_user.username,
-								'icon': gravatar(r.follower_user.email),
-								'id': r.follower} 
-								for r in db.session.query(Follower)\
-								.filter(Follower.following == guser.id, Follower.confirmed == 0)
-						   		.order_by(Follower.follower).all()}
+	reqs_list = [{'username': r.follower_user.username,
+				'icon': gravatar(r.follower_user.email),
+				'id': r.follower} 
+				for r in db.session.query(Follower)\
+				.filter(Follower.following == guser.id, Follower.confirmed == 0)
+		   		.order_by(Follower.follower).all()]
 	
 	reqs = {'type': 'user-request', 'data': reqs_list}
 	
@@ -83,7 +83,7 @@ def userList(guser, db=None):
 
 def groupList(db=None):
 	gl = db.session.query(Group).all()
-	res = {item.id: item.name for item in gl}
+	res = [item.name for item in gl]
 	return [{'type': 'grouplist', 'data': res}]
 	#todo: only return groups to which the user is a member
 

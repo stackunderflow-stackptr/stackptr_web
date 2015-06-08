@@ -338,12 +338,12 @@ def grouplist():
 @cross_origin()
 @login_required
 def groupdata():
-	res = {}
+	res = []
 	gd = db.session.query(Object).filter_by(group = 1).all()
 	for item in gd:
 		js = json.loads(item.json)
 		js['id'] = item.id
-		res[item.id] = {'name': item.name, 'owner': item.owner.username, 'json': js}
+		res.append({'name': item.name, 'owner': item.owner.username, 'json': js})
 	
 	# FIXME: Other groups?
 	return json.dumps([{'type': 'groupdata', 'data': res}])

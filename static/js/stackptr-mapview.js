@@ -152,8 +152,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				});
 				$scope.userListEmpty = ($scope.userList.length) == 0;
 			} else if (item.type == 'user-me') {
-				$scope.userMe = v;
-				$scope.updateMarker(v);
+				$scope.userMe = item.data;
+				$scope.updateMarker(item.data);
 			} else if (item.type == 'user-pending') {
 				item.data.forEach(function(v) {
 					$scope.userPending[v.id] = v;
@@ -254,10 +254,13 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.layers = {}
 	$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
-		added.forEach(function(item) {
+		// FIXME
+		//added.forEach(function(item) {
+		for (itemid in added) {
 			var item = $scope.groupdata[itemid];
 			$scope.features.push(item.json);
-		});
+		}
+		//});
 		//console.log($scope.features);
 		
 		angular.extend($scope, {
@@ -391,7 +394,9 @@ app.filter('updateRange', function () {
 	return function (items, agemin, agemax) {
 		var curTime = Math.round(new Date().getTime()/1000);
 		var filtered = [];
-		items.forEach(function(item) {
+		//items.forEach(function(item) {
+		for (id in items) {
+			var item = items[id];
 			var updateTime = curTime - item.lastupd;
 			// fixme: client/server time mismatch
 			if (updateTime < 0) {
@@ -400,7 +405,8 @@ app.filter('updateRange', function () {
 			if ((updateTime >= agemin) && ((updateTime < agemax) || (agemax == -1))) {
 				filtered.push(item);
 			}
-		});
+		//});
+		}
 		return filtered;
 	};
 });
