@@ -63,45 +63,32 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	$scope.processItem = function(item) {
 		console.log(item);
 			if (item.type == 'user') {
-				for (user in item.data) {
-					if (item.data[user] == null) {
-						delete $scope.userList[user];
-						delete $scope.markers[user];
-					} else {
-						$scope.userList[user] = item.data[user];
-						$scope.updateMarker(item.data[user]);
-					}
-				}
-				$scope.userListEmpty = (Object.keys($scope.userList).length) == 0;
+				item.data.forEach(function(v) {
+					$scope.userList[v.id] = v;
+					$scope.updateMarker(v);
+				});
+				$scope.userListEmpty = ($scope.userList.length) == 0;
 			} else if (item.type == 'user-me') {
-				$scope.userMe = item.data;
-				$scope.updateMarker(item.data);
+				$scope.userMe = v;
+				$scope.updateMarker(v);
 			} else if (item.type == 'user-pending') {
-				for (user in item.data) {
-					if (item.data[user] == null) {
-						delete $scope.userPending[user];
-					} else {
-						$scope.userPending[user] = item.data[user];
-					}
-				}
-				$scope.pendingListEmpty = (Object.keys($scope.userPending).length) == 0;
+				item.data.forEach(function(v) {
+					$scope.userPending[v.id] = v;
+				});
+				$scope.pendingListEmpty = ($scope.userPending.length) == 0;
 			} else if (item.type == 'user-request') {
-				for (user in item.data) {
-					if (item.data[user] == null) {
-						delete $scope.userReqs[user];
-					} else {
-						$scope.userReqs[user] = item.data[user];
-					}
-				}
-				$scope.reqsListEmpty = (Object.keys($scope.userReqs).length) == 0;
+				item.data.forEach(function(v) {
+					$scope.userReqs[v.id] = v;
+				});
+				$scope.reqsListEmpty = ($scope.userReqs.length) == 0;
 			} else if (item.type == 'grouplist') {
-				for (group in item.data) {
-					$scope.grouplist[group] = item.data[group];
-				}
+				item.data.forEach(function(v) {
+					$scope.grouplist[v.id] = v;
+				});
 			} else if (item.type == 'groupdata') {
-				for (groupitem in item.data) {
-					$scope.groupdata[groupitem] = item.data[groupitem];
-				}
+				item.data.forEach(function(v) {
+					$scope.groupdata[v.id] = v;
+				});
 			} else {
 				console.log(item);
 			}
@@ -109,10 +96,9 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	
 	$scope.processData = function(data, status, headers, config) {
 		console.log(data);
-		for (msg in data) {
-			var item = data[msg];
+		data.forEach(function(item) {
 			$scope.processItem(item);
-		}
+		});
 	};
 
 	
@@ -185,10 +171,10 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	$scope.layers = {}
 	$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
-		for (itemid in added) {
+		added.forEach(function(item) {
 			var item = $scope.groupdata[itemid];
 			$scope.features.push(item.json);
-		}
+		});
 		//console.log($scope.features);
 		
 		angular.extend($scope, {
@@ -257,11 +243,11 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 	
 	$scope.gotoItem = function(item) {
 		var items = $scope.geojson.data.features;
-		for (i in items) {
-			if (items[i].id == item) {
-				var bounds = L.bounds(items[i].geometry.coordinates);
+		items.forEach(function(v) {
+			if (v.id == item) {
+				var bounds = L.bounds(v.geometry.coordinates);
 			}
-		}
+		});
 		
 	}
 	
@@ -319,22 +305,21 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 }]);
 
 app.filter('updateRange', function () {
-  return function (items, agemin, agemax) {
-  	var curTime = Math.round(new Date().getTime()/1000);
-    var filtered = [];
-    for (id in items) {
-    	var item = items[id]
-		var updateTime = curTime - item.lastupd;
-		// fixme: client/server time mismatch
-		if (updateTime < 0) {
-			updateTime = 0;
-		}
-      if ((updateTime >= agemin) && ((updateTime < agemax) || (agemax == -1))) {
-        filtered.push(item);
-      }
-    }
-    return filtered;
-  };
+	return function (items, agemin, agemax) {
+		var curTime = Math.round(new Date().getTime()/1000);
+		var filtered = [];
+		items.forEach(function(item) {
+			var updateTime = curTime - item.lastupd;
+			// fixme: client/server time mismatch
+			if (updateTime < 0) {
+				updateTime = 0;
+			}
+			if ((updateTime >= agemin) && ((updateTime < agemax) || (agemax == -1))) {
+				filtered.push(item);
+			}
+		});
+		return filtered;
+	};
 });
 
 $(document).ready(function() {
@@ -386,3 +371,4 @@ function acceptUserClick(item,uid) {
 	var $scope = angular.element($('body')).scope();
 	$scope.acceptUser(uid);
 }
+
