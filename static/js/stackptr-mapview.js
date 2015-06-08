@@ -1,9 +1,7 @@
 // stackptr-mapview.js
 // this is for stuff specific to stackptr.com, not external maps
 
-//window.stackptr.resize(fixheight);
-
-var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp']).config(function($interpolateProvider){
+var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider){
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
@@ -22,7 +20,96 @@ app.run(function($http) {
 
 });
 
-app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '$wamp', function($scope, $http, $interval, leafletData, $wamp ) {
+app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'leafletData', '$wamp', function($scope, $cookies, $http, $interval, leafletData, $wamp) {
+	
+	$scope.tiles = {
+		name: ""
+	}
+	
+	$scope.tileservers = {
+		stackptr: {
+			name: 'StackPtr Default Style',
+			url: 'https://tile{s}.stackcdn.com/' + (L.Browser.retina ? 'osm_tiles_2x' : 'osm_tiles') +'/{z}/{x}/{y}.png',
+			options: {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				maxZoom: 18,
+				subdomains: '123456',
+			}
+		},
+		stackptr_cyber: {
+			name: 'StackPtr Cyber Style',
+			url: 'https://tile{s}.stackcdn.com/' + (L.Browser.retina ? 'osm_tiles_cg_2x' : 'osm_tiles_cg') +'/{z}/{x}/{y}.png',
+			options: {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				maxZoom: 18,
+				subdomains: '123456',
+			}
+		},
+		stackptr_no_retina: {
+			name: 'StackPtr Default No Retina',
+			url: 'https://tile{s}.stackcdn.com/osm_tiles/{z}/{x}/{y}.png',
+			options: {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				maxZoom: 18,
+				subdomains: '123456',
+			}
+		},
+		stackptr_cyber_no_retina: {
+			name: 'StackPtr Cyber No Retina',
+			url: 'https://tile{s}.stackcdn.com/osm_tiles_cg/{z}/{x}/{y}.png',
+			options: {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				maxZoom: 18,
+				subdomains: '123456',
+			}
+		},
+		mqosm: {
+			name: 'MapQuest OSM',
+			url: 'https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png',
+			options: {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				subdomains: '1234',
+			}
+		}
+	}
+		
+	$scope.getTileServer = function() {
+		var default_tileserver = $scope.tileservers['stackptr']
+		var cookie_ts_name = $cookies.get('tileserver')
+		if (cookie_ts_name == undefined) return default_tileserver
+		
+		var cookie_ts = $scope.tileservers[cookie_ts_name]
+		if (cookie_ts == undefined) return default_tileserver
+		return cookie_ts
+	}
+	
+	$scope.setTileServer = function(ev) {
+		var new_ts_name = ev[0][0];
+		$cookies.put('tileserver', new_ts_name);
+		angular.extend($scope, {
+			tiles: $scope.getTileServer()
+		})
+	}
+	
+	$scope.$on('leafletDirectiveMap.moveend', function(event){
+		var i = $scope.center;
+		$cookies.put('last_lat', i.lat);
+		$cookies.put('last_lng', i.lng);
+		$cookies.put('last_zoom', i.zoom);
+    });
+	
+	$cookies.has = function(key) {
+		return $cookies.get(key) != undefined;
+	}
+	
+	$scope.getLastPos = function() {
+		if ($cookies.has('last_lat') && $cookies.has('last_lng') && $cookies.has('last_zoom')) {
+			return {lat: parseFloat($cookies.get('last_lat')), lng: parseFloat($cookies.get('last_lng')), zoom: parseInt($cookies.get('last_zoom'))}
+		} else {
+			return {lat: -24, lng: 138, zoom: 5}
+		}
+	}
+	
 	angular.extend($scope, {
 		defaults: {
 			maxZoom: 18,
@@ -30,23 +117,19 @@ app.controller("StackPtrMap", [ '$scope', '$http', '$interval', 'leafletData', '
 			doubleClickZoom: true,
 			scrollWheelZoom: true,
 			attributionControl: true,
-			tileLayer: 'https://tile{s}.stackcdn.com/' + (L.Browser.retina ? 'osm_tiles_2x' : 'osm_tiles') +'/{z}/{x}/{y}.png',
-			//tileLayer: 'https://otile{s}-s.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png',
-			tileLayerOptions: {
-				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-				maxZoom: 18,
-				subdomains: '123456',
-			},
 		},
-		center: {
-			lat: -24,
-			lng: 138,
-			zoom: 5,
-		},
+		tiles: $scope.getTileServer(),
+		center: $scope.getLastPos(),
 		controls: {
 			draw: {},
 			edit: {featureGroup: L.featureGroup()},
 		},
+		events: {
+			map: {
+				enable: ['moveend'],
+				logic: 'emit'
+			}
+		}
 	});
 	
 	

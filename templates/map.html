@@ -18,7 +18,7 @@
 
 {% block extra_js %}
 	<script type="text/javascript" src="/static/js/leaflet.js"></script>
-	<script type="text/javascript" src="/static/js/angular-leaflet-directive.js"></script>
+	<script type="text/javascript" src="/static/js/angular-leaflet-directive.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-animate.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-sanitize.min.js"></script>
 	<script type="text/javascript" src="/static/js/leaflet.draw.js"></script>
@@ -46,6 +46,12 @@
 		<li><a href="/api/">Manage API keys</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">[[tiles.name]] <span class="caret"></span></a>
+				<ul class="dropdown-menu" role="menu">
+					<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
+				</ul>
+		</li>
 		<li><a class="refreshtimer">[[status]]</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
@@ -57,6 +63,8 @@
 				<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
 				<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
 				<li><a href="/api/">Manage API keys</a></li>
+				<li class="divider"></li>
+				<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
 				<li class="divider"></li>
 				<li><a class="refreshtimer">[[status]]</a></li>
 				<li class="divider"></li>
@@ -99,35 +107,35 @@
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 
 		<span ng-if="(hUsers = (userList | updateRange:60:3600)).length"><div class="label" >&lt;1h ago</div></span>
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="(dUsers = (userList | updateRange:3600:86400)).length"><div class="label">&lt;1d ago</div></span>
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in dUsers" ng-src="[[user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="(wUsers = (userList | updateRange:86400:604800)).length"><div class="label">&lt;1w ago</div></span>
 
 		<img width="32" height="32" class="user-icon" ng-repeat="user in wUsers" ng-src="[[user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="(oUsers = (userList | updateRange:604800:-1)).length"><div class="label">&gt;1w ago</div></span>
 
 		<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers" ng-src="[[user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd]]"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
 		
 		<span ng-if="!pendingListEmpty"><div class="label">Outgoing Requests</div></span>
@@ -219,7 +227,7 @@
 </div>
 
 <div class="fill">
-		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" height="100%"></leaflet>
+		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" tiles="tiles" event-broadcast="events" height="100%"></leaflet>
 </div>
 
 {% endblock content %}
