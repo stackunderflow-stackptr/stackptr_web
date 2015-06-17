@@ -8,7 +8,7 @@ from flask import *
 from flask_wtf import *
 from flask_cors import *
 
-app = Flask(__name__)
+app = application = Flask(__name__)
 
 csrf = CsrfProtect()
 csrf.init_app(app)
