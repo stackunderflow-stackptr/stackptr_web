@@ -130,7 +130,7 @@ class AuthTicket(Base):
 
 class WAMPSession(Base):
 	__tablename__ = "wamp_session"
-	sessionid = Column(Integer, primary_key=True)
+	sessionid = Column(BigInteger, primary_key=True)
 	user = Column(Integer, ForeignKey('users.id'))
 
 
