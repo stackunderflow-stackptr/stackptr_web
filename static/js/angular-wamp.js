@@ -172,6 +172,7 @@
             connection.onopen = digestWrapper(function (session) {
                 $log.debug("Congrats!  You're connected to the WAMP server!");
                 $rootScope.$broadcast("$wamp.open", session);
+                session.caller_disclose_me = true;
                 sessionDeferred.resolve();
             });
 

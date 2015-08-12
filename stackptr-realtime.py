@@ -95,24 +95,11 @@ class StackPtrAuthorizer(ApplicationSession):
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
-		def idList(details):
-			#print details
-			try:
-				users = [tu.userid
-				for f,tu in db.session.query(Follower,TrackPerson)
-										.join(TrackPerson, Follower.following == TrackPerson.userid)\
-										.filter(Follower.follower == details.authid, Follower.confirmed == 1)\
-										.filter(TrackPerson.lastupd != None)
-										.order_by(TrackPerson.userid)
-										.all() ]
-				return users
-			except Exception as e:
-				print traceback.format_exc()
-				raise e
-		
 		def userList(details):
 			try:
-				guser = db.session.query(Users).filter(Users.id == details.authid).first()
+				guser = db.session.query(WAMPSession,Users)\
+					.join(Users, Users.id == WAMPSession.user)\
+					.filter(WAMPSession.sessionid == details.caller).first()[1]
 				return stackptr_core.userList(guser, db=db)
 			except Exception as e:
 				print traceback.format_exc()
@@ -122,9 +109,8 @@ class StackPtrAPI(ApplicationSession):
 			return stackptr_core.groupList(db=db)
 		
 		try:
-			yield self.register(idList, 'com.stackptr.api.idlist', options=RegisterOptions(details_arg='details', discloseCaller=True))
-			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details', discloseCaller=True))
-			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details', discloseCaller=True))
+			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
+			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
 			print "userlist registered"
 		except Exception as e:
 			print "could not register userlist: %s" % e
@@ -133,12 +119,16 @@ class StackPtrSessionMonitor(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
 		def on_session_join(details):
-			session = WAMPSession()
-			session.user = int(details['authid'])
-			session.sessionid = int(details['session'])
-			db.session.add(session)
-			db.session.commit()
-			print "session added: %i" % session.sessionid
+			try:
+				session = WAMPSession()
+				session.user = int(details['authid'])
+				session.sessionid = int(details['session'])
+				db.session.add(session)
+				db.session.commit()
+				print "session added: %i" % session.sessionid
+			except Exception as e:
+				print traceback.format_exc()
+				raise e
 		
 		def on_session_leave(details):
 			try:
@@ -154,8 +144,8 @@ class StackPtrSessionMonitor(ApplicationSession):
 		try:
 			print "removed %i old sessions" % db.session.query(WAMPSession).delete()
 			db.session.commit()
-			yield self.subscribe(on_session_join, 'wamp.metaevent.session.on_join')
-			yield self.subscribe(on_session_leave, 'wamp.metaevent.session.on_leave')
+			yield self.subscribe(on_session_join, 'wamp.session.on_join')
+			yield self.subscribe(on_session_leave, 'wamp.session.on_leave')
 			print "sessionmonitor registered"
 		except Exception as e:
 			print "could not register sessionmonitor: %s" % e
