@@ -40,7 +40,7 @@
                      "name": "sessionmonitor",
                      "permissions": [
                         {
-                           "uri": "wamp.metaevent.session.*",
+                           "uri": "wamp.session.*",
                            "subscribe": true
                         }
                      ]
@@ -88,10 +88,6 @@
 					 "module": "stackptr",
 					 "object": "app"
 				  },
-				  "static": {
-				  	"type": "static",
-				  	"directory": "../static/"
-				  },
                   "ws": {
                      "type": "websocket",
                      "auth": {
@@ -118,7 +114,7 @@
 					},
 					"paths": {
 						"/": {
-							"type": "pusher",
+							"type": "publisher",
 							"realm": "stackptr",
 							"role": "stackptr",
 							"options": {
