@@ -52,7 +52,6 @@ def userList(guser, db=None):
 							.order_by(TrackPerson.userid)
 							.all() ]
 	
-	
 	others = {'type': 'user', 'data': others_list}
 	
 	pending_list = [{'username': p.following_user.username,
@@ -74,10 +73,6 @@ def userList(guser, db=None):
 	reqs = {'type': 'user-request', 'data': reqs_list}
 	
 	return [me, others, pending, reqs]
-	
-	#data = {'me': me, 'following': others, 'pending': pending, 'reqs': reqs}
-	# FIXME: Return "None" instead of -1 for unknown values.
-	#return data
 
 ###########
 
