@@ -130,9 +130,8 @@ class StackPtrSessionMonitor(ApplicationSession):
 				print traceback.format_exc()
 				raise e
 		
-		def on_session_leave(details):
+		def on_session_leave(sessionid):
 			try:
-				sessionid = int(details['session'])
 				session = db.session.query(WAMPSession).filter(WAMPSession.sessionid==sessionid).first()
 				db.session.delete(session)
 				db.session.commit()
