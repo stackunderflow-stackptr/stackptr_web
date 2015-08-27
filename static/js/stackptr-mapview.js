@@ -121,8 +121,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		tiles: $scope.getTileServer(),
 		center: $scope.getLastPos(),
 		controls: {
-			draw: {},
-			edit: {featureGroup: L.featureGroup()},
+			//draw: {},
+			//edit: {featureGroup: L.featureGroup()},
 		},
 		events: {
 			map: {
@@ -134,6 +134,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	
 	
 	$scope.markers = {};
+	$scope.markerScopes = {};
 	$scope.userList = {};
 	$scope.userPending = {};
 	$scope.userReqs = {};
@@ -224,12 +225,26 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 					iconSize: [32,32],
 					iconAnchor: [16,16],
 				},
-				message: "<a onClick='delUserClick(this," + userObj.id + ")'>Delete user</a>",
+				message: '<div ng-include="\'/static/template/user.html\'"></div>',
+				myId: userObj.id,
+				getMessageScope: function() {
+					var sc = $scope.$new(false);
+					sc.myId = this.myId;
+					return sc;
+					/*if ($scope.markerScopes[this.myId] == null) {
+						var sc = $scope.$new(true);
+						sc.userObj = userObj;
+						sc.delUserClick = delUserClick;
+						return sc;
+					}*/
+				},
 				focus: false,
 			};
 		}
 		$scope.markers[userObj.id].lat = userObj.loc[0];
 		$scope.markers[userObj.id].lng = userObj.loc[1];
+		//$scope.markers[userObj.id].myUserObj = userObj;
+		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
 	}
 	
 	//$scope.$watchCollection('userList', function(added,removed) {
@@ -274,6 +289,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	
 	
 	
+	/*
 	leafletData.getMap().then(function(map) {
               var drawnItems = $scope.controls.edit.featureGroup;
               map.addLayer(drawnItems);
@@ -290,7 +306,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
               });
            });
            
-	
+	*/
+
 	$scope.activePanel = -1;
 
 	$scope.addUser = function($event) {

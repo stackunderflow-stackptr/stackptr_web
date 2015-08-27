@@ -142,10 +142,7 @@ def delUser(user, guser=None, db=None):
 	db.session.commit()
 	
 	# remove from users, pending users, and request users
-	msg = {user: None}
-	retmsg = [{'type': 'user', 'data': msg},
-			  {'type': 'user-pending', 'data': msg},
-			  {'type': 'user-request', 'data': msg}]
+	retmsg = [{'type': 'user-deleted', 'data': [user]}]
 	return retmsg
 	
 	#send a message to that user

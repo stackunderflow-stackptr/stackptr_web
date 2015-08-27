@@ -118,3 +118,7 @@ body {
 .icon_Point {
 	background-position: -122px -4px;
 }
+
+.leaflet-popup-content {
+    width:400px !important;
+}
