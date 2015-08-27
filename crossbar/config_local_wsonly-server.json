@@ -1,0 +1,155 @@
+
+{
+   "controller": {
+   },
+   "workers": [
+	  {
+		 "type": "router",
+		 "options": {
+			"pythonpath": [".."]
+		 },
+		 "realms": [
+			{
+			   "name": "stackptr",
+			   "roles": [
+			   {
+                     "name": "authenticator",
+                     "permissions": [
+                        {
+                           "uri": "com.stackptr.authenticate",
+                           "register": true
+                        }
+                     ]
+                  },{
+                     "name": "authorizer",
+                     "permissions": [
+                        {
+                           "uri": "com.stackptr.authorizer",
+                           "register": true
+                        }
+                     ]
+                  },{
+                     "name": "api",
+                     "permissions": [
+                        {
+                           "uri": "com.stackptr.api.*",
+                           "register": true
+                        }
+                     ]
+                  },{
+                     "name": "sessionmonitor",
+                     "permissions": [
+                        {
+                           "uri": "wamp.metaevent.session.*",
+                           "subscribe": true
+                        }
+                     ]
+                  },{
+					 "name": "anonymous",
+					 "permissions": [
+						{
+						   "uri": "*",
+						   "publish": false,
+						   "subscribe": false,
+						   "call": false,
+						   "register": false
+						}
+					 ]
+				  },
+				  {
+					 "name": "stackptr",
+					 "permissions": [
+						{
+						   "uri": "com.stackptr.*",
+						   "publish": true,
+						   "subscribe": false,
+						   "call": false,
+						   "register": false
+						}
+					 ]
+				  },
+				  {
+				  	"name": "user",
+				  	"authorizer": "com.stackptr.authorizer"
+				  }
+			   ]
+			}
+		 ],
+		 "transports": [
+			{
+			   "type": "web",
+			   "endpoint": {
+				  "type": "tcp",
+				  "interface": "127.0.0.1",
+				  "port": 9001
+			   },
+			   "paths": {
+			   	  "/": {
+			   	  	"type": "static",
+			   	  	"directory": "/var/empty"
+			   	  },
+                  "ws": {
+                     "type": "websocket",
+                     "auth": {
+                        "ticket": {
+                           "type": "dynamic",
+                           "authenticator": "com.stackptr.authenticate"
+                        }
+
+                     }
+                  }
+			   },
+			   "options": {
+			   		"access_log": true,
+			   		"debug": true
+			   }
+			},
+			
+			{
+				"type": "web",
+					"endpoint": {
+						"type": "tcp",
+						"interface": "127.0.0.1",
+						"port": 9000
+					},
+					"paths": {
+						"/": {
+							"type": "pusher",
+							"realm": "stackptr",
+							"role": "stackptr",
+							"options": {
+								"require_ip": ["127.0.0.1"]
+							}
+						}
+					}
+			
+			}
+			
+		 ],
+		 "components": [
+            {
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrAuthenticator",
+               "realm": "stackptr",
+               "role": "authenticator"
+            },{
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrAuthorizer",
+               "realm": "stackptr",
+               "role": "authorizer"
+            },{
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrAPI",
+               "realm": "stackptr",
+               "role": "api"
+            },{
+               "type": "class",
+               "classname": "stackptr-realtime.StackPtrSessionMonitor",
+               "realm": "stackptr",
+               "role": "sessionmonitor"
+            }
+         ]
+
+	  }
+   ]
+}
