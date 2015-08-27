@@ -284,7 +284,7 @@ def update():
 		
 	if allowed_list != []:
 		client = crossbarconnect.Client("http://127.0.0.1:9000/")
-		client.publish("com.stackptr.user", "user-me", msg=usrdata, options={'eligible': allowed_list})
+		client.publish("com.stackptr.user", "user-me", msg=msg, options={'eligible': allowed_list})
 	
 	return "OK"
 
