@@ -114,7 +114,7 @@
 					},
 					"paths": {
 						"/": {
-							"type": "pusher",
+							"type": "publisher",
 							"realm": "stackptr",
 							"role": "stackptr",
 							"options": {
