@@ -21,6 +21,20 @@ def utc_seconds(time):
 def gravatar(email):
 	return 'https://gravatar.com/avatar/' + md5.md5(email).hexdigest() + '?s=64&d=retro'
 
+def user_object(user):
+	return {'loc': [user.lat if user.lat else -1, user.lon if user.lon else -1],
+			'alt': user.alt, 'hdg': user.hdg, 'spd': user.spd,
+			'id': user.userid,
+			'username': user.user.username,
+			'icon': gravatar(user.user.email),
+			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
+			'extra': process_extra(user.extra)}
+
+def limited_user_object(user):
+	return {'username': p.following_user.username,
+			'icon': gravatar(p.following_user.email),
+			'id': p.following}
+
 ####
 
 def userList(guser, db=None):
@@ -28,24 +42,9 @@ def userList(guser, db=None):
 	now = datetime.datetime.utcnow()
 	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
 	
-	me = {'type': 'user-me', 'data': {'loc': [tu.lat, tu.lon] if tu.lat else [0.0,0.0],
-	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'id': tu.userid,
-	'username': tu.user.username,
-	'icon': gravatar(tu.user.email),
-	'lastupd': -1 if (tu.lastupd == None) else utc_seconds(tu.lastupd),
-	'extra': process_extra(tu.extra),
-	}}
+	me = {'type': 'user-me', 'data': user_object(tu)}
 	
-	others_list = [{'loc': [tu.lat if tu.lat else -1, tu.lon if tu.lon else -1],
-	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'username': tu.user.username,
-	'icon': gravatar(tu.user.email),
-	'id': tu.userid,
-	'lastupd': utc_seconds(tu.lastupd),
-	'extra': process_extra(tu.extra),
-	}
-	for f,tu in db.session.query(Follower,TrackPerson)
+	others_list = [user_object(tu) for f,tu in db.session.query(Follower,TrackPerson)
 							.join(TrackPerson, Follower.following == TrackPerson.userid)\
 							.filter(Follower.follower == guser.id, Follower.confirmed == 1)\
 							#.filter(TrackPerson.lastupd != None)
@@ -54,19 +53,13 @@ def userList(guser, db=None):
 	
 	others = {'type': 'user', 'data': others_list}
 	
-	pending_list = [{'username': p.following_user.username,
-					'icon': gravatar(p.following_user.email),
-					'id': p.following} 
-					for p in db.session.query(Follower)\
+	pending_list = [ limited_user_object(p)	for p in db.session.query(Follower)\
 					.filter(Follower.follower == guser.id, Follower.confirmed == 0)\
 			   		.order_by(Follower.following).all()]
 	
 	pending = {'type': 'user-pending', 'data': pending_list}
 	
-	reqs_list = [{'username': r.follower_user.username,
-				'icon': gravatar(r.follower_user.email),
-				'id': r.follower} 
-				for r in db.session.query(Follower)\
+	reqs_list = [ limited_user_object(r) for r in db.session.query(Follower)\
 				.filter(Follower.following == guser.id, Follower.confirmed == 0)
 		   		.order_by(Follower.follower).all()]
 	
@@ -128,9 +121,7 @@ def addUser(user, guser=None, db=None):
 		puser = db.session.query(Users).filter(Users.id==fobj2.following).first()
 		# yes, that should just be the following_user object on fobj2...
 		print "puser %s" % puser
-		pending = {puser.id: {'username': puser.username,
-								'icon': gravatar(puser.email),
-								'id': puser.id}}
+		pending = {puser.id: limited_user_object(puser)}
 		pending_msg = [{'type': 'user-pending', 'data': pending}]
 		return pending_msg
 	

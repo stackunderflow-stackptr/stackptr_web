@@ -257,14 +257,7 @@ def update():
 	
 	#push message to realtime
 	
-	msg = [{'loc': [tu.lat, tu.lon],
-	'alt': tu.alt, 'hdg': tu.hdg, 'spd': tu.spd,
-	'username': tu.user.username,
-	'icon': 'https://gravatar.com/avatar/' + md5.md5(tu.user.email).hexdigest() + '?s=64&d=retro',
-	'id': tu.userid,
-	'lastupd': stackptr_core.utc_seconds(tu.lastupd),
-	'extra': stackptr_core.process_extra(tu.extra),
-	}]
+	msg = [stackptr_core.user_object(tu)]
 	
 	
 	#lookup list of followers
