@@ -40,7 +40,7 @@
                      "name": "sessionmonitor",
                      "permissions": [
                         {
-                           "uri": "wamp.metaevent.session.*",
+                           "uri": "wamp.session.*",
                            "subscribe": true
                         }
                      ]
