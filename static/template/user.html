@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style type="text/css">
+			.bubble {
+				width: 400px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="bubble"> 
+			<div class="row">
+				<div class="col-md-12">
+					<p class="lead">[[ userObj = userList[myId]; userObj.username ]] [[myId]]</p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					<img ng-src="[[userObj.icon]]" width=96 height=96>
+					<p><button type="button" class="btn btn-danger" ng-click="delUserClick(this,[[userObj.id]])"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete </button></p>
+				</div>
+				<div class="col-md-9">
+					<div>
+						<span class="col-md-2"><b>Loc:</b></span>
+						<span class="col-md-10">[[userObj.loc]]</span>
+					</div>
+					<div ng-if="userObj.alt">
+						<span class="col-md-2"><b>Alt:</b></span>
+						<span class="col-md-10">[[userObj.alt | number:1]]m ASL</span>
+					</div>
+					<div ng-if="userObj.spd > 0">
+						<span class="col-md-2"><b>Spd:</b></span>
+						<span class="col-md-10">[[userObj.spd * 3.6]]km/h</span>
+					</div>
+					<div ng-if="userObj.hdg > 0">
+						<span class="col-md-2"><b>Hdg:</b></span>
+						<span class="col-md-10">[[userObj.hdg]]&deg;N</span>
+					</div>
+					<div ng-if="userObj.extra.prov">
+						<span class="col-md-2"><b>Via:</b></span>
+						<span class="col-md-10">[[userObj.extra.prov]]</span>
+					</div>
+					<div ng-if="userObj.extra.bat">
+						<span class="col-md-2"><b>Bat:</b></span>
+						<div class="col-md-10">
+							<div class="progress">
+							<div class="progress-bar" role="progressbar" aria-valuenow="[[userObj.extra.bat*100]]"
+							aria-valuemin="0" aria-valuemax="100" style="width:[[userObj.extra.bat*100]]%">
+							<span><span ng-if="userObj.extra.bst == 'charging'" class="glyphicon glyphicon-flash" aria-hidden="true"></span>[[userObj.extra.bat*100|number:0]]%</span>
+							</div>
+							</div>
+						</div>
+					</div>
+					<div>
+						<span class="col-md-5"><b>Last update:</b></span>
+						<span class="col-md-7">[[userObj.lastupd * 1000 | amCalendar]]</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
