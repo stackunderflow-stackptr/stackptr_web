@@ -257,7 +257,7 @@ def update():
 	
 	#push message to realtime
 	
-	msg = [stackptr_core.user_object(tu)]
+	msg = stackptr_core.user_object(tu)
 	
 	
 	#lookup list of followers
@@ -272,7 +272,7 @@ def update():
 	# Crossbar bug: if allowed_list is present but empty, message is sent to everyone (!)
 	if allowed_list != []:
 		client = crossbarconnect.Client("http://127.0.0.1:9000/")
-		client.publish("com.stackptr.user", "user", msg=msg, options={'eligible': allowed_list})
+		client.publish("com.stackptr.user", "user", msg=[msg], options={'eligible': allowed_list})
 	
 	#also send to the user themself
 	
