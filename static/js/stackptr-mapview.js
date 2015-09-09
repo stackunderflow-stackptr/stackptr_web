@@ -134,7 +134,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	
 	
 	$scope.markers = {};
-	$scope.markerScopes = {};
 	$scope.userList = {};
 	$scope.userPending = {};
 	$scope.userReqs = {};
@@ -143,6 +142,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.userListEmpty = false;
 	$scope.pendingListEmpty = false;
 	$scope.reqsListEmpty = false;
+	$scope.paths = {};
 	
 	$scope.processItem = function(item) {
 		console.log(item);
@@ -189,25 +189,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.counter = 0;
 	$scope.status = "Connecting to server...";
 	
-	//$scope.update = function() {
-	//	if (--$scope.counter < 0) {
-	//		$scope.counter = 5;
-	//		
-	//		var resp = $http.get("/users");
-	//		resp.success($scope.processData);
-	//		
-	//		var resp = $http.get("/grouplist");
-	//		resp.success($scope.processData);
-	//		
-	//		var resp = $http.post('/groupdata', $.param({group: 1}));
-	//		resp.success($scope.processData);
-	//		
-	//	};
-	//};
-	
-	//$scope.update();
-	//$interval($scope.update, 1000);
-	
 	$scope.clickMarker = function(user) {
 		$scope.center.lat = user.loc[0];
 		$scope.center.lng = user.loc[1];
@@ -215,9 +196,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.markers[user.id].focus = true;
 	}
 	
-	$scope.updateMarker = function(userObj) {
-		//var userObj = $scope.userList[user];
-		
+	$scope.updateMarker = function(userObj) {		
 		if ($scope.markers[userObj.id] == null) {
 			$scope.markers[userObj.id] = {
 				icon: {
@@ -231,18 +210,20 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 					var sc = $scope.$new(false);
 					sc.myId = this.myId;
 					return sc;
-					/*if ($scope.markerScopes[this.myId] == null) {
-						var sc = $scope.$new(true);
-						sc.userObj = userObj;
-						sc.delUserClick = delUserClick;
-						return sc;
-					}*/
 				},
 				focus: false,
+			};
+			$scope.paths[userObj.id] = {
+				color: 'black',
+				opacity: 0.6,
+				weight: 4,
+				latlngs: []
 			};
 		}
 		$scope.markers[userObj.id].lat = userObj.loc[0];
 		$scope.markers[userObj.id].lng = userObj.loc[1];
+		$scope.paths[userObj.id].latlngs.push({ lat: userObj.loc[0], lng: userObj.loc[1] })
+
 		//$scope.markers[userObj.id].myUserObj = userObj;
 		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
 	}
