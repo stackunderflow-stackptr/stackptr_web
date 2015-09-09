@@ -80,3 +80,16 @@ function formatExtra(extra) {
 	
 	return content.html();
 }
+
+function rgb2hash(r,g,b) {
+	var r = r.toString(16);
+	var g = g.toString(16);
+	var b = b.toString(16);
+
+	r = r.length < 2 ? "0"+r : r;
+	g = g.length < 2 ? "0"+g : g;
+	b = b.length < 2 ? "0"+b : b;
+
+	return "#" + r + g + b;
+
+}

@@ -219,6 +219,16 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				weight: 4,
 				latlngs: []
 			};
+
+			var img = new Image();
+			img.onload = function () {
+				var colourThief = new ColorThief();
+				var colour = colourThief.getColor(img);
+				$scope.paths[userObj.id].color = rgb2hash(colour[0], colour[1], colour[2]);
+			};
+			img.crossOrigin = 'Anonymous';
+			img.src = userObj.icon;
+
 		}
 		$scope.markers[userObj.id].lat = userObj.loc[0];
 		$scope.markers[userObj.id].lng = userObj.loc[1];
