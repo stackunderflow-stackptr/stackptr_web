@@ -345,28 +345,25 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		
 	}
 	
-	
 	var resp = $http.post('/ws_uid', "");
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
 		$wamp.connection._options.authid = rdata;
 		$wamp.open();
 	});
-		
-	
-	
+
 	$scope.$on("$wamp.onchallenge", function (event, data) {
 		console.log(data);
-    if (data.method === "ticket"){
-        var resp = $http.post('/ws_token', "");
-		resp.success(function(rdata, status, headers, config) {
-			console.log(rdata);
-			return data.promise.resolve(rdata);
-		});
-        
-     } 
-     
-		
+		if (data.method === "ticket"){
+			var csrf = $http.get('/csrf',"");
+			csrf.success(function(rdata, status, headers, config) {
+				var resp = $http.post('/ws_token', "");
+				resp.success(function(rdata, status, headers, config) {
+					console.log(rdata);
+					data.promise.resolve(rdata);
+				});
+			});
+		} 
 	});
 	
 	$scope.$on("$wamp.open", function (event, session) {

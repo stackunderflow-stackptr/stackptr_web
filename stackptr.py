@@ -194,11 +194,13 @@ def api_remove():
 ####################
 
 @app.route('/ws_uid', methods=['POST'])
+@cross_origin()
 @login_required
 def ws_uid():
 	return str(g.user.id)
 
 @app.route('/ws_token', methods=['POST'])
+@cross_origin()
 @login_required
 def ws_token():
 	at = AuthTicket()
