@@ -10,14 +10,12 @@ app.config(function ($wampProvider) {
         url: (window.location.protocol == 'https:' ? 'wss://' : 'ws://' ) + window.location.host + '/ws',
         realm: 'stackptr',
         authmethods: ["ticket"],
-        //Any other AutobahnJS options
      });
  });
 
 app.run(function($http) {
 	$http.defaults.headers.post['X-CSRFToken'] = $('meta[name=csrf-token]').attr('content');
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
-
 });
 
 app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'leafletData', '$wamp', function($scope, $cookies, $http, $interval, leafletData, $wamp) {
@@ -206,9 +204,11 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				},
 				message: '<div ng-include="\'/static/template/user.html\'"></div>',
 				myId: userObj.id,
+				isMe: userObj.id == $scope.userMe.id,
 				getMessageScope: function() {
 					var sc = $scope.$new(false);
 					sc.myId = this.myId;
+					sc.isMe = this.isMe;
 					return sc;
 				},
 				focus: false,
