@@ -10,10 +10,9 @@ from flask_cors import *
 
 app = application = Flask(__name__)
 
+app.config['WTF_CSRF_CHECK_DEFAULT'] = False
 csrf = CsrfProtect()
 csrf.init_app(app)
-csrf_protect = app.before_request_funcs[None][0]
-app.before_request_funcs[None] = []
 
 import os
 import json
@@ -29,7 +28,7 @@ config = ConfigParser.ConfigParser()
 config.read(os.path.join(app.root_path, "stackptr.conf"))
 app.secret_key = config.get("app","secret_key")
 app.invite_code = config.get("app","invite_code", None)
-app.CSRF_ENABLED = True
+
 
 import logging, sys
 logging.basicConfig(stream=sys.stderr)
@@ -67,7 +66,7 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(id):
-	csrf_protect()
+	csrf.protect()
 	return db.session.query(Users).get(int(id))
 
 @login_manager.request_loader
