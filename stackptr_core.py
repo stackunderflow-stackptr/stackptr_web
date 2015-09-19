@@ -69,6 +69,24 @@ def userList(guser, db=None):
 
 ###########
 
+def locHist(target=None, guser=None, db=None):
+	permission = db.session.query(Follower).filter(Follower.follower == guser.id,
+	 											   Follower.following == target,
+	 											   Follower.confirmed == 1 ).first()
+	if permission or guser.id == target:
+		dayago = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+		lh = db.session.query(TrackHistory)\
+					   .filter(TrackHistory.userid == target,
+					   		   TrackHistory.time > dayago )\
+					   .order_by(TrackHistory.time).all()
+		lhdata = [{ 'lat': l.lat, 'lng': l.lon } for l in lh]
+		lhmsg = {'type': 'lochist', 'data': [{'id': target, 'lochist': lhdata}]}
+		return [lhmsg]
+	return "Permission denied"
+
+
+###########
+
 def groupList(db=None):
 	gl = db.session.query(Group).all()
 	res = [item.name for item in gl]

@@ -292,13 +292,8 @@ def update():
 @app.route('/lochist', methods=['POST', 'GET'])
 @login_required
 def lochist():
-	usr = request.form.get('uid', g.user.id)
-	lh = db.session.query(TrackHistory).filter(TrackHistory.userid==usr).order_by(TrackHistory.time).all()
-	
-	lhtrack = {'type': 'Feature', 'properties': {}, 'geometry': 
-		{'type': 'LineString', 'coordinates': [[l.lon, l.lat] for l in lh]}}
-	
-	return json.dumps(lhtrack)
+	target = request.args.get('uid', g.user.id)
+	return json.dumps(stackptr_core.locHist(target=target, guser=g.user, db=db))
 
 @app.route('/acceptuser', methods=['POST'])
 @login_required

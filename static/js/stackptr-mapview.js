@@ -171,6 +171,10 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					$scope.groupdata[v.id] = v;
 				});
+			} else if (item.type == 'lochist') {
+				item.data.forEach(function(v) {
+					$scope.paths[v.id].latlngs = v.lochist;
+				});
 			} else {
 				console.log(item);
 			}
@@ -215,7 +219,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			};
 			$scope.paths[userObj.id] = {
 				color: 'black',
-				opacity: 0.6,
+				opacity: 0.8,
 				weight: 4,
 				latlngs: []
 			};
@@ -228,7 +232,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			};
 			img.crossOrigin = 'Anonymous';
 			img.src = userObj.icon;
-
+			$wamp.call('com.stackptr.api.lochist', [userObj.id]).then($scope.processData);
 		}
 		$scope.markers[userObj.id].lat = userObj.loc[0];
 		$scope.markers[userObj.id].lng = userObj.loc[1];

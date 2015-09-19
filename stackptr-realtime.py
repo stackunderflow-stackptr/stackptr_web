@@ -80,7 +80,7 @@ class StackPtrAuthorizer(ApplicationSession):
 				#	print "rejected sub request: %s %s %s" % (session, uri, action)
 				#	return False
 			elif (action == 'call' and reqpath == "com.stackptr.api"):
-				print "grant api"
+				#print "grant api"
 				return True
 			else:
 				print "rejected invalid action: %s %s %s" % (session, uri, action)
@@ -107,10 +107,21 @@ class StackPtrAPI(ApplicationSession):
 		
 		def groupList(details):
 			return stackptr_core.groupList(db=db)
+
+		def locHist(target,details):
+			try:
+				guser = db.session.query(WAMPSession,Users)\
+					.join(Users, Users.id == WAMPSession.user)\
+					.filter(WAMPSession.sessionid == details.caller).first()[1]
+				return stackptr_core.locHist(target=target, guser=guser, db=db)
+			except Exception as e:
+				print traceback.format_exc()
+				raise e
 		
 		try:
 			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
+			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
 			print "userlist registered"
 		except Exception as e:
 			print "could not register userlist: %s" % e

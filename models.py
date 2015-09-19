@@ -39,7 +39,7 @@ class TrackHistory(Base):
 		self.lat = lat
 		self.lon = lon
 		self.extra = extra
-		self.time = datetime.datetime.now()
+		self.time = datetime.datetime.utcnow()
 
 class Users(Base):
 	__tablename__ = "users"
