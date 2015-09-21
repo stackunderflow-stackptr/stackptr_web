@@ -360,7 +360,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		console.log(data);
 		if (data.method === "ticket"){
 			var csrf = $http.get('/csrf',"");
-			csrf.success(function(rdata, status, headers, config) {
+			csrf.success(function(cdata, status, headers, config) {
+				$http.defaults.headers.post['X-CSRFToken'] = cdata;
 				var resp = $http.post('/ws_token', "");
 				resp.success(function(rdata, status, headers, config) {
 					console.log(rdata);
