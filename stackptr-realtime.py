@@ -108,6 +108,20 @@ class StackPtrAPI(ApplicationSession):
 		def groupList(details):
 			return stackptr_core.groupList(db=db)
 
+		def groupData(group,details):
+			return stackptr_core.groupData(db=db,group=group)
+
+		def addFeature(name, group, gjson, details):
+			try:
+				guser = db.session.query(WAMPSession,Users)\
+					.join(Users, Users.id == WAMPSession.user)\
+					.filter(WAMPSession.sessionid == details.caller).first()[1]
+				return stackptr_core.addFeature(db=db, guser=guser, name=name, group=group, gjson=gjson)
+			except Exception as e:
+				db.session.rollback()
+				print traceback.format_exc()
+				raise e
+
 		def locHist(target,details):
 			try:
 				guser = db.session.query(WAMPSession,Users)\
@@ -121,10 +135,11 @@ class StackPtrAPI(ApplicationSession):
 		try:
 			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
+			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
+			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
-			print "userlist registered"
 		except Exception as e:
-			print "could not register userlist: %s" % e
+			print "could not register api calls: %s" % e
 
 class StackPtrSessionMonitor(ApplicationSession):
 	@inlineCallbacks

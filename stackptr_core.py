@@ -93,6 +93,26 @@ def groupList(db=None):
 	return [{'type': 'grouplist', 'data': res}]
 	#todo: only return groups to which the user is a member
 
+def groupData(db=None,group=None):
+	gd = db.session.query(Object).filter_by(group = 1).all()
+	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'json': json.loads(item.json)} for item in gd]
+	# FIXME: Other groups?
+	return [{'type': 'groupdata', 'data': res}]
+
+def addFeature(db=None, name=None, group=None, guser=None, gjson=None):
+	feature = Object()
+	feature.name = name
+	feature.group = int(group)
+	feature.ownerid = guser.id
+	feature.json = gjson
+	db.session.add(feature)
+	db.session.commit()
+	
+	js = json.loads(feature.json)
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id , 'json': js}]
+		
+	return [{'type': 'groupdata', 'data': res}]
+
 
 
 ############

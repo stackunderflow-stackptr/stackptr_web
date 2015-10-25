@@ -325,33 +325,17 @@ def grouplist():
 @cross_origin()
 @login_required
 def groupdata():
-	res = []
-	gd = db.session.query(Object).filter_by(group = 1).all()
-	for item in gd:
-		js = json.loads(item.json)
-		js['id'] = item.id
-		res.append({'name': item.name, 'owner': item.owner.username, 'json': js})
-	
-	# FIXME: Other groups?
-	return json.dumps([{'type': 'groupdata', 'data': res}])
+	return json.dumps(stackptr_core.groupData(db=db, group=request.form.get('group')))
 
 @app.route('/addfeature', methods=['POST'])
 @cross_origin()
 @login_required
 def addfeature():
-	feature = Object()
-	feature.name = request.form.get('name',"Untitled")
-	feature.group = int(request.form['group'])
-	feature.ownerid = g.user.id
-	feature.json = request.form['geojson']
-	db.session.add(feature)
-	db.session.commit()
-	
-	js = json.loads(feature.json)
-	js['id'] = feature.id
-	res = {feature.id : {'name': feature.name, 'owner': feature.owner.username, 'json': js}}
-		
-	return json.dumps([{'type': 'groupdata', 'data': res}])
+	name = request.form.get('name',"Untitled")
+	group = int(request.form['group'])
+	ownerid = g.user.id
+	gjson = request.form['geojson']
+	return json.dumps(stackptr_core.addFeature(db=db, name=name, group=group, guser=ownerid, gjson=gjson))
 
 @app.route('/delfeature', methods=['POST'])
 @cross_origin()
