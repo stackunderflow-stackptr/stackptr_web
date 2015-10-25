@@ -260,11 +260,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		});
 	});
 	
-	$scope.$on("leafletDirectiveMap.geojsonClick", function(ev, featureSelected, leafletEvent) {
-		alert(featureSelected.id);
+	$scope.$on("leafletDirectiveGeoJson.click", function(ev, leafletPayload) {
+		alert(leafletPayload.leafletObject.feature.id);
 	});
-	
-	
 
 	leafletData.getMap().then(function(map) {
 		leafletData.getLayers().then(function(baselayers) {
