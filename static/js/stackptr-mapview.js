@@ -278,39 +278,13 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		});
 	});
 
-	/*
-	leafletData.getMap().then(function(map) {
-		//var drawnItems = $scope.controls.edit.featureGroup;
-		//map.addLayer(drawnItems);
-
-		$scope.$on('draw:created', function(e) {
-			alert("test");
-		});
-
-		map.on('draw:created', function (e) {
-			var layer = e.layer;
-			//drawnItems.addLayer(layer);
-			
-			
-
-		});
-	});
-    */
-	
-
-	$scope.activePanel = -1;
-
 	$scope.addUser = function($event) {
 		var formdata = $($event.target.form).serialize();
 		var resp = $http.post('/adduser', formdata);
-		//alert(resp);
 		resp.success($scope.processData);
 	};
 	
 	$scope.delUser = function(uid) {
-			//var resp = $http.get("/deluser");
-			//resp.success($scope.processData);
-			
 			var resp = $http.post('/deluser', $.param({uid: uid}));
 			resp.success($scope.processData);
 			
@@ -318,9 +292,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 
 	$scope.acceptUser = function(uid) {
-			//var resp = $http.get("/deluser");
-			//resp.success($scope.processData);
-			
 			var resp = $http.post('/acceptuser', $.param({uid: uid}));
 			resp.success($scope.processData);
 			
@@ -368,13 +339,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	
 	$scope.$on("$wamp.open", function (event, session) {
         $scope.status = "Connected";
-        
-        //$wamp.call('com.stackptr.api.idlist').then(function(res) {
-    	//	console.log(res);
-    	//	for (i in res) {  // FIXME: forEach!
-		//		$wamp.subscribe('com.stackptr.user.' + res[i], $scope.processWS);
-		//	}
-    	//});
     	
     	$wamp.subscribe('com.stackptr.user', $scope.processWS);
 
