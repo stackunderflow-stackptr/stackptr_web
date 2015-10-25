@@ -119,8 +119,12 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		tiles: $scope.getTileServer(),
 		center: $scope.getLastPos(),
 		controls: {
-			//draw: {},
-			//edit: {featureGroup: L.featureGroup()},
+			draw: {
+				edit: {featureGroup: L.featureGroup()}
+			}
+		},
+		layers: {
+			baselayers: {}
 		},
 		events: {
 			map: {
@@ -143,7 +147,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.paths = {};
 	
 	$scope.processItem = function(item) {
-		console.log(item);
 			if (item.type == 'user') {
 				item.data.forEach(function(v) {
 					$scope.userList[v.id] = v;
@@ -168,6 +171,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 					$scope.grouplist[v.id] = v;
 				});
 			} else if (item.type == 'groupdata') {
+				console.log(item);
 				item.data.forEach(function(v) {
 					$scope.groupdata[v.id] = v;
 				});
@@ -181,7 +185,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 	
 	$scope.processData = function(data, status, headers, config) {
-		console.log(data);
 		data.forEach(function(item) {
 			$scope.processItem(item);
 		});
@@ -242,36 +245,15 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
 	}
 	
-	//$scope.$watchCollection('userList', function(added,removed) {
-	//	var markerList = {};
-	//	for (user in added) {  // FIXME: forEach
-	//		console.log("added: " + user)
-	//		var userObj = $scope.userList[user];
-	//		var marker = {
-	//			lat: userObj.loc[0],
-	//			lng: userObj.loc[1],
-	//			icon: {
-	//				iconUrl: userObj.icon,
-	//				iconSize: [32,32],
-	//				iconAnchor: [16,16],
-	//			},
-	//		};
-	//		markerList[$scope.userList[user].username] = marker;
-	//	}
-	//	angular.extend($scope, {markers: markerList});
-	//});
-	
 	$scope.layers = {}
 	$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
-		// FIXME
-		//added.forEach(function(item) {
+
 		for (itemid in added) {
 			var item = $scope.groupdata[itemid];
+			item.json.id = item.id;
 			$scope.features.push(item.json);
 		}
-		//});
-		//console.log($scope.features);
 		
 		angular.extend($scope, {
 			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
@@ -283,25 +265,38 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	});
 	
 	
-	
+
+	leafletData.getMap().then(function(map) {
+		leafletData.getLayers().then(function(baselayers) {
+			//var drawnItems = $scope.controls.draw.edit.featureGroup;
+			map.on('draw:created', function (e) {
+				var layer = e.layer;
+				//drawnItems.addLayer(layer);
+				console.log(JSON.stringify(layer.toGeoJSON()));
+				$wamp.call('com.stackptr.api.addFeature',['Untitled',1,JSON.stringify(layer.toGeoJSON())]).then($scope.processData);
+			});
+		});
+	});
+
 	/*
 	leafletData.getMap().then(function(map) {
-              var drawnItems = $scope.controls.edit.featureGroup;
-              map.addLayer(drawnItems);
-              map.on('draw:created', function (e) {
-                var layer = e.layer;
-                //drawnItems.addLayer(layer);
-                //console.log(JSON.stringify(layer.toGeoJSON()));
-				var resp = $http.post('/addfeature', $.param({
-					group: '1',
-					geojson: JSON.stringify(layer.toGeoJSON()),
-				}));
-				resp.success($scope.processData);
-				//resp.success(function(d,s,h,c) {console.log(d)});
-              });
-           });
-           
-	*/
+		//var drawnItems = $scope.controls.edit.featureGroup;
+		//map.addLayer(drawnItems);
+
+		$scope.$on('draw:created', function(e) {
+			alert("test");
+		});
+
+		map.on('draw:created', function (e) {
+			var layer = e.layer;
+			//drawnItems.addLayer(layer);
+			
+			
+
+		});
+	});
+    */
+	
 
 	$scope.activePanel = -1;
 
@@ -385,6 +380,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
         $wamp.call('com.stackptr.api.userList').then($scope.processData);
         $wamp.call('com.stackptr.api.groupList').then($scope.processData);
+        $wamp.call('com.stackptr.api.groupData',[1]).then($scope.processData);
     	
     });
 
@@ -422,38 +418,9 @@ app.filter('updateRange', function () {
 });
 
 $(document).ready(function() {
-	//map = L.map('map-canvas').setView([-34.929, 138.601], 13);
-	//window.stackptr = new StackPtr("/", undefined, undefined);
-	//stackptr.updateFollowing();
-	
-	//window.stackptr.bootstrap = true;
 	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();
-	
-	//$("#upload_loc").click(uploadLocation);
-	//$("#goto_loc").click(gotoMyLocation);
-	//$("#autorefresh_loc").click(toggleAutoRefresh);
-	
-	// //$("#selectgroup").change(stackptr.changegroup);
-	
-	
-	//stackptr.setupDraw();
-	
-	
-	//$("#refresh_loc").click(stackptr.updateFollowing);
-	
-	
-	//$("#adduser").click(function(e) {
-	//	e.preventDefault();
-	//	$.post('/adduser', $('#adduserform').serialize(),
-	//		function(data) {
-	//			$("#addstatus").html("Server returned: " + data);
-	//			stackptr.refreshLocation();
-	//	});
-	//});
-	
-	//stackptr.setupAutoRefresh();
 });
 
 

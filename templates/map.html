@@ -21,6 +21,7 @@
 	<script type="text/javascript" src="/static/js/angular-leaflet-directive.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-animate.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-sanitize.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-simple-logger.min.js"></script>
 	<script type="text/javascript" src="/static/js/leaflet.draw.js"></script>
 	<script type="text/javascript" src="/static/js/moment.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-moment.min.js"></script>
@@ -228,7 +229,7 @@
 </div>
 
 <div class="fill">
-		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" tiles="tiles" event-broadcast="events" paths="paths" height="100%"></leaflet>
+		<leaflet defaults="defaults" geojson="geojson" controls="controls" markers="markers" center="center" tiles="tiles" event-broadcast="events" paths="paths" layers="layers" height="100%"></leaflet>
 </div>
 
 {% endblock content %}

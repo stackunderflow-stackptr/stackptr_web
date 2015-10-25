@@ -21,9 +21,8 @@ body {
 }
 
 #groupmenu {
-	display: none;
 	position: absolute;
-	top: 320px;
+	bottom: 20px;
 	right: 0px;
 	width: 320px;
 	z-index: 99;
