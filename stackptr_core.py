@@ -123,6 +123,16 @@ def renameFeature(db=None, id=None, name=None, guser=None):
 	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'json': js}]
 	return [{'type': 'groupdata', 'data': res}]
 
+def deleteFeature(db=None, id=None, guser=None):
+	feature = db.session.query(Object).filter_by(id = id).first()
+	if feature:
+		#FIXME: check permissions
+		db.session.delete(feature)
+		db.session.commit()
+		# FIXME: Use HTTP status codes to indicate success/failure.
+		return [{'type': 'groupdata-del', 'data': [{'id': id}]}]
+	return "failed"
+
 
 ############
 def acceptUser(user, guser=None, db=None):

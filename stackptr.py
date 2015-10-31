@@ -342,14 +342,7 @@ def addfeature():
 @login_required
 def delfeature():
 	fid = int(request.form['id'])
-	feature = db.session.query(Object).filter_by(id = fid).first()
-	if feature:
-		#FIXME: check permissions
-		db.session.delete(feature)
-		db.session.commit()
-		# FIXME: Use HTTP status codes to indicate success/failure.
-		return json.dumps([{'type': 'groupdata', 'data': {fid: None}}])
-	return "failed"
+	return json.dumps(stackptr_core.deleteFeature(db=db, id=fid, guser=g.user.id))
 
 @app.route('/renamefeature', methods=['POST'])
 @cross_origin()

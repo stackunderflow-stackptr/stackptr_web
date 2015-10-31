@@ -133,6 +133,17 @@ class StackPtrAPI(ApplicationSession):
 				print traceback.format_exc()
 				raise e
 
+		def deleteFeature(id, details):
+			try:
+				guser = db.session.query(WAMPSession,Users)\
+					.join(Users, Users.id == WAMPSession.user)\
+					.filter(WAMPSession.sessionid == details.caller).first()[1]
+				return stackptr_core.deleteFeature(db=db, guser=guser, id=id)
+			except Exception as e:
+				db.session.rollback()
+				print traceback.format_exc()
+				raise e
+
 		def locHist(target,details):
 			try:
 				guser = db.session.query(WAMPSession,Users)\
@@ -149,6 +160,7 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(renameFeature, 'com.stackptr.api.renameFeature', options=RegisterOptions(details_arg='details'))
+			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
 		except Exception as e:
 			print "could not register api calls: %s" % e

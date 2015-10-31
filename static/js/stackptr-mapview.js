@@ -175,6 +175,10 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					$scope.groupdata[v.id] = v;
 				});
+			} else if (item.type == 'groupdata-del') {
+				item.data.forEach(function(v) {
+					delete $scope.groupdata[v.id];
+				});
 			} else if (item.type == 'lochist') {
 				item.data.forEach(function(v) {
 					$scope.paths[v.id].latlngs = v.lochist;
@@ -268,6 +272,13 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
 	});
 
+	$scope.postNewItem = function(data) {
+		$scope.processData(data);
+		var featureId = parseInt(data[0].data[0].id);
+		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
+		// doesn't work yet because this happens before $scope.watchCollection above :|
+	}
+
 	leafletData.getMap().then(function(map) {
 		leafletData.getLayers().then(function(baselayers) {
 			//var drawnItems = $scope.controls.draw.edit.featureGroup;
@@ -275,7 +286,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				var layer = e.layer;
 				//drawnItems.addLayer(layer);
 				console.log(JSON.stringify(layer.toGeoJSON()));
-				$wamp.call('com.stackptr.api.addFeature',['Untitled',1,JSON.stringify(layer.toGeoJSON())]).then($scope.processData);
+				$wamp.call('com.stackptr.api.addFeature',['Untitled',1,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
 			});
 		});
 	});
@@ -283,6 +294,11 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.renameGroupItem = function($event) {
 		var etf = $event.target.form;
 		$wamp.call('com.stackptr.api.renameFeature',[etf.id.value,etf.name.value]).then($scope.processData);
+	};
+
+	$scope.removeGroupItem = function($event) {
+		var etf = $event.target.form;
+		$wamp.call('com.stackptr.api.deleteFeature',[etf.id.value]).then($scope.processData);
 	};
 	
 	$scope.gotoItem = function(item) {
