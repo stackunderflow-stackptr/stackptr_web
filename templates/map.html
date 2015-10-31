@@ -205,7 +205,7 @@
 		</form>
 		
 		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
-		<span id="feature-1" class="list-group-item list-item-draw" ng-repeat="item in groupdata">
+		<span id="feature-[[item.json.id]]" class="list-group-item list-item-draw" ng-repeat="item in groupdata">
 			<span class="icon_type icon_[[item.json.geometry.type]]">&nbsp;</span>
 			<a ng-click="gotoItem(item.json.id)">[[item.name]]</a>
 			<span class="glyphicon glyphicon-pencil pull-right" bs-collapse-toggle></span>
@@ -218,7 +218,7 @@
 						<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
 					</span>
 				</form>
-				<b>Owner</b>: [[ item.owner ]]<br>
+				<b>Created by</b>: [[ item.owner ]]<br>
 				<b>Type</b>: [[item.json.geometry.type]]<br>
 				<b>ID</b>: [[item.json.id]]<br>
 			</div>

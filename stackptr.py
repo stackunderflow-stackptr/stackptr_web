@@ -221,7 +221,7 @@ def ws_token():
 @login_required
 def userjson():
 	data = stackptr_core.userList(g.user, db=db)
-	return json.dumps(data)
+	return Response(json.dumps(data), mimetype="text/json")
 
 @app.route('/update', methods=['POST'])
 @login_required
@@ -355,16 +355,9 @@ def delfeature():
 @cross_origin()
 @login_required
 def renamefeature():
-	feature = db.session.query(Object).filter_by(id = int(request.form['id'])).first()
-	feature.name = request.form['name']
-	#feature.description
-	db.session.commit()
-	# FIXME: Use HTTP status codes to indicate success/failure.
-	# FIXME: Modification of an existing feature's geometry??
-	js = json.loads(feature.json)
-	js['id'] = feature.id
-	res = {feature.id : {'name': feature.name, 'owner': feature.owner.username, 'json': js}}
-	return json.dumps([{'type': 'groupdata', 'data': res}])
+	feature_name = request.form['name']
+	fid = int(request.form['id'])
+	return json.dumps(stackptr_core.renameFeature(db=db, id=fid, name=feature_name, guser=g.user.id))
 
 
 

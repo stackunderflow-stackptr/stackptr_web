@@ -120,7 +120,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		center: $scope.getLastPos(),
 		controls: {
 			draw: {
-				edit: {featureGroup: L.featureGroup()}
+				edit: { featureGroup: L.featureGroup() }
 			}
 		},
 		layers: {
@@ -244,6 +244,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		//$scope.markers[userObj.id].myUserObj = userObj;
 		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
 	}
+
+	/////
 	
 	$scope.layers = {}
 	$scope.$watchCollection('groupdata', function(added, removed) {
@@ -261,7 +263,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	});
 	
 	$scope.$on("leafletDirectiveGeoJson.click", function(ev, leafletPayload) {
-		alert(leafletPayload.leafletObject.feature.id);
+		$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
+		var featureId = parseInt(leafletPayload.leafletObject.feature.id);
+		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
 	});
 
 	leafletData.getMap().then(function(map) {
@@ -275,6 +279,25 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			});
 		});
 	});
+
+	$scope.renameGroupItem = function($event) {
+		var etf = $event.target.form;
+		$wamp.call('com.stackptr.api.renameFeature',[etf.id.value,etf.name.value]).then($scope.processData);
+	};
+	
+	$scope.gotoItem = function(item) {
+		var items = $scope.geojson.data.features;
+		items.forEach(function(v) {
+			if (v.id == item) {
+				var bounds = L.geoJson(v.geometry).getBounds();
+				$scope.center.lat = (bounds._northEast.lat + bounds._southWest.lat) / 2;
+				$scope.center.lng = (bounds._northEast.lng + bounds._southWest.lng) / 2;
+			}
+		});
+	}
+
+	///////////
+
 
 	$scope.addUser = function($event) {
 		var formdata = $($event.target.form).serialize();
@@ -297,21 +320,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 	
 
-	$scope.renameGroupItem = function($event) {
-		var formdata = $($event.target.form).serialize();
-		var resp = $http.post('/renamefeature', formdata);
-		resp.success($scope.processData);
-	};
-	
-	$scope.gotoItem = function(item) {
-		var items = $scope.geojson.data.features;
-		items.forEach(function(v) {
-			if (v.id == item) {
-				var bounds = L.bounds(v.geometry.coordinates);
-			}
-		});
-		
-	}
+	///////////
+
+
 	
 	var resp = $http.post('/ws_uid', "");
 	resp.success(function(rdata, status, headers, config) {

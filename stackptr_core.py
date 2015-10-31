@@ -113,6 +113,15 @@ def addFeature(db=None, name=None, group=None, guser=None, gjson=None):
 		
 	return [{'type': 'groupdata', 'data': res}]
 
+def renameFeature(db=None, id=None, name=None, guser=None):
+	feature = db.session.query(Object).filter_by(id = int(id)).first()
+	feature.name = name
+	db.session.commit()
+	# FIXME: Use HTTP status codes to indicate success/failure.
+	# FIXME: Modification of an existing feature's geometry??
+	js = json.loads(feature.json)
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'json': js}]
+	return [{'type': 'groupdata', 'data': res}]
 
 
 ############
