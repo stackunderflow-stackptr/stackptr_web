@@ -89,7 +89,7 @@ def locHist(target=None, guser=None, db=None):
 
 def groupList(db=None):
 	gl = db.session.query(Group).all()
-	res = [item.name for item in gl]
+	res = [{'name': item.name, 'id': item.id} for item in gl]
 	return [{'type': 'grouplist', 'data': res}]
 	#todo: only return groups to which the user is a member
 
