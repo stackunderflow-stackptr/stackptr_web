@@ -95,6 +95,7 @@ class StackPtrAuthorizer(ApplicationSession):
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
+		###########################
 		def userList(details):
 			try:
 				guser = db.session.query(WAMPSession,Users)\
@@ -122,6 +123,17 @@ class StackPtrAPI(ApplicationSession):
 				print traceback.format_exc()
 				raise e
 
+		def locHist(target,details):
+			try:
+				guser = db.session.query(WAMPSession,Users)\
+					.join(Users, Users.id == WAMPSession.user)\
+					.filter(WAMPSession.sessionid == details.caller).first()[1]
+				return stackptr_core.locHist(target=target, guser=guser, db=db)
+			except Exception as e:
+				print traceback.format_exc()
+				raise e
+
+		#############################
 		def renameFeature(id, name, details):
 			try:
 				guser = db.session.query(WAMPSession,Users)\
@@ -144,15 +156,6 @@ class StackPtrAPI(ApplicationSession):
 				print traceback.format_exc()
 				raise e
 
-		def locHist(target,details):
-			try:
-				guser = db.session.query(WAMPSession,Users)\
-					.join(Users, Users.id == WAMPSession.user)\
-					.filter(WAMPSession.sessionid == details.caller).first()[1]
-				return stackptr_core.locHist(target=target, guser=guser, db=db)
-			except Exception as e:
-				print traceback.format_exc()
-				raise e
 		
 		try:
 			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
