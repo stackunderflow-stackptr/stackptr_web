@@ -407,7 +407,6 @@ app.filter('updateRange', function () {
 });
 
 $(document).ready(function() {
-	$("#gpsmenu").draggable();
 	$("#usermenu").draggable();
 	$("#groupmenu").draggable();
 });
