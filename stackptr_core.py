@@ -30,10 +30,10 @@ def user_object(user):
 			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
 			'extra': process_extra(user.extra)}
 
-def limited_user_object(user):
-	return {'username': user.following_user.username,
-			'icon': gravatar(user.following_user.email),
-			'id': user.following}
+def limited_user_object(follower):
+	return {'username': follower.following_user.username,
+			'icon': gravatar(follower.following_user.email),
+			'id': follower.following}
 
 ####
 
@@ -53,13 +53,19 @@ def userList(guser, db=None):
 	
 	others = {'type': 'user', 'data': others_list}
 	
-	pending_list = [ limited_user_object(p)	for p in db.session.query(Follower)\
+	pending_list = [ {	'username': p.following_user.username,
+						'icon': gravatar(p.following_user.email),
+						'id': p.following}
+					for p in db.session.query(Follower)\
 					.filter(Follower.follower == guser.id, Follower.confirmed == 0)\
 			   		.order_by(Follower.following).all()]
 	
 	pending = {'type': 'user-pending', 'data': pending_list}
 	
-	reqs_list = [ limited_user_object(r) for r in db.session.query(Follower)\
+	reqs_list = [ {	'username': r.follower_user.username,
+					'icon': gravatar(r.follower_user.email),
+					'id': r.follower }
+				for r in db.session.query(Follower)\
 				.filter(Follower.following == guser.id, Follower.confirmed == 0)
 		   		.order_by(Follower.follower).all()]
 	
@@ -185,7 +191,7 @@ def addUser(user, guser=None, db=None):
 	
 	# send a user and request object to com.stackptr.user targeted at the user just added
 	#todo
-	return "OK"
+	return []
 
 def delUser(user, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
