@@ -29,7 +29,7 @@ db.session = sessionmaker(bind=db)()
 
 class StackPtrAuthenticator(ApplicationSession):
 	@inlineCallbacks
-	def onJoin(self, details):
+	def onJoin(self, details=None):
 		def authenticate(realm, authid, ticket):
 			try:
 				res = db.session.query(AuthTicket).filter_by(key=ticket, userid=authid).first()
@@ -55,7 +55,7 @@ class StackPtrAuthenticator(ApplicationSession):
 
 class StackPtrAuthorizer(ApplicationSession):
 	@inlineCallbacks
-	def onJoin(self, details):
+	def onJoin(self, details=None):
 		try:
 			yield self.register(self.authorize, 'com.stackptr.authorizer')
 			print("authorizer registered")
@@ -94,16 +94,17 @@ class StackPtrAuthorizer(ApplicationSession):
 
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
-	def onJoin(self, details):
+	def onJoin(self, details=None):
 		
-		def resolve_guser(func):
+		def api_function(func):
 			def func_wrapper(*args, **kwargs):
 				try:
 					details = kwargs['details']
 					guser = db.session.query(WAMPSession,Users)\
 						.join(Users, Users.id == WAMPSession.user)\
 						.filter(WAMPSession.sessionid == details.caller).first()[1]
-					return func(*args, guser=guser, **kwargs)
+					print "%s -> %s%s" % (guser.username, func.__name__, args)
+					return func(args, guser=guser, details=details)
 				except Exception as e:
 					db.session.rollback()
 					print traceback.format_exc()
@@ -112,38 +113,47 @@ class StackPtrAPI(ApplicationSession):
 
 		###########################
 
-		@resolve_guser
-		def userList(guser, details):
-			return stackptr_core.userList(guser, db=db)
+		@api_function
+		def userList(_,guser=None, details=None):
+			return stackptr_core.userList(guser=guser, db=db)
 
-		@resolve_guser
-		def locHist(target, guser, details):
+		@api_function
+		def locHist((target,), guser=None, details=None):
 			return stackptr_core.locHist(target=target, guser=guser, db=db)
 
-		@resolve_guser
-		def addUser(user, guser, details):
+		@api_function
+		def addUser((user,), guser=None, details=None):
 			return stackptr_core.addUser(user=user, guser=guser, db=db)
+
+		@api_function
+		def acceptUser((user,), guser=None, details=None):
+			print user
+			return stackptr_core.acceptUser(user=user, guser=guser, db=db)
+
+		@api_function
+		def delUser((user,), guser=None, details=None):
+			return stackptr_core.delUser(user=user, guser=guser, db=db)
 
 		###############################
 		
-		@resolve_guser
-		def groupList(guser, details):
+		@api_function
+		def groupList(_,guser=None, details=None):
 			return stackptr_core.groupList(db=db)
 
-		@resolve_guser
-		def groupData(group, guser, details):
+		@api_function
+		def groupData((group,), guser=None, details=None):
 			return stackptr_core.groupData(db=db,group=group)
 
-		@resolve_guser
-		def addFeature(name, group, gjson, guser, details):
+		@api_function
+		def addFeature((name, group, gjson), guser=None, details=None):
 			return stackptr_core.addFeature(db=db, guser=guser, name=name, group=group, gjson=gjson)
 
-		@resolve_guser
-		def renameFeature(id, name, guser, details):
+		@api_function
+		def renameFeature((id, name), guser=None, details=None):
 			return stackptr_core.renameFeature(db=db, guser=guser, id=id, name=name)
 
-		@resolve_guser
-		def deleteFeature(id, guser, details):
+		@api_function
+		def deleteFeature((id,), guser=None, details=None):
 			return stackptr_core.deleteFeature(db=db, guser=guser, id=id)
 
 		################################
@@ -152,6 +162,8 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
 			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
 			yield self.register(addUser, 'com.stackptr.api.addUser', options=RegisterOptions(details_arg='details'))
+			yield self.register(acceptUser, 'com.stackptr.api.acceptUser', options=RegisterOptions(details_arg='details'))
+			yield self.register(delUser, 'com.stackptr.api.delUser', options=RegisterOptions(details_arg='details'))
 
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
@@ -163,8 +175,8 @@ class StackPtrAPI(ApplicationSession):
 
 class StackPtrSessionMonitor(ApplicationSession):
 	@inlineCallbacks
-	def onJoin(self, details):
-		def on_session_join(details):
+	def onJoin(self, details=None):
+		def on_session_join(details=None):
 			try:
 				session = WAMPSession()
 				session.user = int(details['authid'])

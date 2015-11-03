@@ -250,8 +250,10 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 
 	/////
-	
-	$scope.layers = {}
+
+	//$scope.updateGroupData = function(data) {}
+
+
 	$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
 
@@ -316,23 +318,22 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
 
 	$scope.addUser = function($event) {
-		var formdata = $($event.target.form).serialize();
+		var etf = $event.target.form;
+		$wamp.call('com.stackptr.api.addUser',[etf.user.value]).then($scope.processData);
+
+		/*var formdata = $($event.target.form).serialize();
 		var resp = $http.post('/adduser', formdata);
-		resp.success($scope.processData);
+		resp.success($scope.processData);*/
+
+
 	};
 	
 	$scope.delUser = function(uid) {
-			var resp = $http.post('/deluser', $.param({uid: uid}));
-			resp.success($scope.processData);
-			
-			return 1;
+			$wamp.call('com.stackptr.api.delUser',[uid]).then($scope.processData);
 	}
 
 	$scope.acceptUser = function(uid) {
-			var resp = $http.post('/acceptuser', $.param({uid: uid}));
-			resp.success($scope.processData);
-			
-			return 1;
+			$wamp.call('com.stackptr.api.acceptUser',[uid]).then($scope.processData);
 	}
 	
 

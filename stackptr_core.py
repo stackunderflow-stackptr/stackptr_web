@@ -148,8 +148,9 @@ def acceptUser(user, guser=None, db=None):
 	fobj.confirmed = 1
 	db.session.add(fobj)
 	db.session.commit()
-	return "OK"
+	return []
 	#todo: send user update to accepted user
+	#send delete pending user
 
 def addUser(user, guser=None, db=None):
 	#lookup userid for name

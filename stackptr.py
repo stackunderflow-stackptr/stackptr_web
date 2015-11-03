@@ -299,7 +299,7 @@ def lochist():
 @login_required
 def acceptuser():
 	user = request.form['uid']
-	return stackptr_core.acceptUser(user, guser=g.user, db=db)
+	return json.dumps(stackptr_core.acceptUser(user, guser=g.user, db=db))
 
 @app.route('/adduser', methods=['POST'])
 @login_required
