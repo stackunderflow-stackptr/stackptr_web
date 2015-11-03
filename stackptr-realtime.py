@@ -95,76 +95,69 @@ class StackPtrAuthorizer(ApplicationSession):
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details):
-		###########################
-		def userList(details):
-			try:
-				guser = db.session.query(WAMPSession,Users)\
-					.join(Users, Users.id == WAMPSession.user)\
-					.filter(WAMPSession.sessionid == details.caller).first()[1]
-				return stackptr_core.userList(guser, db=db)
-			except Exception as e:
-				print traceback.format_exc()
-				raise e
 		
-		def groupList(details):
+		def resolve_guser(func):
+			def func_wrapper(*args, **kwargs):
+				try:
+					details = kwargs['details']
+					guser = db.session.query(WAMPSession,Users)\
+						.join(Users, Users.id == WAMPSession.user)\
+						.filter(WAMPSession.sessionid == details.caller).first()[1]
+					return func(*args, guser=guser, **kwargs)
+				except Exception as e:
+					db.session.rollback()
+					print traceback.format_exc()
+					raise e
+			return func_wrapper
+
+		###########################
+
+		@resolve_guser
+		def userList(guser, details):
+			return stackptr_core.userList(guser, db=db)
+
+		@resolve_guser
+		def locHist(target, guser, details):
+			return stackptr_core.locHist(target=target, guser=guser, db=db)
+
+		@resolve_guser
+		def addUser(user, guser, details):
+			return stackptr_core.addUser(user=user, guser=guser, db=db)
+
+		###############################
+		
+		@resolve_guser
+		def groupList(guser, details):
 			return stackptr_core.groupList(db=db)
 
-		def groupData(group,details):
+		@resolve_guser
+		def groupData(group, guser, details):
 			return stackptr_core.groupData(db=db,group=group)
 
-		def addFeature(name, group, gjson, details):
-			try:
-				guser = db.session.query(WAMPSession,Users)\
-					.join(Users, Users.id == WAMPSession.user)\
-					.filter(WAMPSession.sessionid == details.caller).first()[1]
-				return stackptr_core.addFeature(db=db, guser=guser, name=name, group=group, gjson=gjson)
-			except Exception as e:
-				db.session.rollback()
-				print traceback.format_exc()
-				raise e
+		@resolve_guser
+		def addFeature(name, group, gjson, guser, details):
+			return stackptr_core.addFeature(db=db, guser=guser, name=name, group=group, gjson=gjson)
 
-		def locHist(target,details):
-			try:
-				guser = db.session.query(WAMPSession,Users)\
-					.join(Users, Users.id == WAMPSession.user)\
-					.filter(WAMPSession.sessionid == details.caller).first()[1]
-				return stackptr_core.locHist(target=target, guser=guser, db=db)
-			except Exception as e:
-				print traceback.format_exc()
-				raise e
+		@resolve_guser
+		def renameFeature(id, name, guser, details):
+			return stackptr_core.renameFeature(db=db, guser=guser, id=id, name=name)
 
-		#############################
-		def renameFeature(id, name, details):
-			try:
-				guser = db.session.query(WAMPSession,Users)\
-					.join(Users, Users.id == WAMPSession.user)\
-					.filter(WAMPSession.sessionid == details.caller).first()[1]
-				return stackptr_core.renameFeature(db=db, guser=guser, id=id, name=name)
-			except Exception as e:
-				db.session.rollback()
-				print traceback.format_exc()
-				raise e
+		@resolve_guser
+		def deleteFeature(id, guser, details):
+			return stackptr_core.deleteFeature(db=db, guser=guser, id=id)
 
-		def deleteFeature(id, details):
-			try:
-				guser = db.session.query(WAMPSession,Users)\
-					.join(Users, Users.id == WAMPSession.user)\
-					.filter(WAMPSession.sessionid == details.caller).first()[1]
-				return stackptr_core.deleteFeature(db=db, guser=guser, id=id)
-			except Exception as e:
-				db.session.rollback()
-				print traceback.format_exc()
-				raise e
-
+		################################
 		
 		try:
+			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
 			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
+			yield self.register(addUser, 'com.stackptr.api.addUser', options=RegisterOptions(details_arg='details'))
+
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(renameFeature, 'com.stackptr.api.renameFeature', options=RegisterOptions(details_arg='details'))
-			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=RegisterOptions(details_arg='details'))
-			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
+			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=RegisterOptions(details_arg='details'))			
 		except Exception as e:
 			print "could not register api calls: %s" % e
 
