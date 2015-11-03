@@ -223,6 +223,11 @@ def userjson():
 	data = stackptr_core.userList(g.user, db=db)
 	return Response(json.dumps(data), mimetype="text/json")
 
+
+def publish_message(dest, topic, msg=None, eligible=None):
+	client = crossbarconnect.Client("http://127.0.0.1:9000/")
+	client.publish(dest, topic, msg=msg, options={'eligible': eligible})
+
 @app.route('/update', methods=['POST'])
 @login_required
 def update():
@@ -232,62 +237,8 @@ def update():
 	hdg = request.form.get('hdg', None)
 	spd = request.form.get('spd', None)
 	ext = request.form.get('ext', None)
-	
-	if None in (lat, lon):
-		return "No lat/lon specified"
-	
-	#update TrackPerson
-	tu = db.session.query(TrackPerson).filter_by(userid = g.user.id).first()
-	if not tu:
-		tu = TrackPerson(g.user.id, g.user.username)
-		db.session.add(tu)
-		db.session.commit()
-	tu.lat = lat
-	tu.lon = lon
-	tu.alt = alt
-	tu.hdg = hdg
-	tu.spd = spd
-	tu.extra = ext
-	tu.lastupd = datetime.datetime.utcnow()
-	
-	#add to TrackHistory
-	
-	th = TrackHistory(g.user.id, lat, lon, ext)
-	db.session.add(th)
-	db.session.commit()
-	
-	#push message to realtime
-	
-	msg = stackptr_core.user_object(tu)
-	
-	
-	#lookup list of followers
-	allowed_ids = db.session.query(Follower,WAMPSession)\
-					.join(WAMPSession, Follower.follower == WAMPSession.user)\
-					.filter(Follower.confirmed == 1, Follower.following == g.user.id)\
-					.filter(Follower.follower != g.user.id)\
-					.all()
-		
-	allowed_list = [a[1].sessionid for a in allowed_ids]
-	
-	# Crossbar bug: if allowed_list is present but empty, message is sent to everyone (!)
-	if allowed_list != []:
-		client = crossbarconnect.Client("http://127.0.0.1:9000/")
-		client.publish("com.stackptr.user", "user", msg=[msg], options={'eligible': allowed_list})
-	
-	#also send to the user themself
-	
-	user_ids = db.session.query(WAMPSession)\
-			   .filter(WAMPSession.user == g.user.id)\
-			   .all()
-	
-	allowed_list = [a.sessionid for a in user_ids]
-		
-	if allowed_list != []:
-		client = crossbarconnect.Client("http://127.0.0.1:9000/")
-		client.publish("com.stackptr.user", "user-me", msg=msg, options={'eligible': allowed_list})
-	
-	return "OK"
+
+	return json.dumps(stackptr_core.update(lat,lon,alt,hdg,spd,ext,publish_message=publish_message,guser=g.user,db=db))
 
 @app.route('/lochist', methods=['POST', 'GET'])
 @login_required

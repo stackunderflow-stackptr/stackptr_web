@@ -37,6 +37,64 @@ def limited_user_object(follower):
 
 ####
 
+def update(lat, lon, alt, hdg, spd, extra, publish_message=None, guser=None, db=None):
+	if None in (lat, lon):
+		return "No lat/lon specified"
+	
+	#update TrackPerson
+	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
+	if not tu:
+		tu = TrackPerson(guser.id, guser.username)
+		db.session.add(tu)
+		db.session.commit()
+	tu.lat = lat
+	tu.lon = lon
+	tu.alt = alt
+	tu.hdg = hdg
+	tu.spd = spd
+	tu.extra = extra
+	tu.lastupd = datetime.datetime.utcnow()
+	
+	#add to TrackHistory
+	
+	th = TrackHistory(guser.id, lat, lon, extra)
+	db.session.add(th)
+	db.session.commit()
+	
+	#push message to realtime
+	
+	msg = user_object(tu)
+	
+	
+	#lookup list of followers
+	allowed_ids = db.session.query(Follower,WAMPSession)\
+					.join(WAMPSession, Follower.follower == WAMPSession.user)\
+					.filter(Follower.confirmed == 1, Follower.following == guser.id)\
+					.filter(Follower.follower != guser.id)\
+					.all()
+		
+	allowed_list = [a[1].sessionid for a in allowed_ids]
+	
+	# Crossbar bug: if allowed_list is present but empty, message is sent to everyone (!)
+	if allowed_list != []:
+		publish_message("com.stackptr.user", "user", msg=[msg], eligible=allowed_list)
+			
+	
+	#also send to the user themself
+	
+	user_ids = db.session.query(WAMPSession)\
+			   .filter(WAMPSession.user == guser.id)\
+			   .all()
+	
+	allowed_list = [a.sessionid for a in user_ids]
+		
+	if allowed_list != []:
+		publish_message("com.stackptr.user", "user-me", msg=msg, eligible=allowed_list)
+	
+	return "OK"
+
+####
+
 def userList(guser, db=None):
 
 	now = datetime.datetime.utcnow()
