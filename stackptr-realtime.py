@@ -1,7 +1,7 @@
 #from __future__ import absolute_import
 from autobahn.twisted.wamp import ApplicationSession
 from autobahn.wamp.exception import ApplicationError
-from autobahn.wamp.types import RegisterOptions
+from autobahn.wamp.types import RegisterOptions, PublishOptions
 from ConfigParser import ConfigParser
 from models import *
 from os import chdir
@@ -82,10 +82,8 @@ class StackPtrAuthorizer(ApplicationSession):
 			elif (action == 'call' and reqpath == "com.stackptr.api"):
 				#print "grant api"
 				return True
-			else:
-				print "rejected invalid action: %s %s %s" % (session, uri, action)
-				return False
 			
+			print "rejected invalid action: %s %s %s" % (session, uri, action)
 			return False
 		except Exception as e:
 			print traceback.format_exc()
@@ -111,6 +109,10 @@ class StackPtrAPI(ApplicationSession):
 					raise e
 			return func_wrapper
 
+		def publish_message(dest, topic, msg=None, eligible=[]):
+			if eligible != []:
+				self.publish(dest, topic, msg=msg, options=PublishOptions(eligible=eligible))
+
 		###########################
 
 		@api_function
@@ -123,7 +125,7 @@ class StackPtrAPI(ApplicationSession):
 
 		@api_function
 		def addUser((user,), guser=None, details=None):
-			return stackptr_core.addUser(user=user, guser=guser, db=db)
+			return stackptr_core.addUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		@api_function
 		def acceptUser((user,), guser=None, details=None):

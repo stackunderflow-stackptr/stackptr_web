@@ -224,9 +224,10 @@ def userjson():
 	return Response(json.dumps(data), mimetype="text/json")
 
 
-def publish_message(dest, topic, msg=None, eligible=None):
-	client = crossbarconnect.Client("http://127.0.0.1:9000/")
-	client.publish(dest, topic, msg=msg, options={'eligible': eligible})
+def publish_message(dest, topic, msg=None, eligible=[]):
+	if eligible != []:
+		client = crossbarconnect.Client("http://127.0.0.1:9000/")
+		client.publish(dest, topic, msg=msg, options={'eligible': eligible})
 
 @app.route('/update', methods=['POST'])
 @login_required
@@ -238,7 +239,7 @@ def update():
 	spd = request.form.get('spd', None)
 	ext = request.form.get('ext', None)
 
-	return json.dumps(stackptr_core.update(lat,lon,alt,hdg,spd,ext,publish_message=publish_message,guser=g.user,db=db))
+	return json.dumps(stackptr_core.update(lat,lon,alt,hdg,spd,ext,pm=publish_message,guser=g.user,db=db))
 
 @app.route('/lochist', methods=['POST', 'GET'])
 @login_required
@@ -256,7 +257,7 @@ def acceptuser():
 @login_required
 def adduser():
 	user = request.form['user']
-	return json.dumps(stackptr_core.addUser(user, guser=g.user, db=db))
+	return json.dumps(stackptr_core.addUser(user, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/deluser', methods=['POST'])
 @login_required

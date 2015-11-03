@@ -35,9 +35,16 @@ def limited_user_object(follower):
 			'icon': gravatar(follower.following_user.email),
 			'id': follower.following}
 
+def sessions_for_uid(id, db=None):
+	user_ids = db.session.query(WAMPSession)\
+			   .filter(WAMPSession.user == id)\
+			   .all()
+	
+	return [a.sessionid for a in user_ids]
+
 ####
 
-def update(lat, lon, alt, hdg, spd, extra, publish_message=None, guser=None, db=None):
+def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
 	if None in (lat, lon):
 		return "No lat/lon specified"
 	
@@ -75,21 +82,14 @@ def update(lat, lon, alt, hdg, spd, extra, publish_message=None, guser=None, db=
 		
 	allowed_list = [a[1].sessionid for a in allowed_ids]
 	
-	# Crossbar bug: if allowed_list is present but empty, message is sent to everyone (!)
-	if allowed_list != []:
-		publish_message("com.stackptr.user", "user", msg=[msg], eligible=allowed_list)
+	pm("com.stackptr.user", "user", msg=[msg], eligible=allowed_list)
 			
 	
 	#also send to the user themself
 	
-	user_ids = db.session.query(WAMPSession)\
-			   .filter(WAMPSession.user == guser.id)\
-			   .all()
+	allowed_list = sessions_for_uid(guser.id, db=db)
 	
-	allowed_list = [a.sessionid for a in user_ids]
-		
-	if allowed_list != []:
-		publish_message("com.stackptr.user", "user-me", msg=msg, eligible=allowed_list)
+	pm("com.stackptr.user", "user-me", msg=msg, eligible=allowed_list)
 	
 	return "OK"
 
@@ -199,6 +199,67 @@ def deleteFeature(db=None, id=None, guser=None):
 
 
 ############
+def addUser(user, pm=None, guser=None, db=None):
+	#lookup userid for name
+	
+	userObj = db.session.query(Users).filter(Users.username==user).first()
+	if not userObj:
+		userObj = db.session.query(Users).filter(Users.email==user).first()
+	if not userObj:
+		return "user unknown"
+	
+	# first allow that user to see my position
+	fobj = db.session.query(Follower).filter(Follower.follower_user==userObj, Follower.following==guser.id).first()
+	if not fobj:
+		fobj = Follower(userObj.id, guser.id)
+	fobj.confirmed = 1
+	db.session.merge(fobj)
+	db.session.commit()
+	
+	# now add the request from me to see theirs
+	fobj2 = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.follower_user==userObj).first()
+	if not fobj2:
+		fobj2 = Follower(guser.id, userObj.id)
+		fobj2.confirmed = 0
+	else:
+		if fobj2.confirmed != 1: # request again, but don't un-confirm the user if they already accepted
+			fobj2.confirmed = 0
+	db.session.merge(fobj2)
+	db.session.commit()
+	
+	# if we just actually added them (i.e. didn't already have them)
+	if fobj2.confirmed == 0: # unconfirmed request just made
+		puser = db.session.query(Users).filter(Users.id==fobj2.following).first()
+		# yes, that should just be the following_user object on fobj2
+		# but the object is newly created so that hasn't been looked up yet?
+		print "puser %s" % puser
+
+		pending = [{ 'username': puser.username,
+					 'icon': gravatar(puser.email),
+					 'id': puser.id }]
+
+		# send pending user info to requester
+		allowed_list = sessions_for_uid(guser.id, db=db)
+		print allowed_list
+		pm("com.stackptr.user", "user-pending", msg=pending, eligible=allowed_list)
+
+		# also send pending user the request
+		request = [{ 'username': guser.username,
+					 'icon': gravatar(guser.email),
+					 'id': guser.id }]
+
+		allowed_list = sessions_for_uid(puser.id, db=db)
+		print allowed_list
+		pm("com.stackptr.user", "user-request", msg=request, eligible=allowed_list)
+
+
+		return []#[{'type': 'user-pending', 'data': [pending]}]
+	
+	
+	# send a user and request object to com.stackptr.user targeted at the user just added
+	#todo
+	return []
+
 def acceptUser(user, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
 	if not fobj:
@@ -209,48 +270,6 @@ def acceptUser(user, guser=None, db=None):
 	return []
 	#todo: send user update to accepted user
 	#send delete pending user
-
-def addUser(user, guser=None, db=None):
-	#lookup userid for name
-	
-	userObj = db.session.query(Users).filter(Users.username==user).first()
-	if not userObj:
-		userObj = db.session.query(Users).filter(Users.email==user).first()
-	if not userObj:
-		return "user unknown"
-	
-	# first pre-accept them being able to see me
-	fobj = db.session.query(Follower).filter(Follower.follower_user==userObj, Follower.following==guser.id).first()
-	if not fobj:
-		fobj = Follower(userObj.id, guser.id)
-	fobj.confirmed = 1
-	db.session.merge(fobj)
-	db.session.commit()
-	
-	# now add the request from me to them
-	fobj2 = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.follower_user==userObj).first()
-	if not fobj2:
-		fobj2 = Follower(guser.id, userObj.id)
-		fobj2.confirmed = 0
-	else:
-		if fobj2.confirmed != 1: # if request was ignored, but don't un-add the user if already accepted
-			fobj2.confirmed = 0
-	db.session.merge(fobj2)
-	db.session.commit()
-	
-	# return the pending user to the requesting client if we just confirmed it
-	if fobj2.confirmed == 0: # unconfirmed request just made
-		puser = db.session.query(Users).filter(Users.id==fobj2.following).first()
-		# yes, that should just be the following_user object on fobj2...
-		print "puser %s" % puser
-		pending = {puser.id: limited_user_object(puser)}
-		pending_msg = [{'type': 'user-pending', 'data': pending}]
-		return pending_msg
-	
-	
-	# send a user and request object to com.stackptr.user targeted at the user just added
-	#todo
-	return []
 
 def delUser(user, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
