@@ -406,10 +406,36 @@ app.filter('updateRange', function () {
 	};
 });
 
-$(document).ready(function() {
+function shiftGroupMenu() {
+	var um = $("#usermenu");
+	var gm = $("#groupmenu");
+
+	var ump = um.position();
+	var umb = ump.top + um.height();
+	gm.css("top",umb+8);
+	gm.css("left",ump.left);
+
+	var wh = $(window).height();
+	gm.css("height",wh-umb-16);
+}
+
+$(document).ready(function() {	
 	$("#usermenu").draggable();
-	$("#groupmenu").draggable();
+	$("#groupmenu").draggable().resizable({
+		minHeight: 96,
+		minWidth: 192
+	});
+
+	$("#groupmenu").on("dragstart", function(e,u) {
+		$("#usermenu").off("DOMSubtreeModified");
+	});
+
+	shiftGroupMenu();
+
+	$("#usermenu").on("DOMSubtreeModified", shiftGroupMenu);
 });
+
+
 
 
 togglePane  = function (pane) {

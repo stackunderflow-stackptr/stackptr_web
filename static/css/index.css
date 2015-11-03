@@ -22,13 +22,11 @@ body {
 
 #groupmenu {
 	position: absolute;
-	bottom: 20px;
-	right: 0px;
 	width: 320px;
-	z-index: 99;
+	z-index: 98;
 	background-color: rgba(0,0,0,0.8);
 	font-family: Helvetica, Arial, sans-serif;
-	/*overflow: scroll;*/
+	overflow: auto;
 }
 
 #groupmenu_content {
