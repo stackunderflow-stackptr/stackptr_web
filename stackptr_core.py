@@ -31,9 +31,9 @@ def user_object(user):
 			'extra': process_extra(user.extra)}
 
 def limited_user_object(user):
-	return {'username': p.following_user.username,
-			'icon': gravatar(p.following_user.email),
-			'id': p.following}
+	return {'username': user.following_user.username,
+			'icon': gravatar(user.following_user.email),
+			'id': user.following}
 
 ####
 
