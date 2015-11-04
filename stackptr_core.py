@@ -240,18 +240,19 @@ def addUser(user, pm=None, guser=None, db=None):
 
 		# send pending user info to requester
 		allowed_list = sessions_for_uid(guser.id, db=db)
-		print allowed_list
 		pm("com.stackptr.user", "user-pending", msg=pending, eligible=allowed_list)
 
 		# also send pending user the request
+		allowed_list = sessions_for_uid(puser.id, db=db)
 		request = [{ 'username': guser.username,
 					 'icon': gravatar(guser.email),
 					 'id': guser.id }]
-
-		allowed_list = sessions_for_uid(puser.id, db=db)
-		print allowed_list
 		pm("com.stackptr.user", "user-request", msg=request, eligible=allowed_list)
 
+		# and an update
+		tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
+		user_upd = [user_object(tu)]
+		pm("com.stackptr.user", "user", msg=user_upd, eligible=allowed_list)
 
 		return []#[{'type': 'user-pending', 'data': [pending]}]
 	
@@ -260,24 +261,49 @@ def addUser(user, pm=None, guser=None, db=None):
 	#todo
 	return []
 
-def acceptUser(user, guser=None, db=None):
+def acceptUser(user, pm=None, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
 	if not fobj:
 		return "no user request"
 	fobj.confirmed = 1
 	db.session.add(fobj)
 	db.session.commit()
-	return []
-	#todo: send user update to accepted user
-	#send delete pending user
 
-def delUser(user, guser=None, db=None):
+	# send delete user pending to them
+	pending_del = [{'id': guser.id}]
+	allowed_list = sessions_for_uid(fobj.follower,db=db)
+	pm("com.stackptr.user", "user-pending-del", msg=pending_del, eligible=allowed_list)
+
+	# send user update to them
+	tu = db.session.query(TrackPerson).filter_by(userid = fobj.following).first()
+	user_upd = [user_object(tu)]
+	pm("com.stackptr.user", "user", msg=user_upd, eligible=allowed_list)
+
+	# send delete user request to me
+
+	request_del = [{'id': fobj.follower}]
+	allowed_list = sessions_for_uid(guser.id, db=db)
+	pm("com.stackptr.user", "user-request-del", msg=request_del, eligible=allowed_list)
+
+	return []
+
+def delUser(user, pm=None, guser=None, db=None):
 	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
 	if fobj:
+		allowed_list = sessions_for_uid(user,db=db)
+		delu = [{'id': guser.id}]
+		pm("com.stackptr.user", "user-del", msg=delu, eligible=allowed_list)
+		pm("com.stackptr.user", "user-request-del", msg=delu, eligible=allowed_list)
+		pm("com.stackptr.user", "user-pending-del", msg=delu, eligible=allowed_list)
 		db.session.delete(fobj)
 		print "delete 1"
 	fobj2 = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.following==user).first()
-	if fobj:
+	if fobj2:
+		allowed_list = sessions_for_uid(guser.id,db=db)
+		delu = [{'id': user}]
+		pm("com.stackptr.user", "user-del", msg=delu, eligible=allowed_list)
+		pm("com.stackptr.user", "user-request-del", msg=delu, eligible=allowed_list)
+		pm("com.stackptr.user", "user-pending-del", msg=delu, eligible=allowed_list)
 		db.session.delete(fobj2)
 		print "delete 2"
 	db.session.commit()

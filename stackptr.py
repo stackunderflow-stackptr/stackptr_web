@@ -251,7 +251,7 @@ def lochist():
 @login_required
 def acceptuser():
 	user = request.form['uid']
-	return json.dumps(stackptr_core.acceptUser(user, guser=g.user, db=db))
+	return json.dumps(stackptr_core.acceptUser(user, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/adduser', methods=['POST'])
 @login_required
@@ -263,7 +263,7 @@ def adduser():
 @login_required
 def deluser():
 	user = request.form['uid']
-	return json.dumps(stackptr_core.delUser(user, guser=g.user, db=db))
+	return json.dumps(stackptr_core.delUser(user, pm=publish_message, guser=g.user, db=db))
 
 ###########
 

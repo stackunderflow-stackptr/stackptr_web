@@ -129,12 +129,11 @@ class StackPtrAPI(ApplicationSession):
 
 		@api_function
 		def acceptUser((user,), guser=None, details=None):
-			print user
-			return stackptr_core.acceptUser(user=user, guser=guser, db=db)
+			return stackptr_core.acceptUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		@api_function
 		def delUser((user,), guser=None, details=None):
-			return stackptr_core.delUser(user=user, guser=guser, db=db)
+			return stackptr_core.delUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		###############################
 		

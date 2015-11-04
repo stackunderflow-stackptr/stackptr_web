@@ -147,12 +147,18 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.paths = {};
 	
 	$scope.processItem = function(item) {
+			console.log(item);
 			if (item.type == 'user') {
 				item.data.forEach(function(v) {
 					$scope.userList[v.id] = v;
 					$scope.updateMarker(v);
 				});
 				$scope.userListEmpty = ($scope.userList.length) == 0;
+			} else if (item.type == 'user-del') {
+				item.data.forEach(function(v) {
+					delete $scope.userList[v.id];
+					delete $scope.markers[v.id];
+				});
 			} else if (item.type == 'user-me') {
 				$scope.userMe = item.data;
 				$scope.updateMarker(item.data);
@@ -161,11 +167,19 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 					$scope.userPending[v.id] = v;
 				});
 				$scope.pendingListEmpty = ($scope.userPending.length) == 0;
+			} else if (item.type == 'user-pending-del') {
+				item.data.forEach(function(v) {
+					delete $scope.userPending[v.id];
+				});
 			} else if (item.type == 'user-request') {
 				item.data.forEach(function(v) {
 					$scope.userReqs[v.id] = v;
 				});
 				$scope.reqsListEmpty = ($scope.userReqs.length) == 0;
+			} else if (item.type == 'user-request-del') {
+				item.data.forEach(function(v) {
+					delete $scope.userReqs[v.id];
+				});
 			} else if (item.type == 'grouplist') {
 				item.data.forEach(function(v) {
 					$scope.grouplist[v.id] = v;
