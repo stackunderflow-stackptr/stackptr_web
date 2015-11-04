@@ -138,41 +138,18 @@
 			data-trigger="click" bs-tooltip data-placement="left" data-html="true"
 			data-title="<b>[[user.username]], [[user.id]]</b><br><a onClick='acceptUserClick(this,[[user.id]])'>Accept</a>
 			<a onClick='delUserClick(this,[[user.id]])'>Delete</a>">
-		
-		
-		<!--
-		<div class="list-group" id="userlist">
-			<a href="" class="list-group-item list-item-person" ng-repeat="user in userList" bs-tooltip="tooltip" data-placement="left">
-				<img width="24" height="24" ng-src="[[user.icon]]">
-				 !-- [[user.hdg]] -- 
-				<span class="glyphicon glyphicon-plus pull-right"></span><br>
-			</a>
-		</div>
-		-->
-		
-		<!--
-		<form class="form-horizontal" role="form" method="POST" action="/adduser" id="adduserform">
-			<div class="form-group">
-				<div class="col-lg-6">
-					<input type="text" class="form-control" name="username">
-				</div>
-				<div class="col-lg-6">
-					<button type="submit" id="adduser" class="btn btn-default">+</button>
-					<button id="goto_loc" class="btn btn-warning">Me</button>
-				</div>
+
+		<br>
+
+			<span class="glyphicon glyphicon-plus" onclick="$('#adduser').collapse('toggle')"></span>
+			<div class="collapse" id="adduser">
+				<form class="input-group input-group-sm">
+					<input type="text" name="user" class="form-control" value="">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" ng-click="addUser($event)">Add</button>
+					</span>
+				</form>	
 			</div>
-		</form>
-		<div id="addstatus"></div>
-		-->
-		<br><br>
-		&nbsp;<span class="glyphicon glyphicon-plus">&nbsp;</span>
-		
-		<form class="input-group input-group-sm">
-			<input type="text" name="user" class="form-control" value="">
-			<span class="input-group-btn">
-				<button class="btn btn-default" type="button" ng-click="addUser($event)">Add</button>
-			</span>
-		</form>	
 		
 	</div>
 </div>
