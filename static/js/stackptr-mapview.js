@@ -147,7 +147,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.paths = {};
 	
 	$scope.processItem = function(item) {
-			console.log(item);
 			if (item.type == 'user') {
 				item.data.forEach(function(v) {
 					$scope.userList[v.id] = v;
