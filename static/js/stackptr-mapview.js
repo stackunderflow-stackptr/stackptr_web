@@ -90,10 +90,12 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 	
 	$scope.$on('leafletDirectiveMap.moveend', function(event){
+		var expDate = new Date();
+		expDate.setDate(expDate.getDate() + 365);
 		var i = $scope.center;
-		$cookies.put('last_lat', i.lat);
-		$cookies.put('last_lng', i.lng);
-		$cookies.put('last_zoom', i.zoom);
+		$cookies.put('last_lat', i.lat, {expires: expDate});
+		$cookies.put('last_lng', i.lng, {expires: expDate});
+		$cookies.put('last_zoom', i.zoom, {expires: expDate});
     });
 	
 	$cookies.has = function(key) {
