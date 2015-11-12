@@ -190,10 +190,12 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					$scope.groupdata[v.id] = v;
 				});
+				$scope.updateGroupData();
 			} else if (item.type == 'groupdata-del') {
 				item.data.forEach(function(v) {
 					delete $scope.groupdata[v.id];
 				});
+				$scope.updateGroupData();
 			} else if (item.type == 'lochist') {
 				item.data.forEach(function(v) {
 					$scope.paths[v.id].latlngs = v.lochist;
@@ -266,10 +268,22 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
 	/////
 
-	//$scope.updateGroupData = function(data) {}
+	$scope.updateGroupData = function() {
+		$scope.features = [];
+		var gd = $scope.groupdata;
 
+		for (k in gd) {
+			var item = gd[k];
+			item.json.id = item.id;
+			$scope.features.push(item.json);
+		}
 
-	$scope.$watchCollection('groupdata', function(added, removed) {
+		angular.extend($scope, {
+			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
+		});
+	}
+
+	/*$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
 
 		for (itemid in added) {
@@ -281,7 +295,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		angular.extend($scope, {
 			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
 		});
-	});
+	});*/
 	
 	$scope.$on("leafletDirectiveGeoJson.click", function(ev, leafletPayload) {
 		$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
