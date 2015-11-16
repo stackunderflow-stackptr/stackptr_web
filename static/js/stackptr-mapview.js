@@ -109,6 +109,14 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			return {lat: -24, lng: 138, zoom: 5}
 		}
 	}
+
+	$scope.getLastGroup = function() {
+		if ($cookies.has('last_group')) {
+			return parseInt($cookies.get('last_group'));
+		} else {
+			return 0;
+		}
+	}
 	
 	angular.extend($scope, {
 		defaults: {
@@ -142,6 +150,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.userPending = {};
 	$scope.userReqs = {};
 	$scope.grouplist = {};
+	$scope.group = $scope.getLastGroup();
 	$scope.groupdata = {};
 	$scope.userListEmpty = false;
 	$scope.pendingListEmpty = false;
@@ -283,6 +292,15 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		});
 	}
 
+	$scope.selectGroup = function() {
+		var expDate = new Date();
+		expDate.setDate(expDate.getDate() + 365);
+		var i = $scope.center;
+		$cookies.put('last_group', parseInt($scope.group) , {expires: expDate});
+
+		$wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
+	}
+
 	/*$scope.$watchCollection('groupdata', function(added, removed) {
 		$scope.features = [];
 
@@ -399,7 +417,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
         $wamp.call('com.stackptr.api.userList').then($scope.processData);
         $wamp.call('com.stackptr.api.groupList').then($scope.processData);
-        $wamp.call('com.stackptr.api.groupData',[1]).then($scope.processData);
+        $wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
     	
     });
 
