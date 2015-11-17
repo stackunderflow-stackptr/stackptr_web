@@ -298,6 +298,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		var i = $scope.center;
 		$cookies.put('last_group', parseInt($scope.group) , {expires: expDate});
 
+		$scope.groupdata = {};
 		$wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
 	}
 
@@ -335,7 +336,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				var layer = e.layer;
 				//drawnItems.addLayer(layer);
 				console.log(JSON.stringify(layer.toGeoJSON()));
-				$wamp.call('com.stackptr.api.addFeature',['Untitled',1,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
+				$wamp.call('com.stackptr.api.addFeature',['Untitled',$scope.group,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
 			});
 		});
 	});

@@ -161,8 +161,8 @@
 		<div class="form-horizontal">
 			<div class="form-group">
 				<div class="col-lg-12">
-					<select class="form-control" name="group" id="group" ng-model="group" ng-change="selectGroup()">
-						<option value="[[groupl.id]]" ng-repeat="groupl in grouplist">[[groupl.name]]</option>
+					<select class="form-control" name="group" id="group" ng-model="group" ng-change="selectGroup()"
+						ng-options="groupl.id as groupl.name for groupl in grouplist">
 					</select>
 				</div>
 			</div>
@@ -170,7 +170,7 @@
 
 		<div class="panel panel-default">
 			<div class="panel-body">
-				[[group]]
+				[[grouplist[group].description]]
 			</div>
 		</div>
 		
