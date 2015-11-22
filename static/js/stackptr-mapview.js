@@ -329,20 +329,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.groupdata = {};
 		$wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
 	}
-
-	/*$scope.$watchCollection('groupdata', function(added, removed) {
-		$scope.features = [];
-
-		for (itemid in added) {
-			var item = $scope.groupdata[itemid];
-			item.json.id = item.id;
-			$scope.features.push(item.json);
-		}
-		
-		angular.extend($scope, {
-			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
-		});
-	});*/
 	
 	$scope.$on("leafletDirectiveGeoJson.click", function(ev, leafletPayload) {
 		$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
@@ -403,12 +389,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.addUser = function($event) {
 		var etf = $event.target.form;
 		$wamp.call('com.stackptr.api.addUser',[etf.user.value]).then($scope.processData);
-
-		/*var formdata = $($event.target.form).serialize();
-		var resp = $http.post('/adduser', formdata);
-		resp.success($scope.processData);*/
-
-
 	};
 	
 	$scope.delUser = function(uid) {
