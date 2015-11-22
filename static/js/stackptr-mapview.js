@@ -303,6 +303,18 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.discoverGroupList = data[0].data;
 	}
 
+	$scope.joinGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.joinGroup',[group.id]).then($scope.postGroupJoined);
+		hide();
+	}
+
+	$scope.postGroupJoined = function(data) {
+		$scope.processData(data);
+		var groupId = parseInt(data[0].data[0].id);
+		$scope.group = groupId;
+		$scope.selectGroup();
+	}
+
 	/////
 
 	$scope.updateGroupData = function() {

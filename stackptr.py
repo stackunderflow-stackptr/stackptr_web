@@ -288,6 +288,16 @@ def creategroup():
 	status = int(request.form.get('status'))
 	return json.dumps(stackptr_core.createGroup(db=db, guser=g.user, name=name, description=description, status=status))
 
+@app.route('/joingroup', methods=['POST'])
+@cross_origin()
+@login_required
+def joingroup():
+	name = request.form.get('gid')
+	return json.dumps(stackptr_core.joinGroup(db=db, guser=g.user, gid=gid))
+
+###########
+
+
 @app.route('/groupdata', methods=['POST'])
 @cross_origin()
 @login_required

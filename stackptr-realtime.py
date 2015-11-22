@@ -149,6 +149,10 @@ class StackPtrAPI(ApplicationSession):
 		def createGroup((name,description,status),guser=None, details=None):
 			return stackptr_core.createGroup(name=name, description=description, status=status, guser=guser, db=db)
 
+		@api_function
+		def joinGroup((gid,),guser=None, details=None):
+			return stackptr_core.joinGroup(gid=gid, guser=guser, db=db)
+
 		###############################
 
 		@api_function
@@ -179,6 +183,7 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
 			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=RegisterOptions(details_arg='details'))
 			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(joinGroup, 'com.stackptr.api.joinGroup', options=RegisterOptions(details_arg='details'))
 
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))

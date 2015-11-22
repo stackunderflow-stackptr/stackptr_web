@@ -191,6 +191,35 @@ def groupDiscover(guser=None, db=None):
 	res = [{'name': item.name, 'id': item.id, 'description': item.description, 'status': item.status} for item in gl]
 	return [{'type': 'groupDiscoverList', 'data': res}]
 
+def joinGroup(gid=None, guser=None, db=None):
+	group = db.session.query(Group)\
+					  .filter(Group.id == gid)\
+					  .first()
+	if not group: return []
+
+	# something different if user invited to group
+	if group.status != 0: return []
+
+
+	gl = db.session.query(GroupMember, Group)\
+				   .join(Group, GroupMember.groupid == Group.id)\
+				   .filter(Group.id == gid)\
+				   .filter(GroupMember.userid == guser.id)\
+				   .first()
+	if gl: return [] # already in the group
+
+	gm = GroupMember()
+	gm.groupid = int(gid)
+	gm.userid = guser.id
+	gm.role = 1
+	db.session.add(gm)
+	db.session.commit()
+
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status}]
+	return [{'type': 'grouplist', 'data': res}]
+
+
+
 
 
 ##########
