@@ -353,8 +353,15 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.postNewItem = function(data) {
 		$scope.processData(data);
 		var featureId = parseInt(data[0].data[0].id);
-		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
-		// doesn't work yet because this happens before $scope.watchCollection above :|
+
+		$("#groupmenu").on("DOMSubtreeModified", function() {
+			var fbox = $("#feature-" + featureId);
+			if (fbox.length) {
+				$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
+				fbox.children(".panel-collapse").collapse("show");
+				$("#groupmenu").off("DOMSubtreeModified");
+			}
+		});
 	}
 
 	leafletData.getMap().then(function(map) {
