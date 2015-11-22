@@ -322,13 +322,24 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 
 	$scope.leaveGroup = function(group,hide,$event) {
-		$wamp.call('com.stackptr.api.leaveGroup',[$scope.group]).then($scope.processData);
+		$wamp.call('com.stackptr.api.leaveGroup',[$scope.group]).then($scope.postGroupLeft);
 		hide();
 	}
 
 	$scope.deleteGroup = function(group,hide,$event) {
-		$wamp.call('com.stackptr.api.deleteGroup',[$scope.group]).then($scope.processData);
+		$wamp.call('com.stackptr.api.deleteGroup',[$scope.group]).then($scope.postGroupLeft);
 		hide();
+	}
+
+	$scope.resetGroup = function() {
+		for (key in $scope.grouplist) break;
+		$scope.group = parseInt(key);
+		$scope.selectGroup();
+	}
+
+	$scope.postGroupLeft = function(data) {
+		$scope.processData(data);
+		$scope.resetGroup();
 	}
 
 	$scope.updateGroup = function(group,hide,$event) {
