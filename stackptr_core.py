@@ -171,7 +171,6 @@ def createGroup(name=None, description=None, status=None, guser=None, db=None):
 	db.session.add(group)
 	db.session.commit()
 
-	print "testing %i" % group.id
 	gm = GroupMember()
 	gm.groupid = group.id
 	gm.userid = guser.id
@@ -179,7 +178,7 @@ def createGroup(name=None, description=None, status=None, guser=None, db=None):
 	db.session.add(gm)
 	db.session.commit()
 		
-	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status}]
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 'role': 2}]
 	return [{'type': 'grouplist', 'data': res}]
 
 def groupList(guser=None, db=None):
@@ -189,7 +188,8 @@ def groupList(guser=None, db=None):
 				   .filter(GroupMember.role > 0)\
 				   .all()
 
-	res = [{'name': item.Group.name, 'id': item.Group.id, 'description': item.Group.description, 'status': item.Group.status} for item in gl]
+	res = [{'name': item.Group.name, 'id': item.Group.id, 'description': item.Group.description, 
+			'status': item.Group.status, 'role': item.GroupMember.role } for item in gl]
 	return [{'type': 'grouplist', 'data': res}]
 
 def groupDiscover(guser=None, db=None):
@@ -227,7 +227,7 @@ def joinGroup(gid=None, guser=None, db=None):
 	db.session.add(gm)
 	db.session.commit()
 
-	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status}]
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 'role': 1}]
 	return [{'type': 'grouplist', 'data': res}]
 
 
@@ -265,17 +265,18 @@ def deleteGroup(gid=None, guser=None, db=None):
 
 
 def updateGroup(gid=None, name=None, description=None, status=None, guser=None, db=None):
+	if not roleInGroup(db=db, guser=guser, group=group, role=2): return error("Not an admin")
 	group = db.session.query(Group)\
 			  		  .filter(Group.id == int(gid))\
 			  		  .first()
-	if not group: return error("Not an admin")
+	if not group: return error("No such group")
 	
 	group.name = name
 	group.description = description
 	group.status = int(status)
 	db.session.commit()
 		
-	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status}]
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 'role': 2}]
 	return [{'type': 'grouplist', 'data': res}]
 
 ##########

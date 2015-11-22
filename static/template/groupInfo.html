@@ -9,24 +9,24 @@
 				<form>
 					<div class="form-group">
 						<label for="groupname">Group Name</label>
-						<input type="text" class="form-control" id="groupname" ng-value="grouplist[group].name">
+						<input type="text" class="form-control" id="groupname" ng-value="grouplist[group].name" ng-disabled="grouplist[group].role != 2">
 					</div>
 					<div class="form-group">
 						<label for="groupdesc">Description</label>
-						<input type="text" class="form-control" id="groupdesc" ng-value="grouplist[group].description">
+						<input type="text" class="form-control" id="groupdesc" ng-value="grouplist[group].description" ng-disabled="grouplist[group].role != 2">
 					</div>
 					<div class="checkbox">
 						<label>
-						<input type="checkbox" name="mode" value="">
+						<input type="checkbox" name="mode" value="" ng-disabled="grouplist[group].role != 2">
 							Require owner approval to join
 						</label>
 					</div>
 
 					<div class="form-group">
-						<button class="btn btn-default" type="button" ng-click="leaveGroup(group,$hide,$event)">Leave</button>
-						<button class="btn btn-danger" type="button" ng-click="deleteGroup(group,$hide,$event)">Delete</button>
+						<button class="btn btn-default" type="button" ng-click="leaveGroup(group,$hide,$event)">Leave Group</button>
+						<button class="btn btn-danger" type="button" ng-click="deleteGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Delete Group</button>
 					</div>
-					<button class="btn btn-default" type="button" ng-click="updateGroup(group,$hide,$event)">Update</button>
+					<button class="btn btn-default" type="button" ng-click="updateGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Update Group</button>
 				</form>
 			</div>
 		</div>
