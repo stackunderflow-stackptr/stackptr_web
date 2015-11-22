@@ -281,8 +281,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.markers[userObj.id].lng = userObj.loc[1];
 		$scope.paths[userObj.id].latlngs.push({ lat: userObj.loc[0], lng: userObj.loc[1] })
 
-		//$scope.markers[userObj.id].myUserObj = userObj;
-		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
 	}
 
 	/////
