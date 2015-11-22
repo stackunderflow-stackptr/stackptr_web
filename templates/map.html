@@ -160,13 +160,18 @@
 
 		<div class="form-horizontal">
 			<div class="form-group">
-				<div class="col-sm-10">
+				<div class="col-sm-9">
 					<select class="form-control" name="group" id="group" ng-model="group" ng-change="selectGroup()"
 						ng-options="groupl.id as groupl.name for groupl in grouplist">
 					</select>
 				</div>
-				<div class="col-sm-2">
-					    <span class="glyphicon glyphicon-cog white" data-template-url="static/template/groups.html" data-container="body" bs-modal="groupsModal"></span>
+				<div class="col-sm-3" style="padding: 0px">
+					    <span class="glyphicon glyphicon-plus icon-white" data-template-url="static/template/groupAdd.html"
+					    data-container="body" data-title="Add Group" bs-modal></span>
+					    <span class="glyphicon glyphicon-list icon-white" data-template-url="static/template/groupDiscover.html"
+					    data-container="body" data-title="Discover Groups" ng-click="groupDiscover()" bs-modal></span>
+					    <span class="glyphicon glyphicon-cog icon-white" data-template-url="static/template/groupInfo.html"
+					    data-container="body" data-title="Group Info" bs-modal></span>
 				</div>
 			</div>
 		</div>

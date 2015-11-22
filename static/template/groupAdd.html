@@ -3,10 +3,10 @@
 		<div class="modal-content">
 			<div class="modal-header" ng-show="title">
 				<button type="button" class="close" ng-click="$hide()">&times;</button>
-				<h4 class="modal-title" ng-bind="title">Manage Groups</h4>
+				<h4 class="modal-title" ng-bind="title">Add Group</h4>
 			</div>
 			<div class="modal-body">
-				<form class="well">
+				<form>
 					<div class="form-group">
 						<label for="groupname">Group Name</label>
 						<input type="text" class="form-control" id="groupname" placeholder="Name">
@@ -21,23 +21,8 @@
 							Require owner approval to join
 						</label>
 					</div>
-					<button type="submit" class="btn btn-default">Create Group</button>
+					<button class="btn btn-default" type="button" ng-click="createNewGroup($hide,$event)">Create New Group</button>
 				</form>
-			</div>
-			<div class="modal-body">
-				<div class="well">
-					<div class="list-group" id="groupjoinlist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
-						<span id="group-[[group.id]]" class="list-group-item list-item-draw" ng-repeat="group in grouplist">
-							<a bs-collapse-toggle>[[group.name]]</a>
-							<div class="panel panel-collapse" bs-collapse-target>
-								<div class="well well-sm">
-									[[group.description]]
-								</div>
-								<button type="submit" class="btn btn-default">Join Group</button>
-							</div>
-						</span>
-					</div>
-				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" ng-click="$hide()">Close</button>

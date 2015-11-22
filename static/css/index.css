@@ -29,8 +29,10 @@ body {
 	overflow: auto;
 }
 
-.white {
+.icon-white {
 	color: #FFF;
+	margin-top: 0.4em;
+	font-size: 1.2em;
 }
 
 #groupmenu_content {

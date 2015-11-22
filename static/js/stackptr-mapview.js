@@ -73,8 +73,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			}
 		}
 	}
-
-	$scope.groupsModal = {title: 'Manage Groups'};
 		
 	$scope.getTileServer = function() {
 		var default_tileserver = $scope.tileservers['stackptr']
@@ -161,6 +159,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.pendingListEmpty = false;
 	$scope.reqsListEmpty = false;
 	$scope.paths = {};
+	$scope.discoverGroupList = {};
 	
 	$scope.processItem = function(item) {
 			if (item.type == 'user') {
@@ -278,6 +277,30 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
 		//$scope.markers[userObj.id].myUserObj = userObj;
 		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
+	}
+
+	/////
+
+	$scope.createNewGroup = function(hide,$event) {
+		var etf = $event.target.form;
+		$wamp.call('com.stackptr.api.createGroup',[etf.groupname.value,etf.groupdesc.value,etf.mode.checked ? "1": "0"]).then($scope.postGroupCreated);
+		hide();
+	};
+
+	$scope.postGroupCreated = function(data) {
+		$scope.processData(data);
+		var groupId = parseInt(data[0].data[0].id);
+		$scope.group = groupId;
+		$scope.selectGroup();
+	}
+
+	$scope.groupDiscover = function() {
+		$scope.discoverGroupList = [];
+		$wamp.call('com.stackptr.api.groupDiscover',[]).then($scope.groupDiscovered);
+	}
+
+	$scope.groupDiscovered = function(data) {
+		$scope.discoverGroupList = data[0].data;
 	}
 
 	/////

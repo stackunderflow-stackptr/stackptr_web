@@ -139,7 +139,17 @@ class StackPtrAPI(ApplicationSession):
 		
 		@api_function
 		def groupList(_,guser=None, details=None):
-			return stackptr_core.groupList(db=db)
+			return stackptr_core.groupList(guser=guser,db=db)
+
+		@api_function
+		def groupDiscover(_,guser=None, details=None):
+			return stackptr_core.groupDiscover(guser=guser,db=db)
+
+		@api_function
+		def createGroup((name,description,status),guser=None, details=None):
+			return stackptr_core.createGroup(name=name, description=description, status=status, guser=guser, db=db)
+
+		###############################
 
 		@api_function
 		def groupData((group,), guser=None, details=None):
@@ -167,6 +177,9 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(delUser, 'com.stackptr.api.delUser', options=RegisterOptions(details_arg='details'))
 
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
+			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=RegisterOptions(details_arg='details'))
+			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=RegisterOptions(details_arg='details'))
+
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(renameFeature, 'com.stackptr.api.renameFeature', options=RegisterOptions(details_arg='details'))

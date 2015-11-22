@@ -271,7 +271,22 @@ def deluser():
 @cross_origin()
 @login_required
 def grouplist():
-	return json.dumps(stackptr_core.groupList(db=db))
+	return json.dumps(stackptr_core.groupList(guser=g.user, db=db))
+
+@app.route('/groupdiscover')
+@cross_origin()
+@login_required
+def groupdiscover():
+	return json.dumps(stackptr_core.groupDiscover(guser=g.user, db=db))
+
+@app.route('/creategroup', methods=['POST'])
+@cross_origin()
+@login_required
+def creategroup():
+	name = request.form.get('name')
+	description = request.form.get('description')
+	status = int(request.form.get('status'))
+	return json.dumps(stackptr_core.createGroup(db=db, guser=g.user, name=name, description=description, status=status))
 
 @app.route('/groupdata', methods=['POST'])
 @cross_origin()
