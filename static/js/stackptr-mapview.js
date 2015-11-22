@@ -217,6 +217,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					$scope.paths[v.id].latlngs = v.lochist;
 				});
+			} else if (item.type == 'error') {
+				alert(item.data);
 			} else {
 				console.log(item);
 			}

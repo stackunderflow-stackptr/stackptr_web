@@ -42,6 +42,18 @@ def sessions_for_uid(id, db=None):
 	
 	return [a.sessionid for a in user_ids]
 
+def roleInGroup(db=None, guser=None, group=None, roleMin=0):
+	gl = db.session.query(GroupMember)\
+			   .filter(GroupMember.groupid == int(group))\
+			   .filter(GroupMember.userid == guser.id)\
+			   .first()
+	if not gl: return False
+	if not gl.role > roleMin: return False
+	return True
+
+def error(msg):
+	return [{'type': 'error', 'data': msg}]
+
 ####
 
 def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
@@ -195,10 +207,10 @@ def joinGroup(gid=None, guser=None, db=None):
 	group = db.session.query(Group)\
 					  .filter(Group.id == gid)\
 					  .first()
-	if not group: return []
+	if not group: return error("No such group")
 
 	# something different if user invited to group
-	if group.status != 0: return []
+	if group.status != 0: return error("Not allowed")
 
 
 	gl = db.session.query(GroupMember, Group)\
@@ -206,7 +218,7 @@ def joinGroup(gid=None, guser=None, db=None):
 				   .filter(Group.id == gid)\
 				   .filter(GroupMember.userid == guser.id)\
 				   .first()
-	if gl: return [] # already in the group
+	if gl: return error("Already in group")
 
 	gm = GroupMember()
 	gm.groupid = int(gid)
@@ -225,7 +237,7 @@ def leaveGroup(gid=None, guser=None, db=None):
 				   .filter(GroupMember.userid == guser.id)\
 				   .first()
 	
-	if not gl: return [] # user not in group
+	if not gl: return error("Not in group") # user not in group
 	db.session.delete(gl)
 	db.session.commit()
 	return [{'type': 'grouplist-del', 'data': [{'id': int(gid)}]}]
@@ -237,8 +249,8 @@ def deleteGroup(gid=None, guser=None, db=None):
 				   .filter(GroupMember.userid == guser.id)\
 				   .first()
 	
-	if not gl: return [] # user not in group
-	if not gl.role == 2: return [] # user not an admin
+	if not gl: return error("Not in group") # user not in group
+	if not gl.role == 2: return error("Not an admin") # user not an admin
 
 	# delete all the groupMembers
 	db.session.query(GroupMember)\
@@ -256,7 +268,7 @@ def updateGroup(gid=None, name=None, description=None, status=None, guser=None, 
 	group = db.session.query(Group)\
 			  		  .filter(Group.id == int(gid))\
 			  		  .first()
-	if not group: return []
+	if not group: return error("Not an admin")
 	
 	group.name = name
 	group.description = description
@@ -269,18 +281,16 @@ def updateGroup(gid=None, name=None, description=None, status=None, guser=None, 
 ##########
 
 def groupData(db=None, guser=None, group=None):
-	gl = db.session.query(GroupMember)\
-				   .filter(GroupMember.groupid == int(group))\
-				   .filter(GroupMember.userid == guser.id)\
-				   .first()
-	if not gl: return []
-	if not gl.role > 0: return []
+	if not group: return []
+	if not roleInGroup(db=db, guser=guser, group=group): return []
 
 	gd = db.session.query(Object).filter_by(group = group).all()
 	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group,'json': json.loads(item.json)} for item in gd]
 	return [{'type': 'groupdata', 'data': res}]
 
 def addFeature(db=None, name=None, group=None, guser=None, gjson=None):
+	if not roleInGroup(db=db, guser=guser, group=group): return []
+
 	feature = Object()
 	feature.name = name
 	feature.group = int(group)
@@ -295,6 +305,7 @@ def addFeature(db=None, name=None, group=None, guser=None, gjson=None):
 	return [{'type': 'groupdata', 'data': res}]
 
 def renameFeature(db=None, id=None, name=None, guser=None):
+	if not roleInGroup(db=db, guser=guser, group=group): return []
 	feature = db.session.query(Object).filter_by(id = int(id)).first()
 	feature.name = name
 	db.session.commit()
@@ -305,6 +316,7 @@ def renameFeature(db=None, id=None, name=None, guser=None):
 	return [{'type': 'groupdata', 'data': res}]
 
 def deleteFeature(db=None, id=None, guser=None):
+	if not roleInGroup(db=db, guser=guser, group=group): return []
 	feature = db.session.query(Object).filter_by(id = id).first()
 	if feature:
 		#FIXME: check permissions
