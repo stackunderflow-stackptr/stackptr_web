@@ -29,6 +29,10 @@ body {
 	overflow: auto;
 }
 
+.text-white {
+	color: #FFF;
+}
+
 .icon-white {
 	color: #FFF;
 	margin-top: 0.4em;
