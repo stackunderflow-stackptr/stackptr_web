@@ -1,0 +1,34 @@
+<div class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog"> 
+		<div class="modal-content">
+			<div class="modal-header" ng-show="title">
+				<button type="button" class="close" ng-click="$hide()">&times;</button>
+				<h4 class="modal-title" ng-bind="title">Group Info</h4>
+			</div>
+			<div class="modal-body">
+				<form>
+					<div class="form-group">
+						<label for="groupname">Group Name</label>
+						<input type="text" class="form-control" id="groupname" ng-value="grouplist[group].name">
+					</div>
+					<div class="form-group">
+						<label for="groupdesc">Description</label>
+						<input type="text" class="form-control" id="groupdesc" ng-value="grouplist[group].description">
+					</div>
+					<div class="checkbox">
+						<label>
+						<input type="checkbox" name="mode" value="">
+							Require owner approval to join
+						</label>
+					</div>
+
+					<div class="form-group">
+						<button class="btn btn-default" type="button" ng-click="leaveGroup(group,$hide,$event)">Leave</button>
+						<button class="btn btn-danger" type="button" ng-click="deleteGroup(group,$hide,$event)">Delete</button>
+					</div>
+					<button class="btn btn-default" type="button" ng-click="updateGroup(group,$hide,$event)">Update</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

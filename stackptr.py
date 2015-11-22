@@ -295,6 +295,30 @@ def joingroup():
 	name = request.form.get('gid')
 	return json.dumps(stackptr_core.joinGroup(db=db, guser=g.user, gid=gid))
 
+@app.route('/leavegroup', methods=['POST'])
+@cross_origin()
+@login_required
+def leavegroup():
+	name = request.form.get('gid')
+	return json.dumps(stackptr_core.leaveGroup(db=db, guser=g.user, gid=gid))
+
+@app.route('/deletegroup', methods=['POST'])
+@cross_origin()
+@login_required
+def deletegroup():
+	name = request.form.get('gid')
+	return json.dumps(stackptr_core.deleteGroup(db=db, guser=g.user, gid=gid))
+
+@app.route('/updategroup', methods=['POST'])
+@cross_origin()
+@login_required
+def updategroup():
+	name = request.form.get('name')
+	description = request.form.get('description')
+	status = int(request.form.get('status'))
+	status = int(request.form.get('gid'))
+	return json.dumps(stackptr_core.updateGroup(db=db, guser=g.user, gid=gid, name=name, description=description, status=status))
+
 ###########
 
 
@@ -302,7 +326,7 @@ def joingroup():
 @cross_origin()
 @login_required
 def groupdata():
-	return json.dumps(stackptr_core.groupData(db=db, group=request.form.get('group')))
+	return json.dumps(stackptr_core.groupData(db=db, guser=g.user, group=request.form.get('group')))
 
 @app.route('/addfeature', methods=['POST'])
 @cross_origin()

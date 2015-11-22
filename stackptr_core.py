@@ -219,12 +219,63 @@ def joinGroup(gid=None, guser=None, db=None):
 	return [{'type': 'grouplist', 'data': res}]
 
 
+def leaveGroup(gid=None, guser=None, db=None):
+	gl = db.session.query(GroupMember)\
+				   .filter(GroupMember.groupid == int(gid))\
+				   .filter(GroupMember.userid == guser.id)\
+				   .first()
+	
+	if not gl: return [] # user not in group
+	db.session.delete(gl)
+	db.session.commit()
+	return [{'type': 'grouplist-del', 'data': [{'id': int(gid)}]}]
 
 
+def deleteGroup(gid=None, guser=None, db=None):
+	gl = db.session.query(GroupMember)\
+				   .filter(GroupMember.groupid == int(gid))\
+				   .filter(GroupMember.userid == guser.id)\
+				   .first()
+	
+	if not gl: return [] # user not in group
+	if not gl.role == 2: return [] # user not an admin
+
+	# delete all the groupMembers
+	db.session.query(GroupMember)\
+			  .filter(GroupMember.groupid == int(gid))\
+			  .delete()
+
+	db.session.query(Group)\
+			  .filter(Group.id == int(gid))\
+			  .delete()
+	
+	return [{'type': 'grouplist-del', 'data': [{'id': int(gid)}]}]
+
+
+def updateGroup(gid=None, name=None, description=None, status=None, guser=None, db=None):
+	group = db.session.query(Group)\
+			  		  .filter(Group.id == int(gid))\
+			  		  .first()
+	if not group: return []
+	
+	group.name = name
+	group.description = description
+	group.status = int(status)
+	db.session.commit()
+		
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status}]
+	return [{'type': 'grouplist', 'data': res}]
 
 ##########
 
-def groupData(db=None,group=None):
+def groupData(db=None, guser=None, group=None):
+	gl = db.session.query(GroupMember)\
+				   .filter(GroupMember.groupid == int(group))\
+				   .filter(GroupMember.userid == guser.id)\
+				   .first()
+	if not gl: return []
+	if not gl.role > 0: return []
+
 	gd = db.session.query(Object).filter_by(group = group).all()
 	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group,'json': json.loads(item.json)} for item in gd]
 	return [{'type': 'groupdata', 'data': res}]

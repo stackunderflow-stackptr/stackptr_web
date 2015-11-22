@@ -198,6 +198,10 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					$scope.grouplist[v.id] = v;
 				});
+			} else if (item.type == 'grouplist-del') {
+				item.data.forEach(function(v) {
+					delete $scope.grouplist[v.id];
+				});
 			} else if (item.type == 'groupdata') {
 				console.log(item);
 				item.data.forEach(function(v) {
@@ -313,6 +317,21 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		var groupId = parseInt(data[0].data[0].id);
 		$scope.group = groupId;
 		$scope.selectGroup();
+	}
+
+	$scope.leaveGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.leaveGroup',[$scope.group]).then($scope.processData);
+		hide();
+	}
+
+	$scope.deleteGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.deleteGroup',[$scope.group]).then($scope.processData);
+		hide();
+	}
+
+	$scope.updateGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.updateGroup',[$scope.group,etf.groupname.value,etf.groupdesc.value,etf.mode.checked ? "1": "0"]).then($scope.processData);
+		hide();
 	}
 
 	/////
