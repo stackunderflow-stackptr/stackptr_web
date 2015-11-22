@@ -107,7 +107,7 @@ class Object(Base):
 class Group(Base):
 	__tablename__ = "group"
 	id = Column(Integer, primary_key=True)
-	name = Column(String(128), unique=True)
+	name = Column(String(128))
 	description = Column(Text)
 	status = Column(Integer)
 	
