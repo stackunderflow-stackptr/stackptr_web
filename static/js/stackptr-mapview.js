@@ -5,12 +5,15 @@ var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngA
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
-app.config(function ($wampProvider) {
+app.config(function ($wampProvider,$modalProvider) {
      $wampProvider.init({
         url: (window.location.protocol == 'https:' ? 'wss://' : 'ws://' ) + window.location.host + '/ws',
         realm: 'stackptr',
         authmethods: ["ticket"],
      });
+	angular.extend($modalProvider.defaults, {
+		html: true
+	});
  });
 
 app.run(function($http) {
@@ -70,6 +73,8 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			}
 		}
 	}
+
+	$scope.groupsModal = {title: 'Manage Groups'};
 		
 	$scope.getTileServer = function() {
 		var default_tileserver = $scope.tileservers['stackptr']

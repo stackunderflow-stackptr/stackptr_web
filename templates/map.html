@@ -160,12 +160,25 @@
 
 		<div class="form-horizontal">
 			<div class="form-group">
-				<div class="col-lg-12">
+				<div class="col-sm-10">
 					<select class="form-control" name="group" id="group" ng-model="group" ng-change="selectGroup()"
 						ng-options="groupl.id as groupl.name for groupl in grouplist">
 					</select>
 				</div>
+				<div class="col-sm-2">
+					    <span class="glyphicon glyphicon-cog white" data-template-url="static/template/groups.html" data-container="body" bs-modal="groupsModal"></span>
+				</div>
 			</div>
+		</div>
+
+		<div class="collapse" id="addgroup">
+			<form class="input-group input-group-sm">
+				<input type="text" name="user" class="form-control" value="">
+				<span class="input-group-btn">
+					<button class="btn btn-default" type="button" ng-click="addUser($event)">Add</button>
+				</span>
+			</form>	
+			<br>
 		</div>
 
 		<div class="panel panel-default">

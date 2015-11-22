@@ -29,6 +29,10 @@ body {
 	overflow: auto;
 }
 
+.white {
+	color: #FFF;
+}
+
 #groupmenu_content {
 	overflow: auto;
 }
