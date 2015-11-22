@@ -42,13 +42,13 @@ def sessions_for_uid(id, db=None):
 	
 	return [a.sessionid for a in user_ids]
 
-def roleInGroup(db=None, guser=None, group=None, roleMin=0):
+def roleInGroup(db=None, guser=None, group=None, roleMin=1):
 	gl = db.session.query(GroupMember)\
 			   .filter(GroupMember.groupid == int(group))\
 			   .filter(GroupMember.userid == guser.id)\
 			   .first()
 	if not gl: return False
-	if not gl.role > roleMin: return False
+	if not gl.role >= roleMin: return False
 	return True
 
 def error(msg):
@@ -265,7 +265,7 @@ def deleteGroup(gid=None, guser=None, db=None):
 
 
 def updateGroup(gid=None, name=None, description=None, status=None, guser=None, db=None):
-	if not roleInGroup(db=db, guser=guser, group=group, role=2): return error("Not an admin")
+	if not roleInGroup(db=db, guser=guser, group=gid, roleMin=2): return error("Not an admin")
 	group = db.session.query(Group)\
 			  		  .filter(Group.id == int(gid))\
 			  		  .first()

@@ -332,6 +332,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 
 	$scope.updateGroup = function(group,hide,$event) {
+		var etf = $event.target.form;
 		$wamp.call('com.stackptr.api.updateGroup',[$scope.group,etf.groupname.value,etf.groupdesc.value,etf.mode.checked ? "1": "0"]).then($scope.processData);
 		hide();
 	}
