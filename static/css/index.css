@@ -29,6 +29,20 @@ body {
 	overflow: auto;
 }
 
+#groupuserlist {
+	padding-bottom: 0.5em;
+}
+
+.text-white {
+	color: #FFF;
+}
+
+.icon-white {
+	color: #FFF;
+	margin-top: 0.4em;
+	font-size: 1.2em;
+}
+
 #groupmenu_content {
 	overflow: auto;
 }
@@ -118,4 +132,21 @@ body {
 
 .leaflet-popup-content {
     width:400px !important;
+}
+
+.modal-backdrop.am-fade {
+  opacity: .5;
+  transition: opacity .15s linear;
+  &.ng-enter {
+    opacity: 0;
+    &.ng-enter-active {
+      opacity: .5;
+    }
+  }
+  &.ng-leave {
+    opacity: .5;
+    &.ng-leave-active {
+      opacity: 0;
+    }
+  }
 }

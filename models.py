@@ -107,7 +107,7 @@ class Object(Base):
 class Group(Base):
 	__tablename__ = "group"
 	id = Column(Integer, primary_key=True)
-	name = Column(String(128), unique=True)
+	name = Column(String(128))
 	description = Column(Text)
 	status = Column(Integer)
 	
@@ -118,6 +118,11 @@ class GroupMember(Base):
 	groupid = Column(Integer, ForeignKey('group.id'), primary_key=True)
 	userid = Column(Integer, ForeignKey('users.id'), primary_key=True)
 	role = Column(Integer)
+	
+	user = relationship('Users', foreign_keys=userid, lazy='joined',
+					primaryjoin="GroupMember.userid==Users.id")
+	group = relationship('Group', foreign_keys=groupid, lazy='joined',
+					primaryjoin="GroupMember.groupid==Group.id")
 	
 	def __init__(self):
 		pass

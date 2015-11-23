@@ -271,13 +271,62 @@ def deluser():
 @cross_origin()
 @login_required
 def grouplist():
-	return json.dumps(stackptr_core.groupList(db=db))
+	return json.dumps(stackptr_core.groupList(guser=g.user, db=db))
+
+@app.route('/groupdiscover')
+@cross_origin()
+@login_required
+def groupdiscover():
+	return json.dumps(stackptr_core.groupDiscover(guser=g.user, db=db))
+
+@app.route('/creategroup', methods=['POST'])
+@cross_origin()
+@login_required
+def creategroup():
+	name = request.form.get('name')
+	description = request.form.get('description')
+	status = int(request.form.get('status'))
+	return json.dumps(stackptr_core.createGroup(db=db, guser=g.user, name=name, description=description, status=status))
+
+@app.route('/joingroup', methods=['POST'])
+@cross_origin()
+@login_required
+def joingroup():
+	name = request.form.get('gid')
+	return json.dumps(stackptr_core.joinGroup(db=db, pm=publish_message, guser=g.user, gid=gid))
+
+@app.route('/leavegroup', methods=['POST'])
+@cross_origin()
+@login_required
+def leavegroup():
+	name = request.form.get('gid')
+	return json.dumps(stackptr_core.leaveGroup(db=db, pm=publish_message, guser=g.user, gid=gid))
+
+@app.route('/deletegroup', methods=['POST'])
+@cross_origin()
+@login_required
+def deletegroup():
+	name = request.form.get('gid')
+	return json.dumps(stackptr_core.deleteGroup(db=db, pm=publish_message, guser=g.user, gid=gid))
+
+@app.route('/updategroup', methods=['POST'])
+@cross_origin()
+@login_required
+def updategroup():
+	name = request.form.get('name')
+	description = request.form.get('description')
+	status = int(request.form.get('status'))
+	status = int(request.form.get('gid'))
+	return json.dumps(stackptr_core.updateGroup(db=db, pm=publish_message, guser=g.user, gid=gid, name=name, description=description, status=status))
+
+###########
+
 
 @app.route('/groupdata', methods=['POST'])
 @cross_origin()
 @login_required
 def groupdata():
-	return json.dumps(stackptr_core.groupData(db=db, group=request.form.get('group')))
+	return json.dumps(stackptr_core.groupData(db=db, guser=g.user, group=request.form.get('group')))
 
 @app.route('/addfeature', methods=['POST'])
 @cross_origin()
@@ -287,14 +336,14 @@ def addfeature():
 	group = int(request.form['group'])
 	ownerid = g.user.id
 	gjson = request.form['geojson']
-	return json.dumps(stackptr_core.addFeature(db=db, name=name, group=group, guser=ownerid, gjson=gjson))
+	return json.dumps(stackptr_core.addFeature(db=db, pm=publish_message, name=name, group=group, guser=ownerid, gjson=gjson))
 
 @app.route('/delfeature', methods=['POST'])
 @cross_origin()
 @login_required
 def delfeature():
 	fid = int(request.form['id'])
-	return json.dumps(stackptr_core.deleteFeature(db=db, id=fid, guser=g.user.id))
+	return json.dumps(stackptr_core.deleteFeature(db=db, pm=publish_message, id=fid, guser=g.user.id))
 
 @app.route('/renamefeature', methods=['POST'])
 @cross_origin()
@@ -302,7 +351,7 @@ def delfeature():
 def renamefeature():
 	feature_name = request.form['name']
 	fid = int(request.form['id'])
-	return json.dumps(stackptr_core.renameFeature(db=db, id=fid, name=feature_name, guser=g.user.id))
+	return json.dumps(stackptr_core.renameFeature(db=db, pm=publish_message, id=fid, name=feature_name, guser=g.user.id))
 
 
 

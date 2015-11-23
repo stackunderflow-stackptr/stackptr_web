@@ -157,15 +157,34 @@
 <div class="panel panel-primary" id="groupmenu">
 	<div class="panel-heading">Groups <a onclick="togglePane('#groupmenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body" id="groupmenu_content">
-		<form class="form-horizontal" role="form" method="POST" action="/selectgroup" id="selectgroupform">
+
+		<div class="form-horizontal">
 			<div class="form-group">
-				<div class="col-lg-12">
-					<select class="form-control" name="groupname" id="selectgroup">
-						<option value="[[group.id]]" ng-repeat="group in grouplist">[[group.name]]</option>
+				<div class="col-sm-9">
+					<select class="form-control" name="group" id="group" ng-model="group" ng-change="selectGroup()"
+						ng-options="groupl.id as groupl.name for groupl in grouplist">
 					</select>
 				</div>
+				<div class="col-sm-3" style="padding: 0px">
+					    <span class="glyphicon glyphicon-plus icon-white" data-template-url="static/template/groupAdd.html"
+					    data-container="body" data-title="Add Group" bs-modal></span>
+					    <span class="glyphicon glyphicon-list icon-white" data-template-url="static/template/groupDiscover.html"
+					    data-container="body" data-title="Discover Groups" ng-click="groupDiscover()" bs-modal></span>
+					    <span class="glyphicon glyphicon-cog icon-white" data-template-url="static/template/groupInfo.html"
+					    data-container="body" data-title="Group Info: [[ grouplist[group].name ]]" ng-if="group >= 0 && group != null" bs-modal></span>
+				</div>
 			</div>
-		</form>
+		</div>
+
+		<div class="panel panel-default" ng-if="group >= 0 && group != null">
+			<div class="panel-body">
+				[[grouplist[group].description]]
+			</div>
+		</div>
+
+		<div class="text-white" ng-if="!(group >= 0) || group == null">
+		You have no groups. Click the <span class="glyphicon glyphicon-plus"></span> icon above to create a new group or click the <span class="glyphicon glyphicon-list"></span> icon to find an existing group.
+		</div>
 		
 		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
 		<span id="feature-[[item.json.id]]" class="list-group-item list-item-draw" ng-repeat="item in groupdata">

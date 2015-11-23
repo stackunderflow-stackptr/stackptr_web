@@ -38,6 +38,10 @@
                         {
                            "uri": "com.stackptr.user",
                            "publish": true
+                        },
+                        {
+                           "uri": "com.stackptr.group",
+                           "publish": true
                         }
                      ]
                   },{

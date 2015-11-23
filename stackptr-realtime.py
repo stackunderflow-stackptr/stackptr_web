@@ -70,6 +70,8 @@ class StackPtrAuthorizer(ApplicationSession):
 			
 			if (action == 'subscribe' and uri == 'com.stackptr.user'):
 				return true
+			if (action == 'subscribe' and uri == 'com.stackptr.group'):
+				return true
 			elif (action == 'subscribe' and uri == 'com.stackptr.alert'):
 				return true
 				#res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
@@ -106,7 +108,6 @@ class StackPtrAPI(ApplicationSession):
 				except Exception as e:
 					db.session.rollback()
 					print traceback.format_exc()
-					raise e
 			return func_wrapper
 
 		def publish_message(dest, topic, msg=None, eligible=[]):
@@ -139,23 +140,49 @@ class StackPtrAPI(ApplicationSession):
 		
 		@api_function
 		def groupList(_,guser=None, details=None):
-			return stackptr_core.groupList(db=db)
+			return stackptr_core.groupList(guser=guser,db=db)
+
+		@api_function
+		def groupDiscover(_,guser=None, details=None):
+			return stackptr_core.groupDiscover(guser=guser,db=db)
+
+		@api_function
+		def createGroup((name,description,status),guser=None, details=None):
+			return stackptr_core.createGroup(name=name, description=description, status=status, guser=guser, db=db)
+
+		@api_function
+		def joinGroup((gid,),guser=None, details=None):
+			return stackptr_core.joinGroup(gid=gid, pm=publish_message, guser=guser, db=db)
+		
+		@api_function
+		def leaveGroup((gid,),guser=None, details=None):
+			return stackptr_core.leaveGroup(gid=gid, pm=publish_message, guser=guser, db=db)
+		
+		@api_function
+		def deleteGroup((gid,),guser=None, details=None):
+			return stackptr_core.deleteGroup(gid=gid, pm=publish_message, guser=guser, db=db)
+
+		@api_function
+		def updateGroup((gid,name,description,status),guser=None, details=None):
+			return stackptr_core.updateGroup(gid=gid, pm=publish_message, name=name, description=description, status=status, guser=guser, db=db)
+
+		###############################
 
 		@api_function
 		def groupData((group,), guser=None, details=None):
-			return stackptr_core.groupData(db=db,group=group)
+			return stackptr_core.groupData(db=db, guser=guser, group=group)
 
 		@api_function
 		def addFeature((name, group, gjson), guser=None, details=None):
-			return stackptr_core.addFeature(db=db, guser=guser, name=name, group=group, gjson=gjson)
+			return stackptr_core.addFeature(db=db, pm=publish_message, guser=guser, name=name, group=group, gjson=gjson)
 
 		@api_function
 		def renameFeature((id, name), guser=None, details=None):
-			return stackptr_core.renameFeature(db=db, guser=guser, id=id, name=name)
+			return stackptr_core.renameFeature(db=db, pm=publish_message, guser=guser, id=id, name=name)
 
 		@api_function
 		def deleteFeature((id,), guser=None, details=None):
-			return stackptr_core.deleteFeature(db=db, guser=guser, id=id)
+			return stackptr_core.deleteFeature(db=db, pm=publish_message, guser=guser, id=id)
 
 		################################
 		
@@ -167,6 +194,13 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(delUser, 'com.stackptr.api.delUser', options=RegisterOptions(details_arg='details'))
 
 			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
+			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=RegisterOptions(details_arg='details'))
+			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(joinGroup, 'com.stackptr.api.joinGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(leaveGroup, 'com.stackptr.api.leaveGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(deleteGroup, 'com.stackptr.api.deleteGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(updateGroup, 'com.stackptr.api.updateGroup', options=RegisterOptions(details_arg='details'))
+
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(renameFeature, 'com.stackptr.api.renameFeature', options=RegisterOptions(details_arg='details'))

@@ -5,12 +5,15 @@ var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngA
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
-app.config(function ($wampProvider) {
+app.config(function ($wampProvider,$modalProvider) {
      $wampProvider.init({
         url: (window.location.protocol == 'https:' ? 'wss://' : 'ws://' ) + window.location.host + '/ws',
         realm: 'stackptr',
         authmethods: ["ticket"],
      });
+	angular.extend($modalProvider.defaults, {
+		html: true
+	});
  });
 
 app.run(function($http) {
@@ -109,6 +112,14 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			return {lat: -24, lng: 138, zoom: 5}
 		}
 	}
+
+	$scope.getLastGroup = function() {
+		if ($cookies.has('last_group')) {
+			return parseInt($cookies.get('last_group'));
+		} else {
+			return -1;
+		}
+	}
 	
 	angular.extend($scope, {
 		defaults: {
@@ -136,17 +147,19 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		}
 	});
 	
-	
+	$scope.myid = null;
 	$scope.markers = {};
 	$scope.userList = {};
 	$scope.userPending = {};
 	$scope.userReqs = {};
 	$scope.grouplist = {};
+	$scope.group = $scope.getLastGroup();
 	$scope.groupdata = {};
 	$scope.userListEmpty = false;
 	$scope.pendingListEmpty = false;
 	$scope.reqsListEmpty = false;
 	$scope.paths = {};
+	$scope.discoverGroupList = {};
 	
 	$scope.processItem = function(item) {
 			if (item.type == 'user') {
@@ -183,21 +196,39 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				});
 			} else if (item.type == 'grouplist') {
 				item.data.forEach(function(v) {
+					v.members.forEach(function(vm) {
+						if(vm.id == $scope.myid) {
+							this.role = vm.role;
+						}
+					},v);
 					$scope.grouplist[v.id] = v;
+				});
+			} else if (item.type == 'grouplist-del') {
+				item.data.forEach(function(v) {
+					delete $scope.grouplist[v.id];
+					if ($scope.group == v.id) {
+						$scope.resetGroup();
+					}
 				});
 			} else if (item.type == 'groupdata') {
 				console.log(item);
 				item.data.forEach(function(v) {
-					$scope.groupdata[v.id] = v;
+					if (v.groupid == $scope.group) {
+						$scope.groupdata[v.id] = v;
+					}
 				});
+				$scope.updateGroupData();
 			} else if (item.type == 'groupdata-del') {
 				item.data.forEach(function(v) {
 					delete $scope.groupdata[v.id];
 				});
+				$scope.updateGroupData();
 			} else if (item.type == 'lochist') {
 				item.data.forEach(function(v) {
 					$scope.paths[v.id].latlngs = v.lochist;
 				});
+			} else if (item.type == 'error') {
+				alert(item.data);
 			} else {
 				console.log(item);
 			}
@@ -260,28 +291,97 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.markers[userObj.id].lng = userObj.loc[1];
 		$scope.paths[userObj.id].latlngs.push({ lat: userObj.loc[0], lng: userObj.loc[1] })
 
-		//$scope.markers[userObj.id].myUserObj = userObj;
-		//$scope.markers[userObj.id].message = '[[userObj.loc]]' + Math.random();
 	}
 
 	/////
 
-	//$scope.updateGroupData = function(data) {}
+	$scope.createNewGroup = function(hide,$event) {
+		var etf = $event.target.form;
+		$wamp.call('com.stackptr.api.createGroup',[etf.groupname.value,etf.groupdesc.value,etf.mode.checked ? "1": "0"]).then($scope.postGroupCreated);
+		hide();
+	};
 
+	$scope.postGroupCreated = function(data) {
+		$scope.processData(data);
+		var groupId = parseInt(data[0].data[0].id);
+		$scope.group = groupId;
+		$scope.selectGroup();
+	}
 
-	$scope.$watchCollection('groupdata', function(added, removed) {
+	$scope.groupDiscover = function() {
+		$scope.discoverGroupList = [];
+		$wamp.call('com.stackptr.api.groupDiscover',[]).then($scope.groupDiscovered);
+	}
+
+	$scope.groupDiscovered = function(data) {
+		$scope.discoverGroupList = data[0].data;
+	}
+
+	$scope.joinGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.joinGroup',[group.id]).then($scope.postGroupJoined);
+		hide();
+	}
+
+	$scope.postGroupJoined = function(data) {
+		$scope.processData(data);
+		var groupId = parseInt(data[0].data[0].id);
+		$scope.group = groupId;
+		$scope.selectGroup();
+	}
+
+	$scope.leaveGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.leaveGroup',[$scope.group]).then($scope.postGroupLeft);
+		hide();
+	}
+
+	$scope.deleteGroup = function(group,hide,$event) {
+		$wamp.call('com.stackptr.api.deleteGroup',[$scope.group]).then($scope.processData);
+		hide();
+	}
+
+	$scope.resetGroup = function() {
+		for (key in $scope.grouplist) break;
+		$scope.group = parseInt(key);
+		$scope.selectGroup();
+	}
+
+	$scope.postGroupLeft = function(data) {
+		$scope.processData(data);
+		$scope.resetGroup();
+	}
+
+	$scope.updateGroup = function(group,hide,$event) {
+		var etf = $event.target.form;
+		$wamp.call('com.stackptr.api.updateGroup',[$scope.group,etf.groupname.value,etf.groupdesc.value,etf.mode.checked ? "1": "0"]).then($scope.processData);
+		hide();
+	}
+
+	/////
+
+	$scope.updateGroupData = function() {
 		$scope.features = [];
+		var gd = $scope.groupdata;
 
-		for (itemid in added) {
-			var item = $scope.groupdata[itemid];
+		for (k in gd) {
+			var item = gd[k];
 			item.json.id = item.id;
 			$scope.features.push(item.json);
 		}
-		
+
 		angular.extend($scope, {
 			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
 		});
-	});
+	}
+
+	$scope.selectGroup = function() {
+		var expDate = new Date();
+		expDate.setDate(expDate.getDate() + 365);
+		var i = $scope.center;
+		$cookies.put('last_group', parseInt($scope.group) , {expires: expDate});
+
+		$scope.groupdata = {};
+		$wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
+	}
 	
 	$scope.$on("leafletDirectiveGeoJson.click", function(ev, leafletPayload) {
 		$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
@@ -292,8 +392,15 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.postNewItem = function(data) {
 		$scope.processData(data);
 		var featureId = parseInt(data[0].data[0].id);
-		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
-		// doesn't work yet because this happens before $scope.watchCollection above :|
+
+		$("#groupmenu").on("DOMSubtreeModified", function() {
+			var fbox = $("#feature-" + featureId);
+			if (fbox.length) {
+				$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
+				fbox.children(".panel-collapse").collapse("show");
+				$("#groupmenu").off("DOMSubtreeModified");
+			}
+		});
 	}
 
 	leafletData.getMap().then(function(map) {
@@ -303,7 +410,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				var layer = e.layer;
 				//drawnItems.addLayer(layer);
 				console.log(JSON.stringify(layer.toGeoJSON()));
-				$wamp.call('com.stackptr.api.addFeature',['Untitled',1,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
+				$wamp.call('com.stackptr.api.addFeature',['Untitled',$scope.group,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
 			});
 		});
 	});
@@ -335,12 +442,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	$scope.addUser = function($event) {
 		var etf = $event.target.form;
 		$wamp.call('com.stackptr.api.addUser',[etf.user.value]).then($scope.processData);
-
-		/*var formdata = $($event.target.form).serialize();
-		var resp = $http.post('/adduser', formdata);
-		resp.success($scope.processData);*/
-
-
 	};
 	
 	$scope.delUser = function(uid) {
@@ -359,6 +460,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	var resp = $http.post('/ws_uid', "");
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
+		$scope.myid = rdata;
 		$wamp.connection._options.authid = rdata;
 		$wamp.open();
 	});
@@ -382,12 +484,20 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
         $scope.status = "Connected";
     	
     	$wamp.subscribe('com.stackptr.user', $scope.processWS);
+    	$wamp.subscribe('com.stackptr.group', $scope.processWS);
 
         $wamp.call('com.stackptr.api.userList').then($scope.processData);
-        $wamp.call('com.stackptr.api.groupList').then($scope.processData);
-        $wamp.call('com.stackptr.api.groupData',[1]).then($scope.processData);
+        $wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
+        $wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
     	
     });
+
+    $scope.postGroupList = function(data) {
+		$scope.processData(data);
+		if ($scope.group < 0) {
+			$scope.resetGroup();
+		}
+	}
 
     $scope.$on("$wamp.close", function (event, data) {
     	$scope.status = "Disconnected: " + data.reason;

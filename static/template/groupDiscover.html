@@ -1,0 +1,23 @@
+<div class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog"> 
+		<div class="modal-content">
+			<div class="modal-header" ng-show="title">
+				<button type="button" class="close" ng-click="$hide()">&times;</button>
+				<h4 class="modal-title" ng-bind="title">Discover Groups</h4>
+			</div>
+			<div class="modal-body">
+				<div class="list-group" id="groupjoinlist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
+					<span id="group-[[group.id]]" class="list-group-item list-item-draw" ng-repeat="group in discoverGroupList">
+						<a bs-collapse-toggle>[[group.name]]</a>
+						<div class="panel panel-collapse" bs-collapse-target>
+							<div class="well well-sm">
+								[[group.description]]
+							</div>
+							<button type="submit" class="btn btn-primary" ng-click="joinGroup(group,$hide,$event)">Join Group</button>
+						</div>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

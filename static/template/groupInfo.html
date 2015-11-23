@@ -1,0 +1,46 @@
+<div class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog"> 
+		<div class="modal-content">
+			<div class="modal-header" ng-show="title">
+				<button type="button" class="close" ng-click="$hide()">&times;</button>
+				<h4 class="modal-title" ng-bind="title">Group Info</h4>
+			</div>
+			<div class="modal-body">
+
+				<label for="groupuserlist">Group Members</label>
+				<div id="groupuserlist">
+					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+				data-trigger="hover" bs-tooltip data-placement="top" data-html="true"
+				data-title="<b>[[user.username]]</b>">
+				</div>
+
+				<form>
+					<div class="form-group">
+						<label for="groupname">Group Name</label>
+						<input type="text" class="form-control" id="groupname" ng-value="grouplist[group].name" ng-disabled="grouplist[group].role != 2">
+					</div>
+					<div class="form-group">
+						<label for="groupdesc">Description</label>
+						<input type="text" class="form-control" id="groupdesc" ng-value="grouplist[group].description" ng-disabled="grouplist[group].role != 2">
+					</div>
+					<div class="checkbox">
+						<label>
+						<input type="checkbox" name="mode" value="" ng-checked="grouplist[group].status > 0" ng-disabled="grouplist[group].role != 2">
+							Require owner approval to join
+						</label>
+					</div>
+
+					<div class="form-group">
+						<button class="btn btn-primary" type="button" ng-click="updateGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Update Group</button>
+					</div>
+
+					<div class="form-group">
+						<button class="btn btn-default" type="button" ng-click="leaveGroup(group,$hide,$event)">Leave Group</button>
+						<button class="btn btn-danger" type="button" ng-click="deleteGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Delete Group</button>
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
