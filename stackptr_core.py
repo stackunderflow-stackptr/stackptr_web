@@ -189,7 +189,7 @@ def createGroup(name=None, description=None, status=None, guser=None, db=None):
 	db.session.commit()
 		
 	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 
-			'members': [group_user_object(gm) for gm in item.Group.members]}]
+			'members': [group_user_object(gm) for gm in group.members]}]
 	return [{'type': 'grouplist', 'data': res}]
 
 def groupList(guser=None, db=None):
