@@ -117,7 +117,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		if ($cookies.has('last_group')) {
 			return parseInt($cookies.get('last_group'));
 		} else {
-			return 0;
+			return -1;
 		}
 	}
 	
@@ -487,10 +487,17 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
     	$wamp.subscribe('com.stackptr.group', $scope.processWS);
 
         $wamp.call('com.stackptr.api.userList').then($scope.processData);
-        $wamp.call('com.stackptr.api.groupList').then($scope.processData);
+        $wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
         $wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
     	
     });
+
+    $scope.postGroupList = function(data) {
+		$scope.processData(data);
+		if ($scope.group < 0) {
+			$scope.resetGroup();
+		}
+	}
 
     $scope.$on("$wamp.close", function (event, data) {
     	$scope.status = "Disconnected: " + data.reason;
