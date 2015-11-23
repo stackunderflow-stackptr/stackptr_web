@@ -205,7 +205,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			} else if (item.type == 'groupdata') {
 				console.log(item);
 				item.data.forEach(function(v) {
-					$scope.groupdata[v.id] = v;
+					if (v.groupid == $scope.group) {
+						$scope.groupdata[v.id] = v;
+					}
 				});
 				$scope.updateGroupData();
 			} else if (item.type == 'groupdata-del') {
@@ -473,6 +475,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
         $scope.status = "Connected";
     	
     	$wamp.subscribe('com.stackptr.user', $scope.processWS);
+    	$wamp.subscribe('com.stackptr.group', $scope.processWS);
 
         $wamp.call('com.stackptr.api.userList').then($scope.processData);
         $wamp.call('com.stackptr.api.groupList').then($scope.processData);

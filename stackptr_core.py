@@ -30,10 +30,11 @@ def user_object(user):
 			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
 			'extra': process_extra(user.extra)}
 
-def limited_user_object(follower):
-	return {'username': follower.following_user.username,
-			'icon': gravatar(follower.following_user.email),
-			'id': follower.following}
+
+def limited_user_object(user):
+	return {'username': user.username,
+			'icon': gravatar(user.email),
+			'id': user.id}
 
 def sessions_for_uid(id, db=None):
 	user_ids = db.session.query(WAMPSession)\
@@ -41,6 +42,14 @@ def sessions_for_uid(id, db=None):
 			   .all()
 	
 	return [a.sessionid for a in user_ids]
+
+def sessions_for_group(gid, db=None):
+	group_ids = db.session.query(GroupMember,WAMPSession)\
+						  .join(WAMPSession, GroupMember.userid == WAMPSession.user)\
+						  .filter(GroupMember.role >= 1, GroupMember.groupid == int(gid))\
+						  .all()
+	
+	return [ a.WAMPSession.sessionid for a in group_ids]
 
 def roleInGroup(db=None, guser=None, group=None, roleMin=1):
 	gl = db.session.query(GroupMember)\
@@ -189,7 +198,8 @@ def groupList(guser=None, db=None):
 				   .all()
 
 	res = [{'name': item.Group.name, 'id': item.Group.id, 'description': item.Group.description, 
-			'status': item.Group.status, 'role': item.GroupMember.role } for item in gl]
+			'status': item.Group.status, 'role': item.GroupMember.role, 
+			'members': [limited_user_object(gm.user) for gm in item.Group.members] } for item in gl]
 	return [{'type': 'grouplist', 'data': res}]
 
 def groupDiscover(guser=None, db=None):
@@ -203,7 +213,7 @@ def groupDiscover(guser=None, db=None):
 	res = [{'name': item.name, 'id': item.id, 'description': item.description, 'status': item.status} for item in gl]
 	return [{'type': 'groupDiscoverList', 'data': res}]
 
-def joinGroup(gid=None, guser=None, db=None):
+def joinGroup(gid=None, pm=None, guser=None, db=None):
 	group = db.session.query(Group)\
 					  .filter(Group.id == gid)\
 					  .first()
@@ -227,11 +237,17 @@ def joinGroup(gid=None, guser=None, db=None):
 	db.session.add(gm)
 	db.session.commit()
 
-	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 'role': 1}]
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
+			'status': group.status, 'role': 1, 
+			'members': [limited_user_object(gm.user) for gm in group.members] }]
+
+	allowed_list = sessions_for_group(gid, db=db)
+	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
+
 	return [{'type': 'grouplist', 'data': res}]
 
 
-def leaveGroup(gid=None, guser=None, db=None):
+def leaveGroup(gid=None, pm=None, guser=None, db=None):
 	gl = db.session.query(GroupMember)\
 				   .filter(GroupMember.groupid == int(gid))\
 				   .filter(GroupMember.userid == guser.id)\
@@ -240,10 +256,22 @@ def leaveGroup(gid=None, guser=None, db=None):
 	if not gl: return error("Not in group") # user not in group
 	db.session.delete(gl)
 	db.session.commit()
+
+	group = db.session.query(Group)\
+					  .filter(Group.id == int(gid))\
+					  .first()
+
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
+			'status': group.status, 'role': 1, 
+			'members': [limited_user_object(gm.user) for gm in group.members] }]
+
+	allowed_list = sessions_for_group(gid, db=db)
+	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
+
 	return [{'type': 'grouplist-del', 'data': [{'id': int(gid)}]}]
 
 
-def deleteGroup(gid=None, guser=None, db=None):
+def deleteGroup(gid=None, pm=None, guser=None, db=None):
 	gl = db.session.query(GroupMember)\
 				   .filter(GroupMember.groupid == int(gid))\
 				   .filter(GroupMember.userid == guser.id)\
@@ -252,19 +280,31 @@ def deleteGroup(gid=None, guser=None, db=None):
 	if not gl: return error("Not in group") # user not in group
 	if not gl.role == 2: return error("Not an admin") # user not an admin
 
+	allowed_list = sessions_for_group(gid, db=db)
+
 	# delete all the groupMembers
 	db.session.query(GroupMember)\
 			  .filter(GroupMember.groupid == int(gid))\
 			  .delete()
 
+	# delete all the objects
+	db.session.query(Object)\
+			  .filter(Object.group == int(gid))\
+			  .delete()
+
+	# then delete the group
 	db.session.query(Group)\
 			  .filter(Group.id == int(gid))\
 			  .delete()
+
+	res = [{'id': int(gid)}]
+
+	pm("com.stackptr.group", "grouplist-del", msg=res, eligible=allowed_list)
 	
-	return [{'type': 'grouplist-del', 'data': [{'id': int(gid)}]}]
+	return [{'type': 'grouplist-del', 'data': res}]
 
 
-def updateGroup(gid=None, name=None, description=None, status=None, guser=None, db=None):
+def updateGroup(gid=None, pm=None, name=None, description=None, status=None, guser=None, db=None):
 	if not roleInGroup(db=db, guser=guser, group=gid, roleMin=2): return error("Not an admin")
 	group = db.session.query(Group)\
 			  		  .filter(Group.id == int(gid))\
@@ -275,8 +315,14 @@ def updateGroup(gid=None, name=None, description=None, status=None, guser=None, 
 	group.description = description
 	group.status = int(status)
 	db.session.commit()
-		
-	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 'role': 2}]
+	
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
+			'status': group.status, 'role': 1, 
+			'members': [limited_user_object(gm.user) for gm in group.members] }]
+
+	allowed_list = sessions_for_group(group.id, db=db)
+	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
+
 	return [{'type': 'grouplist', 'data': res}]
 
 ##########
@@ -286,10 +332,11 @@ def groupData(db=None, guser=None, group=None):
 	if not roleInGroup(db=db, guser=guser, group=group): return []
 
 	gd = db.session.query(Object).filter_by(group = group).all()
-	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group,'json': json.loads(item.json)} for item in gd]
+
+	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group, 'json': json.loads(item.json)} for item in gd]
 	return [{'type': 'groupdata', 'data': res}]
 
-def addFeature(db=None, name=None, group=None, guser=None, gjson=None):
+def addFeature(db=None, pm=None, name=None, group=None, guser=None, gjson=None):
 	if not roleInGroup(db=db, guser=guser, group=group): return []
 
 	feature = Object()
@@ -301,31 +348,45 @@ def addFeature(db=None, name=None, group=None, guser=None, gjson=None):
 	db.session.commit()
 	
 	js = json.loads(feature.json)
-	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id , 'json': js}]
-		
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group,'json': js}]
+
+	allowed_list = sessions_for_group(group, db=db)
+	pm("com.stackptr.group", "groupdata", msg=res, eligible=allowed_list)
+	# currently if the item is not in the user's group, it's rejected clientside
+	# fixme: more granularity on group items
+
 	return [{'type': 'groupdata', 'data': res}]
 
-def renameFeature(db=None, id=None, name=None, guser=None):
-	if not roleInGroup(db=db, guser=guser, group=group): return []
+def renameFeature(db=None, pm=None, id=None, name=None, guser=None):
 	feature = db.session.query(Object).filter_by(id = int(id)).first()
+	if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
 	feature.name = name
 	db.session.commit()
 	# FIXME: Use HTTP status codes to indicate success/failure.
 	# FIXME: Modification of an existing feature's geometry??
 	js = json.loads(feature.json)
-	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'json': js}]
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group, 'json': js}]
+	
+	allowed_list = sessions_for_group(feature.group, db=db)
+	pm("com.stackptr.group", "groupdata", msg=res, eligible=allowed_list)
+
 	return [{'type': 'groupdata', 'data': res}]
 
-def deleteFeature(db=None, id=None, guser=None):
-	if not roleInGroup(db=db, guser=guser, group=group): return []
+def deleteFeature(db=None, pm=None, id=None, guser=None):
 	feature = db.session.query(Object).filter_by(id = id).first()
 	if feature:
-		#FIXME: check permissions
+		if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
 		db.session.delete(feature)
 		db.session.commit()
+
+		res = [{'id': id}]
+
+		allowed_list = sessions_for_group(feature.group, db=db)
+		pm("com.stackptr.group", "groupdata-del", msg=res, eligible=allowed_list)
+
 		# FIXME: Use HTTP status codes to indicate success/failure.
-		return [{'type': 'groupdata-del', 'data': [{'id': id}]}]
-	return "failed"
+		return [{'type': 'groupdata-del', 'data': res}]
+	return error("No such feature")
 
 
 ############

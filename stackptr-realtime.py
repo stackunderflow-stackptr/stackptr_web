@@ -70,6 +70,8 @@ class StackPtrAuthorizer(ApplicationSession):
 			
 			if (action == 'subscribe' and uri == 'com.stackptr.user'):
 				return true
+			if (action == 'subscribe' and uri == 'com.stackptr.group'):
+				return true
 			elif (action == 'subscribe' and uri == 'com.stackptr.alert'):
 				return true
 				#res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
@@ -150,20 +152,19 @@ class StackPtrAPI(ApplicationSession):
 
 		@api_function
 		def joinGroup((gid,),guser=None, details=None):
-			return stackptr_core.joinGroup(gid=gid, guser=guser, db=db)
+			return stackptr_core.joinGroup(gid=gid, pm=publish_message, guser=guser, db=db)
 		
 		@api_function
 		def leaveGroup((gid,),guser=None, details=None):
-			print "gid = %i" % gid
-			return stackptr_core.leaveGroup(gid=gid, guser=guser, db=db)
+			return stackptr_core.leaveGroup(gid=gid, pm=publish_message, guser=guser, db=db)
 		
 		@api_function
 		def deleteGroup((gid,),guser=None, details=None):
-			return stackptr_core.deleteGroup(gid=gid, guser=guser, db=db)
+			return stackptr_core.deleteGroup(gid=gid, pm=publish_message, guser=guser, db=db)
 
 		@api_function
 		def updateGroup((gid,name,description,status),guser=None, details=None):
-			return stackptr_core.updateGroup(gid=gid, name=name, description=description, status=status, guser=guser, db=db)
+			return stackptr_core.updateGroup(gid=gid, pm=publish_message, name=name, description=description, status=status, guser=guser, db=db)
 
 		###############################
 
@@ -173,15 +174,15 @@ class StackPtrAPI(ApplicationSession):
 
 		@api_function
 		def addFeature((name, group, gjson), guser=None, details=None):
-			return stackptr_core.addFeature(db=db, guser=guser, name=name, group=group, gjson=gjson)
+			return stackptr_core.addFeature(db=db, pm=publish_message, guser=guser, name=name, group=group, gjson=gjson)
 
 		@api_function
 		def renameFeature((id, name), guser=None, details=None):
-			return stackptr_core.renameFeature(db=db, guser=guser, id=id, name=name)
+			return stackptr_core.renameFeature(db=db, pm=publish_message, guser=guser, id=id, name=name)
 
 		@api_function
 		def deleteFeature((id,), guser=None, details=None):
-			return stackptr_core.deleteFeature(db=db, guser=guser, id=id)
+			return stackptr_core.deleteFeature(db=db, pm=publish_message, guser=guser, id=id)
 
 		################################
 		

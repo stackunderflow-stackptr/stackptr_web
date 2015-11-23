@@ -6,6 +6,14 @@
 				<h4 class="modal-title" ng-bind="title">Group Info</h4>
 			</div>
 			<div class="modal-body">
+
+				<label for="groupuserlist">Group Members</label>
+				<div id="groupuserlist">
+					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+				data-trigger="hover" bs-tooltip data-placement="top" data-html="true"
+				data-title="<b>[[user.username]]</b>">
+				</div>
+
 				<form>
 					<div class="form-group">
 						<label for="groupname">Group Name</label>

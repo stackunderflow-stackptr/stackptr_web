@@ -29,6 +29,10 @@ body {
 	overflow: auto;
 }
 
+#groupuserlist {
+	padding-bottom: 0.5em;
+}
+
 .text-white {
 	color: #FFF;
 }

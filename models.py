@@ -119,6 +119,11 @@ class GroupMember(Base):
 	userid = Column(Integer, ForeignKey('users.id'), primary_key=True)
 	role = Column(Integer)
 	
+	user = relationship('Users', foreign_keys=userid, lazy='joined',
+					primaryjoin="GroupMember.userid==Users.id")
+	group = relationship('Group', foreign_keys=groupid, lazy='joined',
+					primaryjoin="GroupMember.groupid==Group.id")
+	
 	def __init__(self):
 		pass
 
