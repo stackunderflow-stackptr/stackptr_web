@@ -201,6 +201,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			} else if (item.type == 'grouplist-del') {
 				item.data.forEach(function(v) {
 					delete $scope.grouplist[v.id];
+					if ($scope.group == v.id) {
+						$scope.resetGroup();
+					}
 				});
 			} else if (item.type == 'groupdata') {
 				console.log(item);
@@ -327,7 +330,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	}
 
 	$scope.deleteGroup = function(group,hide,$event) {
-		$wamp.call('com.stackptr.api.deleteGroup',[$scope.group]).then($scope.postGroupLeft);
+		$wamp.call('com.stackptr.api.deleteGroup',[$scope.group]).then($scope.processData);
 		hide();
 	}
 
