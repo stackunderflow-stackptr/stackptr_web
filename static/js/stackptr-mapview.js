@@ -147,7 +147,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		}
 	});
 	
-	
+	$scope.myid = null;
 	$scope.markers = {};
 	$scope.userList = {};
 	$scope.userPending = {};
@@ -196,6 +196,11 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				});
 			} else if (item.type == 'grouplist') {
 				item.data.forEach(function(v) {
+					v.members.forEach(function(vm) {
+						if(vm.id == $scope.myid) {
+							this.role = vm.role;
+						}
+					},v);
 					$scope.grouplist[v.id] = v;
 				});
 			} else if (item.type == 'grouplist-del') {
@@ -455,6 +460,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	var resp = $http.post('/ws_uid', "");
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
+		$scope.myid = rdata;
 		$wamp.connection._options.authid = rdata;
 		$wamp.open();
 	});

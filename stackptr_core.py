@@ -31,10 +31,11 @@ def user_object(user):
 			'extra': process_extra(user.extra)}
 
 
-def limited_user_object(user):
-	return {'username': user.username,
-			'icon': gravatar(user.email),
-			'id': user.id}
+def group_user_object(gm):
+	return {'username': gm.user.username,
+			'icon': gravatar(gm.user.email),
+			'id': gm.user.id,
+			'role': gm.role}
 
 def sessions_for_uid(id, db=None):
 	user_ids = db.session.query(WAMPSession)\
@@ -187,7 +188,8 @@ def createGroup(name=None, description=None, status=None, guser=None, db=None):
 	db.session.add(gm)
 	db.session.commit()
 		
-	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 'role': 2}]
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 'status': group.status, 
+			'members': [group_user_object(gm) for gm in item.Group.members]}]
 	return [{'type': 'grouplist', 'data': res}]
 
 def groupList(guser=None, db=None):
@@ -198,8 +200,7 @@ def groupList(guser=None, db=None):
 				   .all()
 
 	res = [{'name': item.Group.name, 'id': item.Group.id, 'description': item.Group.description, 
-			'status': item.Group.status, 'role': item.GroupMember.role, 
-			'members': [limited_user_object(gm.user) for gm in item.Group.members] } for item in gl]
+			'status': item.Group.status, 'members': [group_user_object(gm) for gm in item.Group.members] } for item in gl]
 	return [{'type': 'grouplist', 'data': res}]
 
 def groupDiscover(guser=None, db=None):
@@ -238,8 +239,7 @@ def joinGroup(gid=None, pm=None, guser=None, db=None):
 	db.session.commit()
 
 	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
-			'status': group.status, 'role': 1, 
-			'members': [limited_user_object(gm.user) for gm in group.members] }]
+			'status': group.status, 'members': [group_user_object(gm) for gm in group.members] }]
 
 	allowed_list = sessions_for_group(gid, db=db)
 	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
@@ -262,8 +262,8 @@ def leaveGroup(gid=None, pm=None, guser=None, db=None):
 					  .first()
 
 	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
-			'status': group.status, 'role': 1, 
-			'members': [limited_user_object(gm.user) for gm in group.members] }]
+			'status': group.status, 
+			'members': [group_user_object(gm) for gm in group.members] }]
 
 	allowed_list = sessions_for_group(gid, db=db)
 	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
@@ -317,8 +317,8 @@ def updateGroup(gid=None, pm=None, name=None, description=None, status=None, gus
 	db.session.commit()
 	
 	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
-			'status': group.status, 'role': 1, 
-			'members': [limited_user_object(gm.user) for gm in group.members] }]
+			'status': group.status, 
+			'members': [group_user_object(gm) for gm in group.members] }]
 
 	allowed_list = sessions_for_group(group.id, db=db)
 	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
