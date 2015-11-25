@@ -29,6 +29,23 @@ body {
 	overflow: auto;
 }
 
+#loginmenu-place {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 50px;
+	top: 5%;
+	width: 640px;
+}
+
+#loginmenu {
+	width: 640px;
+	z-index: 99;
+	background-color: rgba(0,0,0,0.8);
+	font-family: Helvetica, Arial, sans-serif;
+	color: #FFF;
+}
+
 #groupuserlist {
 	padding-bottom: 0.5em;
 }
