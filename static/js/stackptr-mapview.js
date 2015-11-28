@@ -10,6 +10,8 @@ app.config(function ($wampProvider,$modalProvider) {
         url: (window.location.protocol == 'https:' ? 'wss://' : 'ws://' ) + window.location.host + '/ws',
         realm: 'stackptr',
         authmethods: ["ticket"],
+        max_retries: -1,
+        max_retry_delay: 60,
      });
 	angular.extend($modalProvider.defaults, {
 		html: true
