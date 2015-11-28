@@ -39,6 +39,7 @@ body {
 }
 
 #loginmenu {
+	position: relative;
 	width: 640px;
 	z-index: 99;
 	background-color: rgba(0,0,0,0.8);

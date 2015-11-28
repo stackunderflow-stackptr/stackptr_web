@@ -33,8 +33,15 @@ app.controller("StackPtrLogin", [ '$scope', function($scope) {
 	});	
 }]);
 
-$(document).ready(function() {	
-	$("#loginmenu").draggable();
+$(document).ready(function() {
+	var wh = $(window).width();
+	if (wh < 640) {
+		$("#loginmenu").css("width",wh);
+		$("#loginmenu-place").css("width",wh);
+		$("#loginmenu").find("label").remove();
+		$("#loginmenu").find("div .col-sm-10").addClass("col-sm-12").removeClass("col-sm-10");
+		$("#loginmenu").find(".col-sm-offset-2").removeClass("col-sm-offset-2");
+	}
 });
 
 
