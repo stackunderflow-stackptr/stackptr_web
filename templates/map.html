@@ -43,8 +43,8 @@
 		<img src="/static/logo2.png" id="logo" height="50px">
 	</div>
 	<ul class="nav navbar-nav hidden-sm hidden-xs">
-		<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
-		<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
+		<li><a ng-click="toggleUserMenu()">Tracked Users</a></li>
+		<li><a ng-click="toggleGroupMenu()">Groups</a></li>
 		<li><a href="/api/">Manage API keys</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
@@ -62,8 +62,8 @@
 		<li class="dropdown">
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
 			<ul class="dropdown-menu" role="menu">
-				<li><a onclick="togglePane('#usermenu')">Tracked Users</a></li>
-				<li><a onclick="togglePane('#groupmenu')">Groups</a></li>
+				<li><a ng-click="toggleUserMenu()">Tracked Users</a></li>
+				<li><a ng-click="toggleGroupMenu()">Groups</a></li>
 				<li><a href="/api/">Manage API keys</a></li>
 				<li class="divider"></li>
 				<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
@@ -79,7 +79,7 @@
 
 <div class="panel panel-primary" id="usermenu">
 	<div class="panel-heading">Tracked Users 
-	<a onclick="togglePane('#usermenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a>
+	<a ng-click="toggleUserMenu()"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a>
 		
 	</div>
 	<div class="panel-body">
@@ -155,7 +155,7 @@
 </div>
 
 <div class="panel panel-primary" id="groupmenu">
-	<div class="panel-heading">Groups <a onclick="togglePane('#groupmenu')"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
+	<div class="panel-heading">Groups <a ng-click="toggleGroupMenu()"><span class="glyphicon glyphicon-remove closebox pull-right"></span></a></div>
 	<div class="panel-body" id="groupmenu_content">
 
 		<div class="form-horizontal">

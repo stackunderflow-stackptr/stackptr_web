@@ -1,6 +1,8 @@
 // stackptr-mapview.js
 // this is for stuff specific to stackptr.com, not external maps
 
+var isMobileUi = L.Browser.mobile;
+
 var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider){
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
@@ -251,6 +253,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.center.lng = user.loc[1];
 		$scope.center.zoom = 16;
 		$scope.markers[user.id].focus = true;
+		if (isMobileUi) {
+			$scope.toggleUserMenu();
+		}
 	}
 	
 	$scope.updateMarker = function(userObj) {		
@@ -436,6 +441,9 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				$scope.center.lng = (bounds._northEast.lng + bounds._southWest.lng) / 2;
 			}
 		});
+		if (isMobileUi) {
+			$scope.toggleGroupMenu();
+		}
 	}
 
 	///////////
@@ -511,6 +519,37 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		$scope.processItem({type: type[0], data: data.msg});
    	};
 
+
+   	$scope.toggleUserMenu = function() {
+   		if (isMobileUi) {
+			var um = $("#usermenu");
+			var w = $(window);
+
+			um.css("height",w.height());
+			um.css("width",w.width());
+			um.css("top",0);
+			um.css("z-index",9001);
+			um.toggle();
+   		} else {
+			$("#usermenu").toggle();
+   		}
+   	}
+
+   	$scope.toggleGroupMenu = function() {
+   		if (isMobileUi) {
+			var gm = $("#groupmenu");
+			var w = $(window);
+
+			gm.css("height",w.height());
+			gm.css("width",w.width());
+			gm.css("top",0);
+			gm.css("z-index",9001);
+			gm.toggle();
+   		} else {
+			$("#groupmenu").toggle();
+   		}
+   	}
+
 }]);
 
 app.filter('updateRange', function () {
@@ -532,6 +571,7 @@ app.filter('updateRange', function () {
 		}
 		return filtered;
 	};
+
 });
 
 function shiftGroupMenu() {
@@ -548,27 +588,25 @@ function shiftGroupMenu() {
 }
 
 $(document).ready(function() {	
-	$("#usermenu").draggable();
-	$("#groupmenu").draggable().resizable({
-		minHeight: 96,
-		minWidth: 192
-	});
+	if (isMobileUi) {
+		$("#usermenu").hide();
+		$("#groupmenu").hide();
+	} else {
+		$("#usermenu").draggable();
+		$("#groupmenu").draggable().resizable({
+			minHeight: 96,
+			minWidth: 192
+		});
 
-	$("#groupmenu").on("dragstart", function(e,u) {
-		$("#usermenu").off("DOMSubtreeModified");
-	});
+		$("#groupmenu").on("dragstart", function(e,u) {
+			$("#usermenu").off("DOMSubtreeModified");
+		});
 
-	shiftGroupMenu();
+		shiftGroupMenu();
 
-	$("#usermenu").on("DOMSubtreeModified", shiftGroupMenu);
+		$("#usermenu").on("DOMSubtreeModified", shiftGroupMenu);
+	}
 });
-
-
-
-
-togglePane  = function (pane) {
-	$(pane).toggle();
-}
 
 function delUserClick(item,uid) {
 	var $scope = angular.element($('body')).scope();
