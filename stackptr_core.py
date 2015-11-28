@@ -363,8 +363,21 @@ def renameFeature(db=None, pm=None, id=None, name=None, guser=None):
 	feature.name = name
 	db.session.commit()
 	# FIXME: Use HTTP status codes to indicate success/failure.
-	# FIXME: Modification of an existing feature's geometry??
 	js = json.loads(feature.json)
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group, 'json': js}]
+	
+	allowed_list = sessions_for_group(feature.group, db=db)
+	pm("com.stackptr.group", "groupdata", msg=res, eligible=allowed_list)
+
+	return [{'type': 'groupdata', 'data': res}]
+
+def editFeature(db=None, pm=None, id=None, gjson=None, guser=None):
+	feature = db.session.query(Object).filter_by(id = int(id)).first()
+	if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
+	feature.json = gjson
+	db.session.commit()
+	# FIXME: Use HTTP status codes to indicate success/failure.
+	js = json.loads(gjson)
 	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group, 'json': js}]
 	
 	allowed_list = sessions_for_group(feature.group, db=db)

@@ -181,6 +181,10 @@ class StackPtrAPI(ApplicationSession):
 			return stackptr_core.renameFeature(db=db, pm=publish_message, guser=guser, id=id, name=name)
 
 		@api_function
+		def editFeature((id, gjson), guser=None, details=None):
+			return stackptr_core.editFeature(db=db, pm=publish_message, guser=guser, id=id, gjson=gjson)
+
+		@api_function
 		def deleteFeature((id,), guser=None, details=None):
 			return stackptr_core.deleteFeature(db=db, pm=publish_message, guser=guser, id=id)
 
@@ -203,6 +207,7 @@ class StackPtrAPI(ApplicationSession):
 
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
+			yield self.register(editFeature, 'com.stackptr.api.editFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(renameFeature, 'com.stackptr.api.renameFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=RegisterOptions(details_arg='details'))			
 		except Exception as e:

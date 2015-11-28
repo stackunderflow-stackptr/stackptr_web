@@ -353,6 +353,13 @@ def renamefeature():
 	fid = int(request.form['id'])
 	return json.dumps(stackptr_core.renameFeature(db=db, pm=publish_message, id=fid, name=feature_name, guser=g.user.id))
 
+@app.route('/editfeature', methods=['POST'])
+@cross_origin()
+@login_required
+def editfeature():
+	gjson = request.form['geojson']
+	fid = int(request.form['id'])
+	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, id=fid, gjson=gjson, guser=g.user.id))
 
 
 if __name__ == '__main__':

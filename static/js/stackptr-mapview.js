@@ -431,13 +431,16 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
   });
 
   $scope.$on('leafletDirectiveDraw.draw:edited', function(e,payload) {
-    // FIXME: handle this
+    payload.leafletEvent.layers.eachLayer(function(layer) {
+      // debugger;
+      $wamp.call('com.stackptr.api.editFeature',[layer.id,JSON.stringify(layer.toGeoJSON())]).then($scope.processData);
+    });
   });
 
   $scope.$on('leafletDirectiveDraw.draw:deleted', function(e,payload) {
     payload.leafletEvent.layers.eachLayer(function(layer) {
       $wamp.call('com.stackptr.api.deleteFeature',[layer.id]).then($scope.processData);
-    })
+    });
   });
 
 	$scope.renameGroupItem = function($event) {
