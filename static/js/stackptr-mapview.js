@@ -3,7 +3,7 @@
 
 var isMobileUi = L.Browser.mobile;
 
-var app = angular.module("StackPtr", ['leaflet-directive', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider){
+var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider){
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
@@ -25,7 +25,7 @@ app.run(function($http) {
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 });
 
-app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'leafletData', '$wamp', function($scope, $cookies, $http, $interval, leafletData, $wamp) {
+app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp) {
 	
 	$scope.tiles = {
 		name: ""
@@ -124,32 +124,26 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 			return -1;
 		}
 	}
-	
-	angular.extend($scope, {
-		defaults: {
-			maxZoom: 18,
-			minZoom: 1,
-			doubleClickZoom: true,
-			scrollWheelZoom: true,
-			attributionControl: true,
-		},
-		tiles: $scope.getTileServer(),
-		center: $scope.getLastPos(),
-		controls: {
-			draw: {
-				edit: { featureGroup: L.featureGroup() }
-			}
-		},
-		layers: {
-			baselayers: {}
-		},
-		events: {
-			map: {
-				enable: ['moveend'],
-				logic: 'emit'
-			}
-		}
-	});
+
+ angular.extend($scope, {
+      defaults: {
+            maxZoom: 18,
+            minZoom: 1,
+            doubleClickZoom: true,
+            scrollWheelZoom: true,
+            attributionControl: true,
+          },
+        tiles: $scope.getTileServer(),
+        center: $scope.getLastPos(),
+        drawOptions: {
+          draw: {},
+          edit: {
+            featureGroup: new L.FeatureGroup(),
+            remove: true
+          }
+        }
+      
+    });
 	
 	$scope.myid = null;
 	$scope.markers = {};
@@ -219,14 +213,14 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					if (v.groupid == $scope.group) {
 						$scope.groupdata[v.id] = v;
+            $scope.updateGroupData(v.id);
 					}
 				});
-				$scope.updateGroupData();
 			} else if (item.type == 'groupdata-del') {
 				item.data.forEach(function(v) {
 					delete $scope.groupdata[v.id];
+          $scope.updateDelGroupData(v.id);
 				});
-				$scope.updateGroupData();
 			} else if (item.type == 'lochist') {
 				item.data.forEach(function(v) {
 					$scope.paths[v.id].latlngs = v.lochist;
@@ -365,20 +359,35 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
 	/////
 
-	$scope.updateGroupData = function() {
-		$scope.features = [];
+	$scope.updateGroupData = function(cid) {
 		var gd = $scope.groupdata;
+    var di = $scope.drawOptions.edit.featureGroup;
 
-		for (k in gd) {
-			var item = gd[k];
-			item.json.id = item.id;
-			$scope.features.push(item.json);
-		}
+    var item = gd[cid];
+    var layer = L.geoJson(item.json);
 
-		angular.extend($scope, {
-			geojson: {data: {"type":"FeatureCollection","features":$scope.features}},
-		});
+    var remove = [];
+    di.eachLayer(function(layer) {
+      if (layer.id == cid) {
+        di.removeLayer(layer);
+      }
+    });
+
+    var geom0 = layer.getLayers()[0];
+    geom0.id = item.id;
+    di.addLayer(geom0);
 	}
+
+  $scope.updateDelGroupData = function(cid) {
+    var di = $scope.drawOptions.edit.featureGroup;
+
+    var remove = [];
+    di.eachLayer(function(layer) {
+      if (layer.id == cid) {
+        di.removeLayer(layer);
+      }
+    });
+  }
 
 	$scope.selectGroup = function() {
 		var expDate = new Date();
@@ -386,15 +395,21 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		var i = $scope.center;
 		$cookies.put('last_group', parseInt($scope.group) , {expires: expDate});
 
+    var di = $scope.drawOptions.edit.featureGroup;
 		$scope.groupdata = {};
+    di.clearLayers();
+
 		$wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
 	}
 	
-	$scope.$on("leafletDirectiveGeoJson.click", function(ev, leafletPayload) {
+  // FIXME: name of event when leaflet item clicked?
+  /*
+	$scope.$on("leafletDirective.click", function(ev, leafletPayload) {
+
 		$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
 		var featureId = parseInt(leafletPayload.leafletObject.feature.id);
 		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
-	});
+	});*/
 
 	$scope.postNewItem = function(data) {
 		$scope.processData(data);
@@ -410,17 +425,20 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 		});
 	}
 
-	leafletData.getMap().then(function(map) {
-		leafletData.getLayers().then(function(baselayers) {
-			//var drawnItems = $scope.controls.draw.edit.featureGroup;
-			map.on('draw:created', function (e) {
-				var layer = e.layer;
-				//drawnItems.addLayer(layer);
-				console.log(JSON.stringify(layer.toGeoJSON()));
-				$wamp.call('com.stackptr.api.addFeature',['Untitled',$scope.group,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
-			});
-		});
-	});
+  $scope.$on('leafletDirectiveDraw.draw:created', function(e,payload) {
+    var layer = payload.leafletEvent.layer;
+    $wamp.call('com.stackptr.api.addFeature',['Untitled',$scope.group,JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
+  });
+
+  $scope.$on('leafletDirectiveDraw.draw:edited', function(e,payload) {
+    // FIXME: handle this
+  });
+
+  $scope.$on('leafletDirectiveDraw.draw:deleted', function(e,payload) {
+    payload.leafletEvent.layers.eachLayer(function(layer) {
+      $wamp.call('com.stackptr.api.deleteFeature',[layer.id]).then($scope.processData);
+    })
+  });
 
 	$scope.renameGroupItem = function($event) {
 		var etf = $event.target.form;
