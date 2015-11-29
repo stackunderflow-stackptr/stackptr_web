@@ -213,6 +213,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 				item.data.forEach(function(v) {
 					if (v.groupid == $scope.group) {
 						$scope.groupdata[v.id] = v;
+
             $scope.updateGroupData(v.id);
 					}
 				});
@@ -364,6 +365,7 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
     var di = $scope.drawOptions.edit.featureGroup;
 
     var item = gd[cid];
+    item.json.id = item.id;
     var layer = L.geoJson(item.json);
 
     var remove = [];
@@ -375,6 +377,13 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
     var geom0 = layer.getLayers()[0];
     geom0.id = item.id;
+
+    geom0.on("click", function() {
+      $("#groupfeaturelist").find(".panel-collapse").collapse("hide");
+      var featureId = item.id;
+      $("#feature-" + featureId).children(".panel-collapse").collapse("show");
+    });
+
     di.addLayer(geom0);
 	}
 
@@ -401,15 +410,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
 		$wamp.call('com.stackptr.api.groupData',[$scope.group]).then($scope.processData);
 	}
-	
-  // FIXME: name of event when leaflet item clicked?
-  /*
-	$scope.$on("leafletDirective.click", function(ev, leafletPayload) {
-
-		$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
-		var featureId = parseInt(leafletPayload.leafletObject.feature.id);
-		$("#feature-" + featureId).children(".panel-collapse").collapse("show");
-	});*/
 
 	$scope.postNewItem = function(data) {
 		$scope.processData(data);
@@ -432,7 +432,6 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 
   $scope.$on('leafletDirectiveDraw.draw:edited', function(e,payload) {
     payload.leafletEvent.layers.eachLayer(function(layer) {
-      // debugger;
       $wamp.call('com.stackptr.api.editFeature',[layer.id,JSON.stringify(layer.toGeoJSON())]).then($scope.processData);
     });
   });
@@ -454,12 +453,18 @@ app.controller("StackPtrMap", [ '$scope', '$cookies', '$http', '$interval', 'lea
 	};
 	
 	$scope.gotoItem = function(item) {
-		var items = $scope.geojson.data.features;
-		items.forEach(function(v) {
+    var items = $scope.drawOptions.edit.featureGroup;
+		items.eachLayer(function(v) {
 			if (v.id == item) {
-				var bounds = L.geoJson(v.geometry).getBounds();
-				$scope.center.lat = (bounds._northEast.lat + bounds._southWest.lat) / 2;
-				$scope.center.lng = (bounds._northEast.lng + bounds._southWest.lng) / 2;
+        if (v.getBounds) {
+  				var bounds = v.getBounds();
+  				$scope.center.lat = (bounds._northEast.lat + bounds._southWest.lat) / 2;
+  				$scope.center.lng = (bounds._northEast.lng + bounds._southWest.lng) / 2;
+        } else {
+          var loc = v.getLatLng();
+          $scope.center.lat = loc.lat;
+          $scope.center.lng = loc.lng;
+        }
 			}
 		});
 		if (isMobileUi) {
