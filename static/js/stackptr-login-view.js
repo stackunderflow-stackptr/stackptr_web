@@ -1,7 +1,7 @@
 // stackptr-login-view.js
 // a mostly dummy controller just for the login page
 
-var app = angular.module("StackPtr", ['leaflet-directive']).config(function($interpolateProvider){
+var app = angular.module("StackPtr", ['ui-leaflet']).config(function($interpolateProvider){
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
