@@ -326,7 +326,7 @@ def updategroup():
 @cross_origin()
 @login_required
 def groupdata():
-	return json.dumps(stackptr_core.groupData(db=db, guser=g.user, group=request.form.get('group')))
+	return json.dumps(stackptr_core.groupData(db=db, guser=g.user, gid=request.form.get('gid')))
 
 @app.route('/addfeature', methods=['POST'])
 @cross_origin()
@@ -342,24 +342,24 @@ def addfeature():
 @cross_origin()
 @login_required
 def delfeature():
-	fid = int(request.form['id'])
-	return json.dumps(stackptr_core.deleteFeature(db=db, pm=publish_message, id=fid, guser=g.user.id))
+	fid = int(request.form['fid'])
+	return json.dumps(stackptr_core.deleteFeature(db=db, pm=publish_message, fid=fid, guser=g.user.id))
 
 @app.route('/renamefeature', methods=['POST'])
 @cross_origin()
 @login_required
 def renamefeature():
 	feature_name = request.form['name']
-	fid = int(request.form['id'])
-	return json.dumps(stackptr_core.renameFeature(db=db, pm=publish_message, id=fid, name=feature_name, guser=g.user.id))
+	fid = int(request.form['fid'])
+	return json.dumps(stackptr_core.renameFeature(db=db, pm=publish_message, fid=fid, name=feature_name, guser=g.user.id))
 
 @app.route('/editfeature', methods=['POST'])
 @cross_origin()
 @login_required
 def editfeature():
 	gjson = request.form['geojson']
-	fid = int(request.form['id'])
-	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, id=fid, gjson=gjson, guser=g.user.id))
+	fid = int(request.form['fid'])
+	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, fid=fid, gjson=gjson, guser=g.user.id))
 
 
 if __name__ == '__main__':

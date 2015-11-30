@@ -103,8 +103,10 @@ class StackPtrAPI(ApplicationSession):
 					guser = db.session.query(WAMPSession,Users)\
 						.join(Users, Users.id == WAMPSession.user)\
 						.filter(WAMPSession.sessionid == details.caller).first()[1]
-					print "%s -> %s%s" % (guser.username, func.__name__, args)
-					return func(args, guser=guser, details=details)
+					printargs = filter(lambda a: a != 'details', kwargs)
+					printlist = map(lambda b: "%s=%s" % (b, kwargs[b]), printargs)
+					print "%s -> %s(%s)" % (guser.username, func.__name__, ", ".join(printlist))
+					return func(guser=guser, **kwargs)
 				except Exception as e:
 					db.session.rollback()
 					print traceback.format_exc()
@@ -117,76 +119,76 @@ class StackPtrAPI(ApplicationSession):
 		###########################
 
 		@api_function
-		def userList(_,guser=None, details=None):
+		def userList(guser=None, details=None):
 			return stackptr_core.userList(guser=guser, db=db)
 
 		@api_function
-		def locHist((target,), guser=None, details=None):
+		def locHist(guser=None, details=None, target=None):
 			return stackptr_core.locHist(target=target, guser=guser, db=db)
 
 		@api_function
-		def addUser((user,), guser=None, details=None):
+		def addUser(guser=None, details=None, user=None):
 			return stackptr_core.addUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		@api_function
-		def acceptUser((user,), guser=None, details=None):
+		def acceptUser(guser=None, details=None, user=None):
 			return stackptr_core.acceptUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		@api_function
-		def delUser((user,), guser=None, details=None):
+		def delUser(guser=None, details=None, user=None):
 			return stackptr_core.delUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		###############################
 		
 		@api_function
-		def groupList(_,guser=None, details=None):
+		def groupList(guser=None, details=None):
 			return stackptr_core.groupList(guser=guser,db=db)
 
 		@api_function
-		def groupDiscover(_,guser=None, details=None):
+		def groupDiscover(guser=None, details=None):
 			return stackptr_core.groupDiscover(guser=guser,db=db)
 
 		@api_function
-		def createGroup((name,description,status),guser=None, details=None):
+		def createGroup(guser=None, details=None, name=None, description=None, status=None):
 			return stackptr_core.createGroup(name=name, description=description, status=status, guser=guser, db=db)
 
 		@api_function
-		def joinGroup((gid,),guser=None, details=None):
+		def joinGroup(guser=None, details=None, gid=None):
 			return stackptr_core.joinGroup(gid=gid, pm=publish_message, guser=guser, db=db)
 		
 		@api_function
-		def leaveGroup((gid,),guser=None, details=None):
+		def leaveGroup(guser=None, details=None, gid=None):
 			return stackptr_core.leaveGroup(gid=gid, pm=publish_message, guser=guser, db=db)
 		
 		@api_function
-		def deleteGroup((gid,),guser=None, details=None):
+		def deleteGroup(guser=None, details=None, gid=None):
 			return stackptr_core.deleteGroup(gid=gid, pm=publish_message, guser=guser, db=db)
 
 		@api_function
-		def updateGroup((gid,name,description,status),guser=None, details=None):
+		def updateGroup(guser=None, details=None, gid=None, name=None, description=None, status=None):
 			return stackptr_core.updateGroup(gid=gid, pm=publish_message, name=name, description=description, status=status, guser=guser, db=db)
 
 		###############################
 
 		@api_function
-		def groupData((group,), guser=None, details=None):
-			return stackptr_core.groupData(db=db, guser=guser, group=group)
+		def groupData(guser=None, details=None, gid=None):
+			return stackptr_core.groupData(db=db, guser=guser, gid=gid)
 
 		@api_function
-		def addFeature((name, group, gjson), guser=None, details=None):
+		def addFeature(guser=None, details=None, name=None, group=None, gjson=None):
 			return stackptr_core.addFeature(db=db, pm=publish_message, guser=guser, name=name, group=group, gjson=gjson)
 
 		@api_function
-		def renameFeature((id, name), guser=None, details=None):
-			return stackptr_core.renameFeature(db=db, pm=publish_message, guser=guser, id=id, name=name)
+		def renameFeature(guser=None, details=None, fid=None, name=None):
+			return stackptr_core.renameFeature(db=db, pm=publish_message, guser=guser, fid=fid, name=name)
 
 		@api_function
-		def editFeature((id, gjson), guser=None, details=None):
-			return stackptr_core.editFeature(db=db, pm=publish_message, guser=guser, id=id, gjson=gjson)
+		def editFeature(guser=None, details=None, fid=None, gjson=None):
+			return stackptr_core.editFeature(db=db, pm=publish_message, guser=guser, fid=fid, gjson=gjson)
 
 		@api_function
-		def deleteFeature((id,), guser=None, details=None):
-			return stackptr_core.deleteFeature(db=db, pm=publish_message, guser=guser, id=id)
+		def deleteFeature(guser=None, details=None, fid=None):
+			return stackptr_core.deleteFeature(db=db, pm=publish_message, guser=guser, fid=fid)
 
 		################################
 		

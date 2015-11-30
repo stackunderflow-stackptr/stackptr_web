@@ -300,7 +300,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			};
 			img.crossOrigin = 'Anonymous';
 			img.src = userObj.icon;
-			$wamp.call('com.stackptr.api.lochist', [userObj.id]).then($scope.processData);
+			$wamp.call('com.stackptr.api.lochist', [], {
+				target: userObj.id
+			}).then($scope.processData);
 		}
 		$scope.markers[userObj.id].lat = userObj.loc[0];
 		$scope.markers[userObj.id].lng = userObj.loc[1];
@@ -315,7 +317,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.createNewGroup = function(hide, $event) {
 		var etf = $event.target.form;
-		$wamp.call('com.stackptr.api.createGroup', [etf.groupname.value, etf.groupdesc.value, etf.mode.checked ? "1" : "0"]).then($scope.postGroupCreated);
+		$wamp.call('com.stackptr.api.createGroup', [], {
+			name: etf.groupname.value,
+			description: etf.groupdesc.value,
+			status: etf.mode.checked ? "1" : "0"
+		}).then($scope.postGroupCreated);
 		hide();
 	};
 
@@ -328,7 +334,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.groupDiscover = function() {
 		$scope.discoverGroupList = [];
-		$wamp.call('com.stackptr.api.groupDiscover', []).then($scope.groupDiscovered);
+		$wamp.call('com.stackptr.api.groupDiscover').then($scope.groupDiscovered);
 	}
 
 	$scope.groupDiscovered = function(data) {
@@ -336,7 +342,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	}
 
 	$scope.joinGroup = function(group, hide, $event) {
-		$wamp.call('com.stackptr.api.joinGroup', [group.id]).then($scope.postGroupJoined);
+		$wamp.call('com.stackptr.api.joinGroup', [], {
+			gid: group.id
+		}).then($scope.postGroupJoined);
 		hide();
 	}
 
@@ -348,12 +356,16 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	}
 
 	$scope.leaveGroup = function(group, hide, $event) {
-		$wamp.call('com.stackptr.api.leaveGroup', [$scope.group]).then($scope.postGroupLeft);
+		$wamp.call('com.stackptr.api.leaveGroup', [], {
+			gid: $scope.group
+		}).then($scope.postGroupLeft);
 		hide();
 	}
 
 	$scope.deleteGroup = function(group, hide, $event) {
-		$wamp.call('com.stackptr.api.deleteGroup', [$scope.group]).then($scope.processData);
+		$wamp.call('com.stackptr.api.deleteGroup', [], {
+			gid: $scope.group
+		}).then($scope.processData);
 		hide();
 	}
 
@@ -370,7 +382,12 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.updateGroup = function(group, hide, $event) {
 		var etf = $event.target.form;
-		$wamp.call('com.stackptr.api.updateGroup', [$scope.group, etf.groupname.value, etf.groupdesc.value, etf.mode.checked ? "1" : "0"]).then($scope.processData);
+		$wamp.call('com.stackptr.api.updateGroup', [], {
+			gid: $scope.group,
+			name: etf.groupname.value,
+			description: etf.groupdesc.value,
+			status: etf.mode.checked ? "1" : "0"
+		}).then($scope.processData);
 		hide();
 	}
 
@@ -426,7 +443,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		$scope.groupdata = {};
 		di.clearLayers();
 
-		$wamp.call('com.stackptr.api.groupData', [$scope.group]).then($scope.processData);
+		$wamp.call('com.stackptr.api.groupData', [], {
+			gid: $scope.group
+		}).then($scope.processData);
 	}
 
 	$scope.postNewItem = function(data) {
@@ -445,29 +464,43 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.$on('leafletDirectiveDraw.draw:created', function(e, payload) {
 		var layer = payload.leafletEvent.layer;
-		$wamp.call('com.stackptr.api.addFeature', ['Untitled', $scope.group, JSON.stringify(layer.toGeoJSON())]).then($scope.postNewItem);
+		$wamp.call('com.stackptr.api.addFeature', [], {
+			name: 'Untitled',
+			group: $scope.group,
+			gjson: JSON.stringify(layer.toGeoJSON())
+		}).then($scope.postNewItem);
 	});
 
 	$scope.$on('leafletDirectiveDraw.draw:edited', function(e, payload) {
 		payload.leafletEvent.layers.eachLayer(function(layer) {
-			$wamp.call('com.stackptr.api.editFeature', [layer.id, JSON.stringify(layer.toGeoJSON())]).then($scope.processData);
+			$wamp.call('com.stackptr.api.editFeature', [], {
+				fid: layer.id,
+				gjson: JSON.stringify(layer.toGeoJSON())
+			}).then($scope.processData);
 		});
 	});
 
 	$scope.$on('leafletDirectiveDraw.draw:deleted', function(e, payload) {
 		payload.leafletEvent.layers.eachLayer(function(layer) {
-			$wamp.call('com.stackptr.api.deleteFeature', [layer.id]).then($scope.processData);
+			$wamp.call('com.stackptr.api.deleteFeature', [], {
+				fid: layer.id
+			}).then($scope.processData);
 		});
 	});
 
 	$scope.renameGroupItem = function($event) {
 		var etf = $event.target.form;
-		$wamp.call('com.stackptr.api.renameFeature', [etf.id.value, etf.name.value]).then($scope.processData);
+		$wamp.call('com.stackptr.api.renameFeature', [], {
+			fid: etf.id.value,
+			name: etf.name.value
+		}).then($scope.processData);
 	};
 
 	$scope.removeGroupItem = function($event) {
 		var etf = $event.target.form;
-		$wamp.call('com.stackptr.api.deleteFeature', [etf.id.value]).then($scope.processData);
+		$wamp.call('com.stackptr.api.deleteFeature', [], {
+			fid: etf.id.value
+		}).then($scope.processData);
 	};
 
 	$scope.gotoItem = function(item) {
@@ -495,15 +528,21 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.addUser = function($event) {
 		var etf = $event.target.form;
-		$wamp.call('com.stackptr.api.addUser', [etf.user.value]).then($scope.processData);
+		$wamp.call('com.stackptr.api.addUser', [], {
+			user: etf.user.value
+		}).then($scope.processData);
 	};
 
 	$scope.delUser = function(uid) {
-		$wamp.call('com.stackptr.api.delUser', [uid]).then($scope.processData);
+		$wamp.call('com.stackptr.api.delUser', [], {
+			user: uid
+		}).then($scope.processData);
 	}
 
 	$scope.acceptUser = function(uid) {
-		$wamp.call('com.stackptr.api.acceptUser', [uid]).then($scope.processData);
+		$wamp.call('com.stackptr.api.acceptUser', [], {
+			user: uid
+		}).then($scope.processData);
 	}
 
 
@@ -542,7 +581,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 		$wamp.call('com.stackptr.api.userList').then($scope.processData);
 		$wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
-		$wamp.call('com.stackptr.api.groupData', [$scope.group]).then($scope.processData);
+		$wamp.call('com.stackptr.api.groupData', [], {
+			gid: $scope.group
+		}).then($scope.processData);
 
 	});
 
