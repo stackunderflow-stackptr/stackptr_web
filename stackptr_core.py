@@ -327,11 +327,11 @@ def updateGroup(gid=None, pm=None, name=None, description=None, status=None, gus
 
 ##########
 
-def groupData(db=None, guser=None, group=None):
-	if not group: return []
-	if not roleInGroup(db=db, guser=guser, group=group): return []
+def groupData(db=None, guser=None, gid=None):
+	if not gid: return []
+	if not roleInGroup(db=db, guser=guser, group=gid): return []
 
-	gd = db.session.query(Object).filter_by(group = group).all()
+	gd = db.session.query(Object).filter_by(group = gid).all()
 
 	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group, 'json': json.loads(item.json)} for item in gd]
 	return [{'type': 'groupdata', 'data': res}]
@@ -357,8 +357,8 @@ def addFeature(db=None, pm=None, name=None, group=None, guser=None, gjson=None):
 
 	return [{'type': 'groupdata', 'data': res}]
 
-def renameFeature(db=None, pm=None, id=None, name=None, guser=None):
-	feature = db.session.query(Object).filter_by(id = int(id)).first()
+def renameFeature(db=None, pm=None, fid=None, name=None, guser=None):
+	feature = db.session.query(Object).filter_by(id = int(fid)).first()
 	if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
 	feature.name = name
 	db.session.commit()
@@ -371,8 +371,8 @@ def renameFeature(db=None, pm=None, id=None, name=None, guser=None):
 
 	return [{'type': 'groupdata', 'data': res}]
 
-def editFeature(db=None, pm=None, id=None, gjson=None, guser=None):
-	feature = db.session.query(Object).filter_by(id = int(id)).first()
+def editFeature(db=None, pm=None, fid=None, gjson=None, guser=None):
+	feature = db.session.query(Object).filter_by(id = int(fid)).first()
 	if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
 	feature.json = gjson
 	db.session.commit()
@@ -385,14 +385,14 @@ def editFeature(db=None, pm=None, id=None, gjson=None, guser=None):
 
 	return [{'type': 'groupdata', 'data': res}]
 
-def deleteFeature(db=None, pm=None, id=None, guser=None):
-	feature = db.session.query(Object).filter_by(id = id).first()
+def deleteFeature(db=None, pm=None, fid=None, guser=None):
+	feature = db.session.query(Object).filter_by(id = fid).first()
 	if feature:
 		if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
 		db.session.delete(feature)
 		db.session.commit()
 
-		res = [{'id': id}]
+		res = [{'id': fid}]
 
 		allowed_list = sessions_for_group(feature.group, db=db)
 		pm("com.stackptr.group", "groupdata-del", msg=res, eligible=allowed_list)

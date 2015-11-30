@@ -444,7 +444,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		di.clearLayers();
 
 		$wamp.call('com.stackptr.api.groupData', [], {
-			group: $scope.group
+			gid: $scope.group
 		}).then($scope.processData);
 	}
 
@@ -582,7 +582,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		$wamp.call('com.stackptr.api.userList').then($scope.processData);
 		$wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
 		$wamp.call('com.stackptr.api.groupData', [], {
-			group: $scope.group
+			gid: $scope.group
 		}).then($scope.processData);
 
 	});
