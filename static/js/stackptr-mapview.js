@@ -149,7 +149,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		tiles: $scope.getTileServer(),
 		center: $scope.getLastPos(),
 		drawOptions: {
-			draw: {},
+			draw: {
+        circle: false
+      },
 			edit: {
 				featureGroup: new L.FeatureGroup(),
 				remove: true
