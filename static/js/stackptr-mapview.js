@@ -489,7 +489,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	});
 
 	$scope.renameGroupItem = function($event) {
-		var etf = $event.target.form;
+		var etf = $event.target.form || $event.target;
 		$wamp.call('com.stackptr.api.renameFeature', [], {
 			fid: etf.id.value,
 			name: etf.name.value
@@ -527,7 +527,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 
 	$scope.addUser = function($event) {
-		var etf = $event.target.form;
+		var etf = $event.target.form || $event.target;
 		$wamp.call('com.stackptr.api.addUser', [], {
 			user: etf.user.value
 		}).then($scope.processData);

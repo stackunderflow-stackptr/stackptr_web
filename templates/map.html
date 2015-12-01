@@ -147,7 +147,7 @@
 
 			<span class="glyphicon glyphicon-plus" onclick="$('#adduser').collapse('toggle')"></span>
 			<div class="collapse" id="adduser">
-				<form class="input-group input-group-sm">
+				<form class="input-group input-group-sm" ng-submit="addUser($event)">
 					<input type="text" name="user" class="form-control" value="">
 					<span class="input-group-btn">
 						<button class="btn btn-default" type="button" ng-click="addUser($event)">Add</button>
@@ -197,7 +197,7 @@
 			<span class="glyphicon glyphicon-pencil pull-right" bs-collapse-toggle></span>
 			<div class="panel-collapse" bs-collapse-target>
 				<br>
-				<form class="input-group input-group-sm">
+				<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
 					<input type="text" name="name" class="form-control" value="[[item.name]]">
 					<input type="hidden" name="id" value="[[item.json.id]]">
 					<span class="input-group-btn">
