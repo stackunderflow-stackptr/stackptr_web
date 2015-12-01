@@ -178,7 +178,6 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 				$scope.userList[v.id] = v;
 				$scope.updateMarker(v);
 			});
-			$scope.userListEmpty = ($scope.userList.length) == 0;
 		} else if (item.type == 'user-del') {
 			item.data.forEach(function(v) {
 				delete $scope.userList[v.id];
@@ -370,6 +369,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	}
 
 	$scope.resetGroup = function() {
+    var key = null;
 		for (key in $scope.grouplist) break;
 		$scope.group = parseInt(key);
 		$scope.selectGroup();
@@ -579,7 +579,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		$wamp.subscribe('com.stackptr.user', $scope.processWS);
 		$wamp.subscribe('com.stackptr.group', $scope.processWS);
 
-		$wamp.call('com.stackptr.api.userList').then($scope.processData);
+		$wamp.call('com.stackptr.api.userList').then($scope.postUserList);
 		$wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
 		$wamp.call('com.stackptr.api.groupData', [], {
 			gid: $scope.group
@@ -593,6 +593,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			$scope.resetGroup();
 		}
 	}
+
+  $scope.postUserList = function(data) {
+    $scope.processData(data);
+    $scope.userListEmpty = $.isEmptyObject($scope.userList);
+  }
 
 	$scope.$on("$wamp.close", function(event, data) {
 		$scope.status = "Disconnected: " + data.reason;

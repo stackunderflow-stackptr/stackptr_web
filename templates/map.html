@@ -47,6 +47,7 @@
 		<li><a ng-click="toggleUserMenu()">Tracked Users</a></li>
 		<li><a ng-click="toggleGroupMenu()">Groups</a></li>
 		<li><a href="/api/">Manage API keys</a></li>
+		<li><a href="https://stackptr.readthedocs.org/">API Docs</a></li>
 	</ul>
 	<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
 		<li class="dropdown">
@@ -60,12 +61,13 @@
 	</ul>
 	
 	<ul class="nav navbar-nav navbar-right visible-sm-block visible-xs-block">
+		<li><a ng-click="toggleUserMenu()"><span class="glyphicon glyphicon-user"></span></a></li>
+		<li><a ng-click="toggleGroupMenu()"><span class="glyphicon glyphicon-th"></span></a></li>
 		<li class="dropdown">
-			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
 			<ul class="dropdown-menu" role="menu">
-				<li><a ng-click="toggleUserMenu()">Tracked Users</a></li>
-				<li><a ng-click="toggleGroupMenu()">Groups</a></li>
 				<li><a href="/api/">Manage API keys</a></li>
+				<li><a href="https://stackptr.readthedocs.org/">API Docs</a></li>
 				<li class="divider"></li>
 				<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
 				<li class="divider"></li>
@@ -88,10 +90,8 @@
 		<img width="32" height="32" class="user-icon" ng-src="[[userMe.icon]]" ng-click="center.lat = userMe.loc[0]; center.lng = userMe.loc[1]; center.zoom = 16">
 		<span class="userme-label">[[userMe.username]]<span ng-if="userMe.lastupd > 0">, </span><span am-time-ago="userMe.lastupd" am-preprocess="unix" ng-if="userMe.lastupd > 0">,</span></span>
 		
-		<div ng-if="userMe.lastupd < 0">Your position has never been updated, insert information about mobile clients here...</div>
+		<div ng-if="userMe.lastupd < 0">Your position has never been updated. You can install the mobile client for Android <a href="https://play.google.com/apps/testing/com.stackunderflow.stackptr">here</a> (iOS coming soon)</div>
 				
-		<div ng-if="userListEmpty">Your user list is empty. Click the + to add someone.</div>
-		
 		<span ng-if="(hUsers = (userList | updateRange:0:60)).length"><div class="label" >&lt;1m ago</div></span>
 		
 		<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers" ng-src="[[user.icon]]"
@@ -141,6 +141,9 @@
 			<a onClick='delUserClick(this,[[user.id]])'>Delete</a>">
 
 		<br>
+
+		<div ng-if="userListEmpty">Your user list is empty. Click the <span class="glyphicon glyphicon-plus"></span> to add another user.</div>
+
 
 			<span class="glyphicon glyphicon-plus" onclick="$('#adduser').collapse('toggle')"></span>
 			<div class="collapse" id="adduser">
