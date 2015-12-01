@@ -669,7 +669,8 @@ function shiftGroupMenu() {
 	var ump = um.position();
 	var umb = ump.top + um.height();
 	gm.css("top", umb + 8);
-	gm.css("left", ump.left);
+  var umr = $(window).width() - (ump.left + um.width() + 2);
+	gm.css("right", umr);
 
 	var wh = $(window).height();
 	gm.css("height", wh - umb - 16);
