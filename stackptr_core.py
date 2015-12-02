@@ -168,7 +168,7 @@ def locHist(target=None, guser=None, db=None):
 		lhdata = [{ 'lat': l.lat, 'lng': l.lon } for l in lh]
 		lhmsg = {'type': 'lochist', 'data': [{'id': target, 'lochist': lhdata}]}
 		return [lhmsg]
-	return "Permission denied"
+	return error("Permission denied")
 
 
 ###########
@@ -248,6 +248,15 @@ def joinGroup(gid=None, pm=None, guser=None, db=None):
 
 
 def leaveGroup(gid=None, pm=None, guser=None, db=None):
+	admins = db.session.query(GroupMember)\
+					   .filter(GroupMember.groupid == int(gid))\
+					   .filter(GroupMember.role == 2)\
+					   .all()
+
+	if len(admins) == 1 and admins[0].userid == guser.id:
+		return error("You are the only admin in this group - you may not leave")
+	return error("test")
+
 	gl = db.session.query(GroupMember)\
 				   .filter(GroupMember.groupid == int(gid))\
 				   .filter(GroupMember.userid == guser.id)\
@@ -333,22 +342,25 @@ def groupData(db=None, guser=None, gid=None):
 
 	gd = db.session.query(Object).filter_by(group = gid).all()
 
-	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group, 'json': json.loads(item.json)} for item in gd]
+	res = [{'name': item.name, 'owner': item.owner.username, 'id': item.id, 'groupid': item.group, 
+			'description': item.description, 'json': json.loads(item.json)} for item in gd]
 	return [{'type': 'groupdata', 'data': res}]
 
-def addFeature(db=None, pm=None, name=None, group=None, guser=None, gjson=None):
-	if not roleInGroup(db=db, guser=guser, group=group): return []
+def addFeature(db=None, pm=None, name=None, group=None, guser=None, description=None, gjson=None):
+	if not roleInGroup(db=db, guser=guser, group=group): return error("Not allowed")
 
 	feature = Object()
 	feature.name = name
 	feature.group = int(group)
 	feature.ownerid = guser.id
 	feature.json = gjson
+	feature.description = description
 	db.session.add(feature)
 	db.session.commit()
 	
 	js = json.loads(feature.json)
-	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group,'json': js}]
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 
+			'description': feature.description, 'groupid': feature.group, 'json': js}]
 
 	allowed_list = sessions_for_group(group, db=db)
 	pm("com.stackptr.group", "groupdata", msg=res, eligible=allowed_list)
@@ -357,27 +369,17 @@ def addFeature(db=None, pm=None, name=None, group=None, guser=None, gjson=None):
 
 	return [{'type': 'groupdata', 'data': res}]
 
-def renameFeature(db=None, pm=None, fid=None, name=None, guser=None):
+def editFeature(db=None, pm=None, fid=None, gjson=None, name=None, description=None, guser=None):
 	feature = db.session.query(Object).filter_by(id = int(fid)).first()
 	if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
-	feature.name = name
+	
+	if name: feature.name = name
+	if description: feature.description = description
+	if gjson: feature.json = gjson
+	
 	db.session.commit()
 	# FIXME: Use HTTP status codes to indicate success/failure.
 	js = json.loads(feature.json)
-	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group, 'json': js}]
-	
-	allowed_list = sessions_for_group(feature.group, db=db)
-	pm("com.stackptr.group", "groupdata", msg=res, eligible=allowed_list)
-
-	return [{'type': 'groupdata', 'data': res}]
-
-def editFeature(db=None, pm=None, fid=None, gjson=None, guser=None):
-	feature = db.session.query(Object).filter_by(id = int(fid)).first()
-	if not roleInGroup(db=db, guser=guser, group=feature.group): return error("Not allowed")
-	feature.json = gjson
-	db.session.commit()
-	# FIXME: Use HTTP status codes to indicate success/failure.
-	js = json.loads(gjson)
 	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group, 'json': js}]
 	
 	allowed_list = sessions_for_group(feature.group, db=db)
@@ -403,14 +405,19 @@ def deleteFeature(db=None, pm=None, fid=None, guser=None):
 
 
 ############
-def addUser(user, pm=None, guser=None, db=None):
+def addUser(user=None, pm=None, guser=None, db=None):
 	#lookup userid for name
 	
 	userObj = db.session.query(Users).filter(Users.username==user).first()
 	if not userObj:
 		userObj = db.session.query(Users).filter(Users.email==user).first()
 	if not userObj:
-		return "user unknown"
+		return error("user unknown")
+
+	# check that i don't already have them
+	fuser = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.following_user==userObj).first()
+	if fuser:
+		return error("user already added")
 	
 	# first allow that user to see my position
 	fobj = db.session.query(Follower).filter(Follower.follower_user==userObj, Follower.following==guser.id).first()
@@ -436,8 +443,6 @@ def addUser(user, pm=None, guser=None, db=None):
 		puser = db.session.query(Users).filter(Users.id==fobj2.following).first()
 		# yes, that should just be the following_user object on fobj2
 		# but the object is newly created so that hasn't been looked up yet?
-		print "puser %s" % puser
-
 		pending = [{ 'username': puser.username,
 					 'icon': gravatar(puser.email),
 					 'id': puser.id }]
@@ -457,16 +462,11 @@ def addUser(user, pm=None, guser=None, db=None):
 		tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
 		user_upd = [user_object(tu)]
 		pm("com.stackptr.user", "user", msg=user_upd, eligible=allowed_list)
-
-		return []#[{'type': 'user-pending', 'data': [pending]}]
 	
-	
-	# send a user and request object to com.stackptr.user targeted at the user just added
-	#todo
 	return []
 
-def acceptUser(user, pm=None, guser=None, db=None):
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
+def acceptUser(uid=None, pm=None, guser=None, db=None):
+	fobj = db.session.query(Follower).filter(Follower.follower==uid, Follower.following==guser.id).first()
 	if not fobj:
 		return "no user request"
 	fobj.confirmed = 1
@@ -484,27 +484,26 @@ def acceptUser(user, pm=None, guser=None, db=None):
 	pm("com.stackptr.user", "user", msg=user_upd, eligible=allowed_list)
 
 	# send delete user request to me
-
 	request_del = [{'id': fobj.follower}]
 	allowed_list = sessions_for_uid(guser.id, db=db)
 	pm("com.stackptr.user", "user-request-del", msg=request_del, eligible=allowed_list)
 
 	return []
 
-def delUser(user, pm=None, guser=None, db=None):
-	fobj = db.session.query(Follower).filter(Follower.follower==user, Follower.following==guser.id).first()
+def delUser(uid=None, pm=None, guser=None, db=None):
+	fobj = db.session.query(Follower).filter(Follower.follower==uid, Follower.following==guser.id).first()
 	if fobj:
-		allowed_list = sessions_for_uid(user,db=db)
+		allowed_list = sessions_for_uid(uid,db=db)
 		delu = [{'id': guser.id}]
 		pm("com.stackptr.user", "user-del", msg=delu, eligible=allowed_list)
 		pm("com.stackptr.user", "user-request-del", msg=delu, eligible=allowed_list)
 		pm("com.stackptr.user", "user-pending-del", msg=delu, eligible=allowed_list)
 		db.session.delete(fobj)
 		print "delete 1"
-	fobj2 = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.following==user).first()
+	fobj2 = db.session.query(Follower).filter(Follower.follower==guser.id, Follower.following==uid).first()
 	if fobj2:
 		allowed_list = sessions_for_uid(guser.id,db=db)
-		delu = [{'id': user}]
+		delu = [{'id': uid}]
 		pm("com.stackptr.user", "user-del", msg=delu, eligible=allowed_list)
 		pm("com.stackptr.user", "user-request-del", msg=delu, eligible=allowed_list)
 		pm("com.stackptr.user", "user-pending-del", msg=delu, eligible=allowed_list)
@@ -513,9 +512,5 @@ def delUser(user, pm=None, guser=None, db=None):
 	db.session.commit()
 	
 	# remove from users, pending users, and request users
-	retmsg = [{'type': 'user-deleted', 'data': [user]}]
-	return retmsg
-	
-	#send a message to that user
-	#todo
+	return [{'type': 'user-deleted', 'data': [uid]}]
 

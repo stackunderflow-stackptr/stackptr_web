@@ -379,7 +379,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.postGroupLeft = function(data) {
 		$scope.processData(data);
-		$scope.resetGroup();
+    if (data[0].type != "error") {
+		  $scope.resetGroup();
+    }
 	}
 
 	$scope.updateGroup = function(group, hide, $event) {
@@ -492,7 +494,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.renameGroupItem = function($event) {
 		var etf = $event.target.form || $event.target;
-		$wamp.call('com.stackptr.api.renameFeature', [], {
+		$wamp.call('com.stackptr.api.editFeature', [], {
 			fid: etf.id.value,
 			name: etf.name.value
 		}).then($scope.processData);
@@ -537,13 +539,13 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.delUser = function(uid) {
 		$wamp.call('com.stackptr.api.delUser', [], {
-			user: uid
+			uid: uid
 		}).then($scope.processData);
 	}
 
 	$scope.acceptUser = function(uid) {
 		$wamp.call('com.stackptr.api.acceptUser', [], {
-			user: uid
+			uid: uid
 		}).then($scope.processData);
 	}
 

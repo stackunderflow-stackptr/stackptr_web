@@ -251,19 +251,19 @@ def lochist():
 @login_required
 def acceptuser():
 	user = request.form['uid']
-	return json.dumps(stackptr_core.acceptUser(user, pm=publish_message, guser=g.user, db=db))
+	return json.dumps(stackptr_core.acceptUser(uid=user, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/adduser', methods=['POST'])
 @login_required
 def adduser():
 	user = request.form['user']
-	return json.dumps(stackptr_core.addUser(user, pm=publish_message, guser=g.user, db=db))
+	return json.dumps(stackptr_core.addUser(user=user, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/deluser', methods=['POST'])
 @login_required
 def deluser():
 	user = request.form['uid']
-	return json.dumps(stackptr_core.delUser(user, pm=publish_message, guser=g.user, db=db))
+	return json.dumps(stackptr_core.delUser(uid=user, pm=publish_message, guser=g.user, db=db))
 
 ###########
 
@@ -345,21 +345,16 @@ def delfeature():
 	fid = int(request.form['fid'])
 	return json.dumps(stackptr_core.deleteFeature(db=db, pm=publish_message, fid=fid, guser=g.user.id))
 
-@app.route('/renamefeature', methods=['POST'])
-@cross_origin()
-@login_required
-def renamefeature():
-	feature_name = request.form['name']
-	fid = int(request.form['fid'])
-	return json.dumps(stackptr_core.renameFeature(db=db, pm=publish_message, fid=fid, name=feature_name, guser=g.user.id))
 
 @app.route('/editfeature', methods=['POST'])
 @cross_origin()
 @login_required
 def editfeature():
-	gjson = request.form['geojson']
+	gjson = request.form.get('geojson', None)
+	name = request.form.get('name', None)
+	description = request.form.get('description', None)
 	fid = int(request.form['fid'])
-	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, fid=fid, gjson=gjson, guser=g.user.id))
+	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, fid=fid, gjson=gjson, name=name, description=description, guser=g.user.id))
 
 
 if __name__ == '__main__':

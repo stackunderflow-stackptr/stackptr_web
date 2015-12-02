@@ -203,13 +203,15 @@
 					<span class="input-group-btn">
 						<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
 					</span>
-					<span class="input-group-btn">
-						<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
-					</span>
 				</form>
 				<b>Created by</b>: [[ item.owner ]]<br>
 				<b>Type</b>: [[item.json.geometry.type]]<br>
 				<b>ID</b>: [[item.json.id]]<br>
+				<b>Description</b>: [[item.description]]<br>
+
+				<span class="input-group-btn">
+					<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
+				</span>
 			</div>
 		</span>
 		</div>

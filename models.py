@@ -100,6 +100,7 @@ class Object(Base):
 	group = Column(Integer, ForeignKey('group.id'))
 	ownerid = Column(Integer, ForeignKey('users.id'))
 	json = Column(Text)
+	description = Column(Text)
 	
 	owner = relationship('Users', foreign_keys=ownerid, lazy='joined',
 					primaryjoin="Object.ownerid==Users.id")

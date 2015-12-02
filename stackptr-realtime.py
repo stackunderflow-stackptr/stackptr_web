@@ -131,12 +131,12 @@ class StackPtrAPI(ApplicationSession):
 			return stackptr_core.addUser(user=user, pm=publish_message, guser=guser, db=db)
 
 		@api_function
-		def acceptUser(guser=None, details=None, user=None):
-			return stackptr_core.acceptUser(user=user, pm=publish_message, guser=guser, db=db)
+		def acceptUser(guser=None, details=None, uid=None):
+			return stackptr_core.acceptUser(uid=uid, pm=publish_message, guser=guser, db=db)
 
 		@api_function
-		def delUser(guser=None, details=None, user=None):
-			return stackptr_core.delUser(user=user, pm=publish_message, guser=guser, db=db)
+		def delUser(guser=None, details=None, uid=None):
+			return stackptr_core.delUser(uid=uid, pm=publish_message, guser=guser, db=db)
 
 		###############################
 		
@@ -175,16 +175,12 @@ class StackPtrAPI(ApplicationSession):
 			return stackptr_core.groupData(db=db, guser=guser, gid=gid)
 
 		@api_function
-		def addFeature(guser=None, details=None, name=None, group=None, gjson=None):
-			return stackptr_core.addFeature(db=db, pm=publish_message, guser=guser, name=name, group=group, gjson=gjson)
+		def addFeature(guser=None, details=None, name=None, group=None, gjson=None, description=None):
+			return stackptr_core.addFeature(db=db, pm=publish_message, guser=guser, name=name, description=description, group=group, gjson=gjson)
 
 		@api_function
-		def renameFeature(guser=None, details=None, fid=None, name=None):
-			return stackptr_core.renameFeature(db=db, pm=publish_message, guser=guser, fid=fid, name=name)
-
-		@api_function
-		def editFeature(guser=None, details=None, fid=None, gjson=None):
-			return stackptr_core.editFeature(db=db, pm=publish_message, guser=guser, fid=fid, gjson=gjson)
+		def editFeature(guser=None, details=None, fid=None, gjson=None, name=None, description=None):
+			return stackptr_core.editFeature(db=db, pm=publish_message, guser=guser, fid=fid, gjson=gjson, name=name, description=description)
 
 		@api_function
 		def deleteFeature(guser=None, details=None, fid=None):

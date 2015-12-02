@@ -7,11 +7,20 @@
 			</div>
 			<div class="modal-body">
 
+				<label for="groupadminlist">Group Administrators</label>
+				<div id="groupadminlist">
+					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+				data-trigger="hover" bs-tooltip data-placement="top" data-html="true"
+				data-title="<b>[[user.username]]</b>"
+				ng-if="user.role == 2">
+				</div>
+
 				<label for="groupuserlist">Group Members</label>
 				<div id="groupuserlist">
 					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
 				data-trigger="hover" bs-tooltip data-placement="top" data-html="true"
-				data-title="<b>[[user.username]]</b>">
+				data-title="<b>[[user.username]]</b>"
+				ng-if="user.role != 2">
 				</div>
 
 				<form>
