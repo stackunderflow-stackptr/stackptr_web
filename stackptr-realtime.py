@@ -206,7 +206,6 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(editFeature, 'com.stackptr.api.editFeature', options=RegisterOptions(details_arg='details'))
-			yield self.register(renameFeature, 'com.stackptr.api.renameFeature', options=RegisterOptions(details_arg='details'))
 			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=RegisterOptions(details_arg='details'))			
 		except Exception as e:
 			print "could not register api calls: %s" % e
