@@ -145,12 +145,11 @@ def login():
 		password = request.form['password']
 		registered_user = db.session.query(Users).filter_by(email=email).first()
 		if not registered_user:
-			return "no such user %s" % email
+			return "no such user or incorrect password", 403
 		if check_password_hash(registered_user.password, password):
 			login_user(registered_user, remember=True)
 			return redirect("/")
-		else:
-			return "incorrect password"
+		return "no such user or incorrect password", 403
 
 @app.route('/logout')
 @login_required
