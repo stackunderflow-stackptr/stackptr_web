@@ -551,10 +551,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 
 	///////////
+  var apikey = location.search.split("=")[1];
 
-
-
-	var resp = $http.post('/ws_uid', "");
+	var resp = $http.post('/ws_uid', "apikey="+encodeURIComponent(apikey));
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
 		$scope.myid = rdata;
@@ -565,17 +564,27 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
 		if (data.method === "ticket") {
-			var csrf = $http.get('/csrf', "");
-			csrf.success(function(cdata, status, headers, config) {
-				$http.defaults.headers.post['X-CSRFToken'] = cdata;
-				var resp = $http.post('/ws_token', "");
-				resp.success(function(rdata, status, headers, config) {
-					console.log(rdata);
-					data.promise.resolve(rdata);
-				});
-			});
-		}
+      if (apikey) {
+        $scope.getWSToken(data);
+      } else {
+  			var csrf = $http.get('/csrf', "");
+  			csrf.success(function(cdata, status, headers, config) {
+  				$http.defaults.headers.post['X-CSRFToken'] = cdata;
+  				$scope.getWSToken(data);
+  			});
+      }
+		} else {
+      alert("Could not auth to server - ticket auth not offered!");
+    }
 	});
+
+  $scope.getWSToken = function(data) {
+    var resp = $http.post('/ws_token', "apikey="+encodeURIComponent(apikey));
+    resp.success(function(rdata, status, headers, config) {
+      console.log(rdata);
+      data.promise.resolve(rdata);
+    });
+  }
 
 	$scope.$on("$wamp.open", function(event, session) {
 		$scope.status = "Connected";
