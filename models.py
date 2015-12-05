@@ -136,9 +136,9 @@ class GroupLocShare(Base):
 	
 	
 	user = relationship('Users', foreign_keys=userid, lazy='joined',
-					primaryjoin="GroupMember.userid==Users.id")
+					primaryjoin="GroupLocShare.userid==Users.id")
 	group = relationship('Group', foreign_keys=groupid, lazy='joined',
-					primaryjoin="GroupMember.groupid==Group.id")
+					primaryjoin="GroupLocShare.groupid==Group.id")
 
 	def __init__(self, gid, uid):
 		self.groupid = gid
