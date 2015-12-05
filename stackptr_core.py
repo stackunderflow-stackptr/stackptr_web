@@ -30,6 +30,10 @@ def user_object(user):
 			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
 			'extra': process_extra(user.extra)}
 
+def user_object_with_gid(tp,gid):
+	uo = user_object(tp)
+	uo.update({'gid': gid})
+	return uo
 
 def group_user_object(gm):
 	return {'username': gm.user.username,
@@ -466,6 +470,82 @@ def deleteFeature(db=None, pm=None, fid=None, guser=None):
 		# FIXME: Use HTTP status codes to indicate success/failure.
 		return [{'type': 'groupdata-del', 'data': res}]
 	return error("No such feature")
+
+############
+
+def getSharedToGroups(db=None, guser=None):
+	gls = db.session.query(GroupLocShare)\
+			  		.filter(GroupLocShare.userid == guser.id)\
+			  		.all()
+	res = [{'gid': share.groupid, 'start': utc_seconds(share.time)} for share in gls]
+	return [{'type': 'grouplocshare', 'data': res}]
+
+def setShareToGroup(gid=None, share=None, db=None, guser=None, pm=None):
+	if share > 0:
+		gl = db.session.query(GroupLocShare)\
+					   .filter(GroupLocShare.groupid == gid)\
+					   .filter(GroupLocShare.userid == guser.id)\
+					   .first()
+		if gl:
+			return error("Already sharing to that group")
+		gls = GroupLocShare(gid,guser.id)
+		db.session.add(gls)
+		db.session.commit()
+
+		res = [{'gid': gid, 'start': utc_seconds(gls.time)}]
+
+		allowed_list = sessions_for_uid(guser.id, db=db)
+		pm("com.stackptr.user", "grouplocshare", msg=res, eligible=allowed_list)
+
+		tp = db.session.query(TrackPerson)\
+					   .filter(TrackPerson.userid == guser.id)\
+					   .first()
+		if not tp: return [{'type': 'grouplocshare', 'data': res}]
+
+		res2 = [user_object_with_gid(tp, gid)]
+		allowed_list = sessions_for_group(gid, db=db)
+		pm("com.stackptr.user", "grouplocshareuser", msg=res2, eligible=allowed_list)
+
+		# send current location to group
+
+		return [{'type': 'grouplocshare', 'data': res}]
+	else:
+		gl = db.session.query(GroupLocShare)\
+					   .filter(GroupLocShare.groupid == gid)\
+					   .filter(GroupLocShare.userid == guser.id)\
+					   .first()
+		if (gl):
+			db.session.delete(gl)
+			db.session.commit()
+			
+			res = [{'gid': gid}]
+			allowed_list = sessions_for_uid(guser.id, db=db)
+			pm("com.stackptr.user", "grouplocshare-del", msg=res, eligible=allowed_list)
+
+			res2 = [{'id': guser.id, 'gid': gid}]
+			allowed_list = sessions_for_group(gid, db=db)
+			pm("com.stackptr.user", "grouplocshareuser-del", msg=res2, eligible=allowed_list)
+
+			return [{'type': 'grouplocshare-del', 'data': res}]
+
+			# send delete message to group
+
+		else:
+			return error("Not sharing to group")
+
+def sharedGroupLocs(gid=None, db=None, guser=None):
+	if not roleInGroup(db=db, guser=guser, group=gid): return []
+
+	ll = db.session.query(GroupLocShare,TrackPerson)\
+				   .join(TrackPerson, GroupLocShare.userid == TrackPerson.userid)\
+				   .filter(GroupLocShare.groupid == gid)\
+				   .all()
+
+	res = [user_object_with_gid(tp,gid) for gls,tp in ll]
+	return [{'type': 'grouplocshareuser', 'data': res}]
+
+def sharedGroupLocHistory(gid=None, db=None, guser=None):
+	return []
 
 
 ############
