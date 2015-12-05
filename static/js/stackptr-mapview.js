@@ -8,6 +8,10 @@ if (typeof stackptr_server_base_protocol === 'undefined') {
   stackptr_server_base_protocol = window.location.protocol
 }
 
+if (typeof stackptr_apikey == 'undefined') {
+  stackptr_apikey = location.search.split("=")[1];
+}
+
 stackptr_server_base_addr = stackptr_server_base_protocol + "//" + stackptr_server_base_host;
 
 var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider) {
@@ -579,9 +583,8 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 
 	///////////
-  var apikey = location.search.split("=")[1];
-
-	var resp = $http.post(stackptr_server_base_addr + '/ws_uid', "apikey="+encodeURIComponent(apikey));
+	var resp = $http.post(stackptr_server_base_addr + '/ws_uid', 
+    (stackptr_apikey != "") ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
 		$scope.myid = rdata;
@@ -592,7 +595,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
 		if (data.method === "ticket") {
-      if (apikey) {
+      if (stackptr_apikey != "") {
         $scope.getWSToken(data);
       } else {
   			var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
@@ -607,7 +610,8 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	});
 
   $scope.getWSToken = function(data) {
-    var resp = $http.post(stackptr_server_base_addr + '/ws_token', "apikey="+encodeURIComponent(apikey));
+    var resp = $http.post(stackptr_server_base_addr + '/ws_token', 
+      (stackptr_apikey != "") ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
     resp.success(function(rdata, status, headers, config) {
       console.log(rdata);
       data.promise.resolve(rdata);
