@@ -56,7 +56,7 @@
 					<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
 				</ul>
 		</li>
-		<li><a class="refreshtimer">[[status]]</a></li>
+		<li><a>[[status]]</a></li>
 		<li><a href="/logout">Log out</a></li>
 	</ul>
 	
@@ -71,7 +71,7 @@
 				<li class="divider"></li>
 				<li ng-repeat="(tilename,tile) in tileservers"><a ng-click="setTileServer([[tilename]])">[[tile.name]]</a></li>
 				<li class="divider"></li>
-				<li><a class="refreshtimer">[[status]]</a></li>
+				<li><a>[[status]]</a></li>
 				<li class="divider"></li>
 				<li><a>Logged in as: {{ current_user }}</a></li>
 				<li><a href="/logout">Log out</a></li>
