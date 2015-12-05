@@ -223,7 +223,6 @@ def joinGroup(gid=None, pm=None, guser=None, db=None):
 	# something different if user invited to group
 	if group.status != 0: return error("Not allowed")
 
-
 	gl = db.session.query(GroupMember, Group)\
 				   .join(Group, GroupMember.groupid == Group.id)\
 				   .filter(Group.id == gid)\
@@ -245,6 +244,71 @@ def joinGroup(gid=None, pm=None, guser=None, db=None):
 	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
 
 	return [{'type': 'grouplist', 'data': res}]
+
+def groupUserMod(gid=None, uid=None, user=None, role=None, pm=None, guser=None, db=None):
+	if not roleInGroup(db=db, guser=guser, group=gid, roleMin=2): return error("Not an admin")
+
+	role = 2 if role > 2 else role
+	role = 0 if role < 0 else role
+
+	group = db.session.query(Group)\
+					  .filter(Group.id == gid)\
+					  .first()
+	if not group: return error("No such group")
+
+	if not uid and not user: return error("No user")
+
+	if not uid:
+		userObj = db.session.query(Users).filter(Users.username==user).first()
+		if not userObj:
+			userObj = db.session.query(Users).filter(Users.email==user).first()
+		if not userObj:
+			return error("user unknown")
+		uid = userObj.id
+
+	if int(uid) == guser.id:
+		admins = db.session.query(GroupMember)\
+					   .filter(GroupMember.groupid == int(gid))\
+					   .filter(GroupMember.role == 2)\
+					   .all()
+		print len(admins)
+
+		if len(admins) == 1:
+			return error("You are the only admin in this group - you may not demote yourself")
+
+	gl = db.session.query(GroupMember)\
+				   .filter(GroupMember.groupid == gid)\
+				   .filter(GroupMember.userid == uid)\
+				   .first()
+	
+	if gl and role > 0: # already in group
+		print "already in group"
+		gl.role = role
+		db.session.add(gl)
+		db.session.commit()
+	elif gl and role == 0:
+		db.session.delete(gl)
+		db.session.commit()
+	elif not gl and role > 0:
+		print "adding to group"
+		gm = GroupMember()
+		gm.groupid = int(gid)
+		gm.userid = uid
+		gm.role = role
+		db.session.add(gm)
+		db.session.commit()
+	else:
+		return error("User not in group")
+
+	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
+			'status': group.status, 'members': [group_user_object(gm) for gm in group.members] }]
+
+	allowed_list = sessions_for_group(gid, db=db)
+	pm("com.stackptr.group", "grouplist", msg=res, eligible=allowed_list)
+
+	return [{'type': 'grouplist', 'data': res}]
+
+
 
 
 def leaveGroup(gid=None, pm=None, guser=None, db=None):

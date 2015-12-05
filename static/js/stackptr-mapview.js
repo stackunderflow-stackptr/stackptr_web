@@ -395,6 +395,23 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		hide();
 	}
 
+  $scope.groupAddUser = function($event,role) {
+    var etf = $event.target.form || $event.target;
+    $wamp.call('com.stackptr.api.groupUserMod', [], {
+      gid: $scope.group,
+      user: etf.user.value,
+      role: role
+    }).then($scope.processData);
+  };
+
+  $scope.setRoleUser = function(uid,role) {
+    $wamp.call('com.stackptr.api.groupUserMod', [], {
+      gid: $scope.group,
+      uid: uid,
+      role: role
+    }).then($scope.processData);
+  };
+
 	/////
 
 	$scope.updateGroupData = function(cid) {
@@ -714,6 +731,11 @@ $(document).ready(function() {
 		$("#usermenu").on("DOMSubtreeModified", shiftGroupMenu);
 	}
 });
+
+function setRoleUserClick(uid, role) {
+  var $scope = angular.element($('body')).scope();
+  $scope.setRoleUser(uid,role);
+}
 
 function delUserClick(item, uid) {
 	var $scope = angular.element($('body')).scope();

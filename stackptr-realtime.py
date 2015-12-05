@@ -155,6 +155,10 @@ class StackPtrAPI(ApplicationSession):
 		@api_function
 		def joinGroup(guser=None, details=None, gid=None):
 			return stackptr_core.joinGroup(gid=gid, pm=publish_message, guser=guser, db=db)
+
+		@api_function
+		def groupUserMod(gid=None, uid=None, user=None, role=None, pm=None, guser=None, details=None):
+			return stackptr_core.groupUserMod(gid=gid, uid=uid, user=user, role=role, pm=publish_message, guser=guser, db=db)
 		
 		@api_function
 		def leaveGroup(guser=None, details=None, gid=None):
@@ -199,6 +203,7 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=RegisterOptions(details_arg='details'))
 			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=RegisterOptions(details_arg='details'))
 			yield self.register(joinGroup, 'com.stackptr.api.joinGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(groupUserMod, 'com.stackptr.api.groupUserMod', options=RegisterOptions(details_arg='details'))
 			yield self.register(leaveGroup, 'com.stackptr.api.leaveGroup', options=RegisterOptions(details_arg='details'))
 			yield self.register(deleteGroup, 'com.stackptr.api.deleteGroup', options=RegisterOptions(details_arg='details'))
 			yield self.register(updateGroup, 'com.stackptr.api.updateGroup', options=RegisterOptions(details_arg='details'))

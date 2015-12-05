@@ -291,8 +291,18 @@ def creategroup():
 @cross_origin()
 @login_required
 def joingroup():
-	name = request.form.get('gid')
+	gid = request.form.get('gid')
 	return json.dumps(stackptr_core.joinGroup(db=db, pm=publish_message, guser=g.user, gid=gid))
+
+@app.route('/groupusermod', methods=['POST'])
+@cross_origin()
+@login_required
+def groupusermod():
+	gid = request.form.get('gid')
+	uid = request.form.get('uid')
+	user = request.form.get('user')
+	role = request.form.get('role')
+	return json.dumps(stackptr_core.groupUserMod(gid=gid, uid=uid, user=user, role=role, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/leavegroup', methods=['POST'])
 @cross_origin()
