@@ -128,6 +128,23 @@ class GroupMember(Base):
 	def __init__(self):
 		pass
 
+class GroupLocShare(Base):
+	__tablename__ = "group_loc_share"
+	groupid = Column(Integer, ForeignKey('group.id'), primary_key=True)
+	userid = Column(Integer, ForeignKey('users.id'), primary_key=True)
+	time = Column(DateTime())
+	
+	
+	user = relationship('Users', foreign_keys=userid, lazy='joined',
+					primaryjoin="GroupMember.userid==Users.id")
+	group = relationship('Group', foreign_keys=groupid, lazy='joined',
+					primaryjoin="GroupMember.groupid==Group.id")
+
+	def __init__(self, gid, uid):
+		self.groupid = gid
+		self.userid = uid
+		self.time = datetime.datetime.utcnow()
+
 class AuthTicket(Base):
 	__tablename__ = "auth_ticket"
 	key = Column(String(32), primary_key=True)
