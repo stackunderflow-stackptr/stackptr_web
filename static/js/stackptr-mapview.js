@@ -1,14 +1,23 @@
-// stackptr-mapview.js
-// this is for stuff specific to stackptr.com, not external maps
 var isMobileUi = L.Browser.mobile;
+
+if (typeof stackptr_server_base_host === 'undefined') {
+  stackptr_server_base_host = window.location.host
+}
+
+if (typeof stackptr_server_base_protocol === 'undefined') {
+  stackptr_server_base_protocol = window.location.protocol
+}
+
+stackptr_server_base_addr = stackptr_server_base_protocol + "//" + stackptr_server_base_host;
 
 var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider) {
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
 app.config(function($wampProvider, $modalProvider) {
+  var wsurl = (stackptr_server_base_protocol == 'https:' ? 'wss://' : 'ws://') + stackptr_server_base_host + '/ws';
 	$wampProvider.init({
-		url: (window.location.protocol == 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws',
+		url: wsurl,
 		realm: 'stackptr',
 		authmethods: ["ticket"],
 		max_retries: -1,
@@ -275,7 +284,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 					iconSize: [32, 32],
 					iconAnchor: [16, 16],
 				},
-				message: '<div ng-include="\'/static/template/user.html\'"></div>',
+				message: '<div ng-include="\'' + stackptr_server_base_addr + '/static/template/user.html\'"></div>',
 				myId: userObj.id,
 				isMe: userObj.id == $scope.userMe.id,
 				getMessageScope: function() {
@@ -570,7 +579,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	///////////
   var apikey = location.search.split("=")[1];
 
-	var resp = $http.post('/ws_uid', "apikey="+encodeURIComponent(apikey));
+	var resp = $http.post(stackptr_server_base_addr + '/ws_uid', "apikey="+encodeURIComponent(apikey));
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
 		$scope.myid = rdata;
@@ -584,7 +593,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
       if (apikey) {
         $scope.getWSToken(data);
       } else {
-  			var csrf = $http.get('/csrf', "");
+  			var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
   			csrf.success(function(cdata, status, headers, config) {
   				$http.defaults.headers.post['X-CSRFToken'] = cdata;
   				$scope.getWSToken(data);
@@ -596,7 +605,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	});
 
   $scope.getWSToken = function(data) {
-    var resp = $http.post('/ws_token', "apikey="+encodeURIComponent(apikey));
+    var resp = $http.post(stackptr_server_base_addr + '/ws_token', "apikey="+encodeURIComponent(apikey));
     resp.success(function(rdata, status, headers, config) {
       console.log(rdata);
       data.promise.resolve(rdata);
