@@ -601,7 +601,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
   $scope.setShareToGroup = function(group, share, hide, $event) {
     $wamp.call('com.stackptr.api.setShareToGroup', [], {
-      gid: $scope.group,
+      gid: group,
       share: share
     }).then($scope.processData);
     if (hide) hide();
