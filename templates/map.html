@@ -209,9 +209,12 @@
 				<b>ID</b>: [[item.json.id]]<br>
 				<b>Description</b>: [[item.description]]<br>
 
-				<span class="input-group-btn">
-					<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
-				</span>
+				<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
+					<input type="hidden" name="id" value="[[item.json.id]]">
+					<span class="input-group-btn">
+						<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
+					</span>
+				</form>
 			</div>
 		</span>
 		</div>
