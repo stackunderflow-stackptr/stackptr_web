@@ -35,6 +35,8 @@ app.run(function($http) {
 
 app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp) {
 
+  stackptr_leafletdata_map = leafletData.getMap;
+
 	$scope.tiles = {
 		name: ""
 	}
