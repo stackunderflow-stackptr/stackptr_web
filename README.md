@@ -2,12 +2,12 @@
 
 ## Introduction ##
 
-This repository contains the main web applications for the StackPtr project (see also the [iOS](https://bitbucket.org/FooProject/stackptr_ios) and [Android](https://bitbucket.org/FooProject/stackptr_android) application repositories, as well as the [tools](https://bitbucket.org/FooProject/stackptr_tools) repository). This web application also contains a RESTful API used by the mobile applications.
+This repository contains the main web applications for the StackPtr project (see also the [Android](https://github.com/stackunderflow-stackptr/stackptr_android) application repositories, as well as the [tools](https://github.com/stackunderflow-stackptr/stackptr_tools) repository).
 
 ## License ##
 
-StackPtr is released under the terms of the GNU General Public License, v3. Please see the LICENSE file for the full terms of the license.
+StackPtr is released under the terms of the GNU Affero General Public License, v3. Please see the LICENSE file for the full terms of the license.
 
-## Installation ##
+## Documentation ##
 
-Please see the docs/setup.rst file for details.
+Please see the documentation at [stackptr.readthedocs.org](https://stackptr.readthedocs.org/).
