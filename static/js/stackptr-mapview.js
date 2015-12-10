@@ -188,6 +188,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.reqsListEmpty = false;
 	$scope.paths = {};
 	$scope.discoverGroupList = {};
+  $scope.groupsSharedTo = {};
+  $scope.groupShareUsers = {};
+  $scope.groupShareUsersEmpty = false;
 
 	$scope.processItem = function(item) {
 		if (item.type == 'user') {
@@ -238,7 +241,6 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 				}
 			});
 		} else if (item.type == 'groupdata') {
-			console.log(item);
 			item.data.forEach(function(v) {
 				if (v.groupid == $scope.group) {
 					$scope.groupdata[v.id] = v;
@@ -255,7 +257,31 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			item.data.forEach(function(v) {
 				$scope.paths[v.id].latlngs = v.lochist;
 			});
-		} else if (item.type == 'error') {
+    } else if (item.type == 'grouplocshare') {
+      item.data.forEach(function(v) {
+        $scope.groupsSharedTo[v.gid] = v;
+      });
+    } else if (item.type == 'grouplocshare-del') {
+      item.data.forEach(function(v) {
+        delete $scope.groupsSharedTo[v.gid];
+      });
+		} else if (item.type == 'grouplocshareuser') {
+      item.data.forEach(function(v) {
+        if (v.gid == $scope.group) {
+          $scope.groupShareUsers[v.id] = v;
+          $scope.updateMarker(v);
+        }
+      });
+      $scope.groupShareUsersEmpty = $.isEmptyObject($scope.groupShareUsers);
+    } else if (item.type == 'grouplocshareuser-del') {
+      item.data.forEach(function(v) {
+        if (v.gid == $scope.group) {
+          delete $scope.groupShareUsers[v.id];
+          delete $scope.markers[v.gid + ":" + v.id];
+        }
+      });
+      $scope.groupShareUsersEmpty = $.isEmptyObject($scope.groupShareUsers);
+    } else if (item.type == 'error') {
 			alert(item.data);
 		} else {
 			console.log(item);
@@ -273,35 +299,45 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.status = "Connecting to server...";
 
 	$scope.clickMarker = function(user) {
+		var isGroupShare = !(user.gid == undefined);
+    	var markerId = isGroupShare ? (user.gid + ":" + user.id) : user.id;
+
 		$scope.center.lat = user.loc[0];
 		$scope.center.lng = user.loc[1];
 		$scope.center.zoom = 16;
-		$scope.markers[user.id].focus = true;
+		$scope.markers[markerId].focus = true;
 		if (isMobileUi) {
-			$scope.toggleUserMenu();
+			if (isGroupShare) {
+				$scope.toggleGroupMenu();
+			} else {
+				$scope.toggleUserMenu();
+			}
 		}
 	}
 
 	$scope.updateMarker = function(userObj) {
-		if ($scope.markers[userObj.id] == null) {
-			$scope.markers[userObj.id] = {
+    var isGroupShare = !(userObj.gid == undefined);
+    var markerId = isGroupShare ? (userObj.gid + ":" + userObj.id) : userObj.id;
+
+    if (isGroupShare && (userObj.id == $scope.userMe.id)) return;
+    if (isGroupShare && ($scope.userList[userObj.id] != undefined)) return;
+
+		if ($scope.markers[markerId] == null) {
+			$scope.markers[markerId] = {
 				icon: {
 					iconUrl: userObj.icon,
 					iconSize: [32, 32],
 					iconAnchor: [16, 16],
 				},
 				message: '<div ng-include="\'' + stackptr_server_base_addr + '/static/template/user.html\'"></div>',
-				myId: userObj.id,
-				isMe: userObj.id == $scope.userMe.id,
 				getMessageScope: function() {
 					var sc = $scope.$new(false);
-					sc.myId = this.myId;
-					sc.isMe = this.isMe;
+					sc.userObj = (userObj.id == $scope.userMe.id) ? $scope.userMe : userObj;
 					return sc;
 				},
 				focus: false,
 			};
-			$scope.paths[userObj.id] = {
+			$scope.paths[markerId] = {
 				color: 'black',
 				opacity: 0.8,
 				weight: 3,
@@ -312,17 +348,19 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			img.onload = function() {
 				var colourThief = new ColorThief();
 				var colour = colourThief.getColor(img);
-				$scope.paths[userObj.id].color = rgb2hash(colour[0], colour[1], colour[2]);
+				$scope.paths[markerId].color = rgb2hash(colour[0], colour[1], colour[2]);
 			};
 			img.crossOrigin = 'Anonymous';
 			img.src = userObj.icon;
-			$wamp.call('com.stackptr.api.lochist', [], {
-				target: userObj.id
-			}).then($scope.processData);
+			if (userObj.gid == undefined) {
+        $wamp.call('com.stackptr.api.lochist', [], {
+  				target: userObj.id
+  			}).then($scope.processData);
+      }
 		}
-		$scope.markers[userObj.id].lat = userObj.loc[0];
-		$scope.markers[userObj.id].lng = userObj.loc[1];
-		$scope.paths[userObj.id].latlngs.push({
+		$scope.markers[markerId].lat = userObj.loc[0];
+		$scope.markers[markerId].lng = userObj.loc[1];
+		$scope.paths[markerId].latlngs.push({
 			lat: userObj.loc[0],
 			lng: userObj.loc[1]
 		})
@@ -477,11 +515,25 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 		var di = $scope.drawOptions.edit.featureGroup;
 		$scope.groupdata = {};
+    $scope.groupShareUsers = {};
+    $.each($scope.markers, function(v) {
+      if (v.indexOf(":") > 0) {
+        delete $scope.markers[v];
+      }
+    });
+    $.each($scope.paths, function(v) {
+      if (v.indexOf(":") > 0) {
+        delete $scope.paths[v];
+      }
+    });
 		di.clearLayers();
 
 		$wamp.call('com.stackptr.api.groupData', [], {
 			gid: $scope.group
 		}).then($scope.processData);
+    $wamp.call('com.stackptr.api.sharedGroupLocs', [], {
+      gid: $scope.group
+    }).then($scope.processData);
 	}
 
 	$scope.postNewItem = function(data) {
@@ -561,6 +613,16 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	///////////
 
+  $scope.setShareToGroup = function(group, share, hide, $event) {
+    $wamp.call('com.stackptr.api.setShareToGroup', [], {
+      gid: group,
+      share: share
+    }).then($scope.processData);
+    if (hide) hide();
+  }
+
+  ///////////
+
 
 	$scope.addUser = function($event) {
 		var etf = $event.target.form || $event.target;
@@ -626,10 +688,13 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 		$wamp.call('com.stackptr.api.userList').then($scope.postUserList);
 		$wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
+    $wamp.call('com.stackptr.api.getSharedToGroups').then($scope.processData);
 		$wamp.call('com.stackptr.api.groupData', [], {
 			gid: $scope.group
 		}).then($scope.processData);
-
+    $wamp.call('com.stackptr.api.sharedGroupLocs', [], {
+      gid: $scope.group
+    }).then($scope.processData);
 	});
 
 	$scope.postGroupList = function(data) {

@@ -11,15 +11,20 @@
 		<div class="bubble"> 
 			<div class="row">
 				<div class="col-md-12">
-					<p class="lead">[[ userObj = isMe ? userMe : userList[myId]; userObj.username ]]</p>
+					<p class="lead">[[userObj.username ]]</p>
 				</div>
 			</div>
+
 			<div class="row">
 				<div class="col-md-3">
 					<img ng-src="[[userObj.icon]]" width=96 height=96>
 					<p><button type="button" class="btn btn-danger" ng-click="delUser(userObj.id)"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete </button></p>
 				</div>
 				<div class="col-md-9">
+					<div ng-if="userObj.gid">
+						<span class="col-md-2"><b>Group:</b></span>
+						<span class="col-md-10">[[ grouplist[userObj.gid].name ]]</span>
+					</div>
 					<div>
 						<span class="col-md-2"><b>Loc:</b></span>
 						<span class="col-md-10">[[userObj.loc]]</span>

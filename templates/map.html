@@ -144,6 +144,8 @@
 
 		<div ng-if="userListEmpty">Your user list is empty. Click the <span class="glyphicon glyphicon-plus"></span> to add another user.</div>
 
+		<div ng-repeat="g in groupsSharedTo">Sharing with group [[ grouplist[g.gid].name ]]: <a ng-click="setShareToGroup(g.gid,0,null,$event)">Stop</a></div>
+
 
 			<span class="glyphicon glyphicon-plus" onclick="$('#adduser').collapse('toggle')"></span>
 			<div class="collapse" id="adduser">
@@ -189,6 +191,15 @@
 		<div class="text-white" ng-if="!(group >= 0) || group == null">
 		You have no groups. Click the <span class="glyphicon glyphicon-plus"></span> icon above to create a new group or click the <span class="glyphicon glyphicon-list"></span> icon to find an existing group.
 		</div>
+
+		<span ng-if="!groupShareUsersEmpty"><div class="label">Users sharing location</div></span>
+
+		<img width="32" height="32" class="user-icon" ng-repeat="user in groupShareUsers" ng-src="[[user.icon]]" 
+			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
+			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+			ng-click="clickMarker(user)">
+
+		<span><div class="label">Drawn Objects</div></span>
 		
 		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
 		<span id="feature-[[item.json.id]]" class="list-group-item list-item-draw" ng-repeat="item in groupdata">

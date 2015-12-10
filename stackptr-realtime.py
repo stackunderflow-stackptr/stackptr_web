@@ -190,6 +190,24 @@ class StackPtrAPI(ApplicationSession):
 		def deleteFeature(guser=None, details=None, fid=None):
 			return stackptr_core.deleteFeature(db=db, pm=publish_message, guser=guser, fid=fid)
 
+		###############################
+
+		@api_function
+		def getSharedToGroups(guser=None, details=None):
+			return stackptr_core.getSharedToGroups(db=db, guser=guser)
+
+		@api_function
+		def setShareToGroup(gid=None, share=None, guser=None, details=None):
+			return stackptr_core.setShareToGroup(gid=gid, db=db, guser=guser, share=share, pm=publish_message)
+
+		@api_function
+		def sharedGroupLocs(gid=None, guser=None, details=None):
+			return stackptr_core.sharedGroupLocs(gid=gid, db=db, guser=guser)
+
+		#@api_function
+		#def sharedGroupLocHistory(gid=None, guser=None, details=None, db=None):
+		#	return stackptr_core.sharedGroupLocHistory(gid=gid, db=db, )
+
 		################################
 		
 		try:
@@ -207,6 +225,11 @@ class StackPtrAPI(ApplicationSession):
 			yield self.register(leaveGroup, 'com.stackptr.api.leaveGroup', options=RegisterOptions(details_arg='details'))
 			yield self.register(deleteGroup, 'com.stackptr.api.deleteGroup', options=RegisterOptions(details_arg='details'))
 			yield self.register(updateGroup, 'com.stackptr.api.updateGroup', options=RegisterOptions(details_arg='details'))
+
+			yield self.register(getSharedToGroups, 'com.stackptr.api.getSharedToGroups', options=RegisterOptions(details_arg='details'))
+			yield self.register(setShareToGroup, 'com.stackptr.api.setShareToGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(sharedGroupLocs, 'com.stackptr.api.sharedGroupLocs', options=RegisterOptions(details_arg='details'))
+			#yield self.register(sharedGroupLocHistory, 'com.stackptr.api.sharedGroupLocHistory', options=RegisterOptions(details_arg='details'))
 
 			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
 			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
