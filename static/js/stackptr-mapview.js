@@ -521,6 +521,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
         delete $scope.markers[v];
       }
     });
+    $.each($scope.paths, function(v) {
+      if (v.indexOf(":") > 0) {
+        delete $scope.paths[v];
+      }
+    });
 		di.clearLayers();
 
 		$wamp.call('com.stackptr.api.groupData', [], {
