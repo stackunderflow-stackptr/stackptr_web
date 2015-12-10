@@ -584,7 +584,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	///////////
 	var resp = $http.post(stackptr_server_base_addr + '/ws_uid', 
-    (stackptr_apikey != "") ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
+    (stackptr_apikey != undefined) ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
 		$scope.myid = rdata;
@@ -595,7 +595,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
 		if (data.method === "ticket") {
-      if (stackptr_apikey != "") {
+      if (stackptr_apikey != undefined) {
         $scope.getWSToken(data);
       } else {
   			var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
@@ -611,7 +611,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
   $scope.getWSToken = function(data) {
     var resp = $http.post(stackptr_server_base_addr + '/ws_token', 
-      (stackptr_apikey != "") ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
+      (stackptr_apikey != undefined) ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
     resp.success(function(rdata, status, headers, config) {
       console.log(rdata);
       data.promise.resolve(rdata);
