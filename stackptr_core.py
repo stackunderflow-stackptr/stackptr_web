@@ -116,6 +116,19 @@ def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
 	allowed_list = sessions_for_uid(guser.id, db=db)
 	
 	pm("com.stackptr.user", "user-me", msg=msg, eligible=allowed_list)
+
+
+	# lookup list of share groups
+
+	groups = db.session.query(GroupLocShare)\
+					   .filter(GroupLocShare.userid == guser.id)\
+					   .all()
+	for group in groups:
+		allowed_list = sessions_for_group(group.groupid, db=db)
+		msg.update({'gid': group.groupid})
+		pm("com.stackptr.group", "grouplocshareuser", msg=[msg], eligible=allowed_list)
+
+	#fixme: post to group-specific endpoint
 	
 	return "OK"
 
