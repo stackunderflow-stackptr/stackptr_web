@@ -299,17 +299,29 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.status = "Connecting to server...";
 
 	$scope.clickMarker = function(user) {
+		var isGroupShare = !(user.gid == undefined);
+    	var markerId = isGroupShare ? (user.gid + ":" + user.id) : user.id;
+
 		$scope.center.lat = user.loc[0];
 		$scope.center.lng = user.loc[1];
 		$scope.center.zoom = 16;
-		$scope.markers[user.id].focus = true;
+		$scope.markers[markerId].focus = true;
 		if (isMobileUi) {
-			$scope.toggleUserMenu();
+			if (isGroupShare) {
+				$scope.toggleGroupMenu();
+			} else {
+				$scope.toggleUserMenu();
+			}
 		}
 	}
 
 	$scope.updateMarker = function(userObj) {
-    var markerId = (userObj.gid == undefined) ? userObj.id : userObj.gid + ":" + userObj.id;
+    var isGroupShare = !(userObj.gid == undefined);
+    var markerId = isGroupShare ? (userObj.gid + ":" + userObj.id) : userObj.id;
+
+    if (isGroupShare && (userObj.id == $scope.userMe.id)) return;
+    if (isGroupShare && ($scope.userList[userObj.id] != undefined)) return;
+
 		if ($scope.markers[markerId] == null) {
 			$scope.markers[markerId] = {
 				icon: {
@@ -318,12 +330,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 					iconAnchor: [16, 16],
 				},
 				message: '<div ng-include="\'' + stackptr_server_base_addr + '/static/template/user.html\'"></div>',
-				myId: userObj.id,
-				isMe: userObj.id == $scope.userMe.id,
 				getMessageScope: function() {
 					var sc = $scope.$new(false);
-					sc.myId = this.myId;
-					sc.isMe = this.isMe;
+					sc.userObj = (userObj.id == $scope.userMe.id) ? $scope.userMe : userObj;
 					return sc;
 				},
 				focus: false,
