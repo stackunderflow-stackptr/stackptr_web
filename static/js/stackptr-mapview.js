@@ -584,6 +584,14 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		}).then($scope.processData);
 	};
 
+	$scope.redescriptionGroupItem = function($event) {
+		var etf = $event.target.form || $event.target;
+		$wamp.call('com.stackptr.api.editFeature', [], {
+			fid: etf.id.value,
+			description: etf.description.value
+		}).then($scope.processData);
+	};
+
 	$scope.removeGroupItem = function($event) {
 		var etf = $event.target.form;
 		$wamp.call('com.stackptr.api.deleteFeature', [], {

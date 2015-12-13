@@ -218,7 +218,16 @@
 				<b>Created by</b>: [[ item.owner ]]<br>
 				<b>Type</b>: [[item.json.geometry.type]]<br>
 				<b>ID</b>: [[item.json.id]]<br>
-				<b>Description</b>: [[item.description]]<br>
+				<b>Description</b>:
+				<div class="form-group">
+					<form class="input-group input-group-sm">
+						<textarea name="description">[[item.description]]</textarea>
+						<input type="hidden" name="id" value="[[item.json.id]]">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" ng-click="redescriptionGroupItem($event)">Update</button>
+						</span>
+					</form>
+				</div>
 
 				<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
 					<input type="hidden" name="id" value="[[item.json.id]]">

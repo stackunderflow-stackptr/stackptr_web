@@ -461,7 +461,8 @@ def editFeature(db=None, pm=None, fid=None, gjson=None, name=None, description=N
 	db.session.commit()
 	# FIXME: Use HTTP status codes to indicate success/failure.
 	js = json.loads(feature.json)
-	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id, 'groupid': feature.group, 'json': js}]
+	res = [{'name': feature.name, 'owner': feature.owner.username, 'id': feature.id,
+			'description': feature.description, 'groupid': feature.group, 'json': js}]
 	
 	allowed_list = sessions_for_group(feature.group, db=db)
 	pm("com.stackptr.group", "groupdata", msg=res, eligible=allowed_list)
