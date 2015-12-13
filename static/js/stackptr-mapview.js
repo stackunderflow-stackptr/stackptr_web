@@ -1,15 +1,15 @@
 var isMobileUi = L.Browser.mobile;
 
 if (typeof stackptr_server_base_host === 'undefined') {
-  stackptr_server_base_host = window.location.host
+	stackptr_server_base_host = window.location.host
 }
 
 if (typeof stackptr_server_base_protocol === 'undefined') {
-  stackptr_server_base_protocol = window.location.protocol
+	stackptr_server_base_protocol = window.location.protocol
 }
 
 if (typeof stackptr_apikey == 'undefined') {
-  stackptr_apikey = location.search.split("=")[1];
+	stackptr_apikey = location.search.split("=")[1];
 }
 
 stackptr_server_base_addr = stackptr_server_base_protocol + "//" + stackptr_server_base_host;
@@ -19,7 +19,7 @@ var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate'
 });
 
 app.config(function($wampProvider, $modalProvider) {
-  var wsurl = (stackptr_server_base_protocol == 'https:' ? 'wss://' : 'ws://') + stackptr_server_base_host + '/ws';
+	var wsurl = (stackptr_server_base_protocol == 'https:' ? 'wss://' : 'ws://') + stackptr_server_base_host + '/ws';
 	$wampProvider.init({
 		url: wsurl,
 		realm: 'stackptr',
@@ -39,7 +39,7 @@ app.run(function($http) {
 
 app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp) {
 
-  stackptr_leafletdata_map = leafletData.getMap;
+	stackptr_leafletdata_map = leafletData.getMap;
 
 	$scope.tiles = {
 		name: ""
@@ -165,8 +165,8 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		center: $scope.getLastPos(),
 		drawOptions: {
 			draw: {
-        circle: false
-      },
+				circle: false
+			},
 			edit: {
 				featureGroup: new L.FeatureGroup(),
 				remove: true
@@ -188,9 +188,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.reqsListEmpty = false;
 	$scope.paths = {};
 	$scope.discoverGroupList = {};
-  $scope.groupsSharedTo = {};
-  $scope.groupShareUsers = {};
-  $scope.groupShareUsersEmpty = false;
+	$scope.groupsSharedTo = {};
+	$scope.groupShareUsers = {};
+	$scope.groupShareUsersEmpty = false;
 
 	$scope.processItem = function(item) {
 		if (item.type == 'user') {
@@ -257,31 +257,31 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			item.data.forEach(function(v) {
 				$scope.paths[v.id].latlngs = v.lochist;
 			});
-    } else if (item.type == 'grouplocshare') {
-      item.data.forEach(function(v) {
-        $scope.groupsSharedTo[v.gid] = v;
-      });
-    } else if (item.type == 'grouplocshare-del') {
-      item.data.forEach(function(v) {
-        delete $scope.groupsSharedTo[v.gid];
-      });
+		} else if (item.type == 'grouplocshare') {
+			item.data.forEach(function(v) {
+				$scope.groupsSharedTo[v.gid] = v;
+			});
+		} else if (item.type == 'grouplocshare-del') {
+			item.data.forEach(function(v) {
+				delete $scope.groupsSharedTo[v.gid];
+			});
 		} else if (item.type == 'grouplocshareuser') {
-      item.data.forEach(function(v) {
-        if (v.gid == $scope.group) {
-          $scope.groupShareUsers[v.id] = v;
-          $scope.updateMarker(v);
-        }
-      });
-      $scope.groupShareUsersEmpty = $.isEmptyObject($scope.groupShareUsers);
-    } else if (item.type == 'grouplocshareuser-del') {
-      item.data.forEach(function(v) {
-        if (v.gid == $scope.group) {
-          delete $scope.groupShareUsers[v.id];
-          delete $scope.markers[v.gid + ":" + v.id];
-        }
-      });
-      $scope.groupShareUsersEmpty = $.isEmptyObject($scope.groupShareUsers);
-    } else if (item.type == 'error') {
+			item.data.forEach(function(v) {
+				if (v.gid == $scope.group) {
+					$scope.groupShareUsers[v.id] = v;
+					$scope.updateMarker(v);
+				}
+			});
+			$scope.groupShareUsersEmpty = $.isEmptyObject($scope.groupShareUsers);
+		} else if (item.type == 'grouplocshareuser-del') {
+			item.data.forEach(function(v) {
+				if (v.gid == $scope.group) {
+					delete $scope.groupShareUsers[v.id];
+					delete $scope.markers[v.gid + ":" + v.id];
+				}
+			});
+			$scope.groupShareUsersEmpty = $.isEmptyObject($scope.groupShareUsers);
+		} else if (item.type == 'error') {
 			alert(item.data);
 		} else {
 			console.log(item);
@@ -300,7 +300,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.clickMarker = function(user) {
 		var isGroupShare = !(user.gid == undefined);
-    	var markerId = isGroupShare ? (user.gid + ":" + user.id) : user.id;
+		var markerId = isGroupShare ? (user.gid + ":" + user.id) : user.id;
 
 		$scope.center.lat = user.loc[0];
 		$scope.center.lng = user.loc[1];
@@ -316,11 +316,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	}
 
 	$scope.updateMarker = function(userObj) {
-    var isGroupShare = !(userObj.gid == undefined);
-    var markerId = isGroupShare ? (userObj.gid + ":" + userObj.id) : userObj.id;
+		var isGroupShare = !(userObj.gid == undefined);
+		var markerId = isGroupShare ? (userObj.gid + ":" + userObj.id) : userObj.id;
 
-    if (isGroupShare && (userObj.id == $scope.userMe.id)) return;
-    if (isGroupShare && ($scope.userList[userObj.id] != undefined)) return;
+		if (isGroupShare && (userObj.id == $scope.userMe.id)) return;
+		if (isGroupShare && ($scope.userList[userObj.id] != undefined)) return;
 
 		if ($scope.markers[markerId] == null) {
 			$scope.markers[markerId] = {
@@ -353,10 +353,10 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			img.crossOrigin = 'Anonymous';
 			img.src = userObj.icon;
 			if (userObj.gid == undefined) {
-        $wamp.call('com.stackptr.api.lochist', [], {
-  				target: userObj.id
-  			}).then($scope.processData);
-      }
+				$wamp.call('com.stackptr.api.lochist', [], {
+					target: userObj.id
+				}).then($scope.processData);
+			}
 		}
 		$scope.markers[markerId].lat = userObj.loc[0];
 		$scope.markers[markerId].lng = userObj.loc[1];
@@ -424,7 +424,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	}
 
 	$scope.resetGroup = function() {
-    var key = null;
+		var key = null;
 		for (key in $scope.grouplist) break;
 		$scope.group = parseInt(key);
 		$scope.selectGroup();
@@ -432,9 +432,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.postGroupLeft = function(data) {
 		$scope.processData(data);
-    if (data[0].type != "error") {
-		  $scope.resetGroup();
-    }
+		if (data[0].type != "error") {
+			$scope.resetGroup();
+		}
 	}
 
 	$scope.updateGroup = function(group, hide, $event) {
@@ -448,22 +448,22 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		hide();
 	}
 
-  $scope.groupAddUser = function($event,role) {
-    var etf = $event.target.form || $event.target;
-    $wamp.call('com.stackptr.api.groupUserMod', [], {
-      gid: $scope.group,
-      user: etf.user.value,
-      role: role
-    }).then($scope.processData);
-  };
+	$scope.groupAddUser = function($event, role) {
+		var etf = $event.target.form || $event.target;
+		$wamp.call('com.stackptr.api.groupUserMod', [], {
+			gid: $scope.group,
+			user: etf.user.value,
+			role: role
+		}).then($scope.processData);
+	};
 
-  $scope.setRoleUser = function(uid,role) {
-    $wamp.call('com.stackptr.api.groupUserMod', [], {
-      gid: $scope.group,
-      uid: uid,
-      role: role
-    }).then($scope.processData);
-  };
+	$scope.setRoleUser = function(uid, role) {
+		$wamp.call('com.stackptr.api.groupUserMod', [], {
+			gid: $scope.group,
+			uid: uid,
+			role: role
+		}).then($scope.processData);
+	};
 
 	/////
 
@@ -515,25 +515,25 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 		var di = $scope.drawOptions.edit.featureGroup;
 		$scope.groupdata = {};
-    $scope.groupShareUsers = {};
-    $.each($scope.markers, function(v) {
-      if (v.indexOf(":") > 0) {
-        delete $scope.markers[v];
-      }
-    });
-    $.each($scope.paths, function(v) {
-      if (v.indexOf(":") > 0) {
-        delete $scope.paths[v];
-      }
-    });
+		$scope.groupShareUsers = {};
+		$.each($scope.markers, function(v) {
+			if (v.indexOf(":") > 0) {
+				delete $scope.markers[v];
+			}
+		});
+		$.each($scope.paths, function(v) {
+			if (v.indexOf(":") > 0) {
+				delete $scope.paths[v];
+			}
+		});
 		di.clearLayers();
 
 		$wamp.call('com.stackptr.api.groupData', [], {
 			gid: $scope.group
 		}).then($scope.processData);
-    $wamp.call('com.stackptr.api.sharedGroupLocs', [], {
-      gid: $scope.group
-    }).then($scope.processData);
+		$wamp.call('com.stackptr.api.sharedGroupLocs', [], {
+			gid: $scope.group
+		}).then($scope.processData);
 	}
 
 	$scope.postNewItem = function(data) {
@@ -613,15 +613,15 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	///////////
 
-  $scope.setShareToGroup = function(group, share, hide, $event) {
-    $wamp.call('com.stackptr.api.setShareToGroup', [], {
-      gid: group,
-      share: share
-    }).then($scope.processData);
-    if (hide) hide();
-  }
+	$scope.setShareToGroup = function(group, share, hide, $event) {
+		$wamp.call('com.stackptr.api.setShareToGroup', [], {
+			gid: group,
+			share: share
+		}).then($scope.processData);
+		if (hide) hide();
+	}
 
-  ///////////
+	///////////
 
 
 	$scope.addUser = function($event) {
@@ -645,8 +645,8 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 
 	///////////
-	var resp = $http.post(stackptr_server_base_addr + '/ws_uid', 
-    (stackptr_apikey != undefined) ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
+	var resp = $http.post(stackptr_server_base_addr + '/ws_uid',
+		(stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "");
 	resp.success(function(rdata, status, headers, config) {
 		console.log(rdata);
 		$scope.myid = rdata;
@@ -657,28 +657,28 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
 		if (data.method === "ticket") {
-      if (stackptr_apikey != undefined) {
-        $scope.getWSToken(data);
-      } else {
-  			var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
-  			csrf.success(function(cdata, status, headers, config) {
-  				$http.defaults.headers.post['X-CSRFToken'] = cdata;
-  				$scope.getWSToken(data);
-  			});
-      }
+			if (stackptr_apikey != undefined) {
+				$scope.getWSToken(data);
+			} else {
+				var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
+				csrf.success(function(cdata, status, headers, config) {
+					$http.defaults.headers.post['X-CSRFToken'] = cdata;
+					$scope.getWSToken(data);
+				});
+			}
 		} else {
-      alert("Could not auth to server - ticket auth not offered!");
-    }
+			alert("Could not auth to server - ticket auth not offered!");
+		}
 	});
 
-  $scope.getWSToken = function(data) {
-    var resp = $http.post(stackptr_server_base_addr + '/ws_token', 
-      (stackptr_apikey != undefined) ? "apikey="+encodeURIComponent(stackptr_apikey) : "");
-    resp.success(function(rdata, status, headers, config) {
-      console.log(rdata);
-      data.promise.resolve(rdata);
-    });
-  }
+	$scope.getWSToken = function(data) {
+		var resp = $http.post(stackptr_server_base_addr + '/ws_token',
+			(stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "");
+		resp.success(function(rdata, status, headers, config) {
+			console.log(rdata);
+			data.promise.resolve(rdata);
+		});
+	}
 
 	$scope.$on("$wamp.open", function(event, session) {
 		$scope.status = "Connected";
@@ -688,13 +688,13 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 		$wamp.call('com.stackptr.api.userList').then($scope.postUserList);
 		$wamp.call('com.stackptr.api.groupList').then($scope.postGroupList);
-    $wamp.call('com.stackptr.api.getSharedToGroups').then($scope.processData);
+		$wamp.call('com.stackptr.api.getSharedToGroups').then($scope.processData);
 		$wamp.call('com.stackptr.api.groupData', [], {
 			gid: $scope.group
 		}).then($scope.processData);
-    $wamp.call('com.stackptr.api.sharedGroupLocs', [], {
-      gid: $scope.group
-    }).then($scope.processData);
+		$wamp.call('com.stackptr.api.sharedGroupLocs', [], {
+			gid: $scope.group
+		}).then($scope.processData);
 	});
 
 	$scope.postGroupList = function(data) {
@@ -704,10 +704,10 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		}
 	}
 
-  $scope.postUserList = function(data) {
-    $scope.processData(data);
-    $scope.userListEmpty = $.isEmptyObject($scope.userList);
-  }
+	$scope.postUserList = function(data) {
+		$scope.processData(data);
+		$scope.userListEmpty = $.isEmptyObject($scope.userList);
+	}
 
 	$scope.$on("$wamp.close", function(event, data) {
 		$scope.status = "Disconnected: " + data.reason;
@@ -784,7 +784,7 @@ function shiftGroupMenu() {
 	var ump = um.position();
 	var umb = ump.top + um.height();
 	gm.css("top", umb + 8);
-  var umr = $(window).width() - (ump.left + um.width() + 2);
+	var umr = $(window).width() - (ump.left + um.width() + 2);
 	gm.css("right", umr);
 
 	var wh = $(window).height();
@@ -813,8 +813,8 @@ $(document).ready(function() {
 });
 
 function setRoleUserClick(uid, role) {
-  var $scope = angular.element($('body')).scope();
-  $scope.setRoleUser(uid,role);
+	var $scope = angular.element($('body')).scope();
+	$scope.setRoleUser(uid, role);
 }
 
 function delUserClick(item, uid) {
