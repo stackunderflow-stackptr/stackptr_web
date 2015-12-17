@@ -317,9 +317,10 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	$scope.updateMarker = function(userObj) {
 		var isGroupShare = !(userObj.gid == undefined);
+		var isMe = (userObj.id == $scope.userMe.id);
 		var markerId = isGroupShare ? (userObj.gid + ":" + userObj.id) : userObj.id;
 
-		if (isGroupShare && (userObj.id == $scope.userMe.id)) return;
+		if (isGroupShare && isMe) return;
 		if (isGroupShare && ($scope.userList[userObj.id] != undefined)) return;
 
 		if ($scope.markers[markerId] == null) {
@@ -332,7 +333,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 				message: '<div ng-include="\'' + stackptr_server_base_addr + '/static/template/user.html\'"></div>',
 				getMessageScope: function() {
 					var sc = $scope.$new(false);
-					sc.userObj = (userObj.id == $scope.userMe.id) ? $scope.userMe : userObj;
+					sc.userId = userObj.id;
+					sc.isGroup = isGroupShare;
+					sc.isMe = isMe;
 					return sc;
 				},
 				focus: false,

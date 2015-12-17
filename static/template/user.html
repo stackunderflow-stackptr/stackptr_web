@@ -11,7 +11,7 @@
 		<div class="bubble"> 
 			<div class="row">
 				<div class="col-md-12">
-					<p class="lead">[[userObj.username ]]</p>
+					<p class="lead">[[userObj = (isMe) ? userMe : (isGroup ? groupShareUsers[userId] : userList[userId]); userObj.username ]]</p>
 				</div>
 			</div>
 
