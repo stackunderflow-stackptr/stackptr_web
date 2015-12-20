@@ -256,9 +256,12 @@ class StackPtrSessionMonitor(ApplicationSession):
 		def on_session_leave(sessionid):
 			try:
 				session = db.session.query(WAMPSession).filter(WAMPSession.sessionid==sessionid).first()
-				db.session.delete(session)
-				db.session.commit()
-				print "session removed: %i" % sessionid
+				if session:
+					db.session.delete(session)
+					db.session.commit()
+					print "session removed: %i" % sessionid
+				else:
+					print "removed nonexistant session"
 			except Exception as e:
 				print traceback.format_exc()
 				raise e
