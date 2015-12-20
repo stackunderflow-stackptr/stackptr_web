@@ -330,7 +330,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 					iconSize: [32, 32],
 					iconAnchor: [16, 16],
 				},
-				message: '<div ng-include="\'/static/template/user.html\'"></div>',
+				message: '<div ng-include="\'static/template/user.html\'"></div>',
 				getMessageScope: function() {
 					var sc = $scope.$new(false);
 					sc.userId = userObj.id;
