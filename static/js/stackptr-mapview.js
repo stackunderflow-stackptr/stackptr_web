@@ -656,14 +656,25 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 
 	///////////
-	var resp = $http.post(stackptr_server_base_addr + '/ws_uid',
-		(stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "");
-	resp.success(function(rdata, status, headers, config) {
-		console.log(rdata);
-		$scope.myid = rdata;
-		$wamp.connection._options.authid = rdata;
-		$wamp.open();
-	});
+
+	$scope.doConnect = function() {
+		console.log("Connecting");
+		var resp = $http.post(stackptr_server_base_addr + '/ws_uid',
+			(stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "");
+		resp.success(function(rdata, status, headers, config) {
+			console.log(rdata);
+			$scope.myid = rdata;
+			$wamp.connection._options.authid = rdata;
+			$wamp.open();
+		});
+	}
+
+	$scope.doConnect();
+
+	$scope.doDisconnect = function() {
+		console.log("Disconnecting");
+		$wamp.close();
+	}
 
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
@@ -822,6 +833,14 @@ $(document).ready(function() {
 		$("#usermenu").on("DOMSubtreeModified", shiftGroupMenu);
 	}
 });
+
+function StackPtrConnect() {
+	angular.element($('body')).scope().doConnect();
+}
+
+function StackPtrDisconnect() {
+	angular.element($('body')).scope().doDisconnect();
+}
 
 function setRoleUserClick(uid, role) {
 	var $scope = angular.element($('body')).scope();
