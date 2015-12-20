@@ -42,6 +42,7 @@ class StackPtrAuthenticator(ApplicationSession):
 				else:
 					raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
 			except Exception as e:
+				db.session.rollback()
 				print traceback.format_exc()
 				raise e
 		
