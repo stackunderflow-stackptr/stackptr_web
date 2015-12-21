@@ -215,6 +215,14 @@ def ws_token():
 # Data
 ####################
 
+@app.route('/uid', methods=['POST'])
+@cross_origin()
+@login_required
+def sp_uid():
+	return json.dumps({'id': g.user.id,
+                       'username': g.user.username,
+                       'icon': stackptr_core.gravatar(g.user.email)})
+
 @app.route('/users')
 @cross_origin()
 @login_required

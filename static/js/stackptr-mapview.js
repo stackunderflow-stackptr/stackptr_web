@@ -175,7 +175,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	});
 
-	$scope.myid = null;
+	$scope.me = null;
 	$scope.markers = {};
 	$scope.userList = {};
 	$scope.userPending = {};
@@ -227,7 +227,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		} else if (item.type == 'grouplist') {
 			item.data.forEach(function(v) {
 				v.members.forEach(function(vm) {
-					if (vm.id == $scope.myid) {
+					if (vm.id == $scope.me.id) {
 						this.role = vm.role;
 					}
 				}, v);
@@ -657,19 +657,25 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	///////////
 
+
+	var resp = $http.post(stackptr_server_base_addr + '/uid',
+		(stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "");
+	resp.success(function(rdata, status, headers, config) {
+		if (typeof rdata != "object") {
+			console.log("uid failed");
+		} else {
+			console.log(rdata);
+			$scope.me = rdata;
+			$wamp.connection._options.authid = rdata.id.toString();
+			$scope.doConnect();
+		}
+	});
+	
+
 	$scope.doConnect = function() {
 		console.log("Connecting");
-		var resp = $http.post(stackptr_server_base_addr + '/ws_uid',
-			(stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "");
-		resp.success(function(rdata, status, headers, config) {
-			console.log(rdata);
-			$scope.myid = rdata;
-			$wamp.connection._options.authid = rdata;
-			$wamp.open();
-		});
+		$wamp.open();
 	}
-
-	$scope.doConnect();
 
 	$scope.doDisconnect = function() {
 		console.log("Disconnecting");
