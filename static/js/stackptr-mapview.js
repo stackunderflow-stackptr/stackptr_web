@@ -667,14 +667,16 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			console.log(rdata);
 			$scope.me = rdata;
 			$wamp.connection._options.authid = rdata.id.toString();
+			$scope.doConnect = function() {
+				console.log("Connecting");
+				$wamp.open();
+			}
 			$scope.doConnect();
 		}
 	});
 	
-
 	$scope.doConnect = function() {
-		console.log("Connecting");
-		$wamp.open();
+		console.log("Not yet connected");
 	}
 
 	$scope.doDisconnect = function() {
