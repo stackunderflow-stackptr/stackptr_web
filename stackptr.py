@@ -221,7 +221,7 @@ def ws_token():
 def sp_uid():
 	return json.dumps({'id': g.user.id,
                        'username': g.user.username,
-                       'icon': stackptr_core.gravatar(g.user.email)})
+                       'icon': stackptr_core.gravatar(g.user.email, size=256)})
 
 @app.route('/users')
 @cross_origin()

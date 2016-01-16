@@ -18,8 +18,8 @@ def utc_seconds(time):
 	diff = (time - epoch).total_seconds()
 	return int(diff)
 
-def gravatar(email):
-	return 'https://gravatar.com/avatar/' + md5.md5(email).hexdigest() + '?s=64&d=retro'
+def gravatar(email, size=64):
+	return 'https://gravatar.com/avatar/' + md5.md5(email).hexdigest() + ('?s=%i&d=retro' % size)
 
 def user_object(user):
 	return {'loc': [user.lat if user.lat else -1, user.lon if user.lon else -1],
