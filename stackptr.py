@@ -237,6 +237,7 @@ def publish_message(dest, topic, msg=None, eligible=[]):
 		client.publish(dest, topic, msg=msg, options={'eligible': eligible})
 
 @app.route('/update', methods=['POST'])
+@cross_origin()
 @login_required
 def update():
 	lat = request.form.get('lat', None)
@@ -249,24 +250,28 @@ def update():
 	return json.dumps(stackptr_core.update(lat,lon,alt,hdg,spd,ext,pm=publish_message,guser=g.user,db=db))
 
 @app.route('/lochist', methods=['POST', 'GET'])
+@cross_origin()
 @login_required
 def lochist():
 	target = request.args.get('uid', g.user.id)
 	return json.dumps(stackptr_core.locHist(target=target, guser=g.user, db=db))
 
 @app.route('/acceptuser', methods=['POST'])
+@cross_origin()
 @login_required
 def acceptuser():
 	user = request.form['uid']
 	return json.dumps(stackptr_core.acceptUser(uid=user, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/adduser', methods=['POST'])
+@cross_origin()
 @login_required
 def adduser():
 	user = request.form['user']
 	return json.dumps(stackptr_core.addUser(user=user, pm=publish_message, guser=g.user, db=db))
 
 @app.route('/deluser', methods=['POST'])
+@cross_origin()
 @login_required
 def deluser():
 	user = request.form['uid']
@@ -333,7 +338,7 @@ def updategroup():
 	name = request.form.get('name')
 	description = request.form.get('description')
 	status = int(request.form.get('status'))
-	status = int(request.form.get('gid'))
+	gid = int(request.form.get('gid'))
 	return json.dumps(stackptr_core.updateGroup(db=db, pm=publish_message, guser=g.user, gid=gid, name=name, description=description, status=status))
 
 ###########
