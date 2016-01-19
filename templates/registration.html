@@ -1,51 +1,88 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block extra_head %}
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no">
+{% endblock extra_head %}
+
+{% block extra_css %}
+	<link rel="stylesheet" type="text/css" href="/static/css/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="/static/css/index.css" />
+	<style type="text/css">
+		body {
+			overflow: hidden;
+		}
+	</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+	<script type="text/javascript" src="/static/js/leaflet.js"></script>
+	<script type="text/javascript" src="/static/js/ui-leaflet.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-simple-logger.min.js"></script>
+	<script type="text/javascript" src="/static/js/stackptr-login-view.js"></script>
+{% endblock extra_js %}
+
+{% block htmldef %}ng-app="StackPtr"{% endblock %}
+{% block bodydef %}ng-controller="StackPtrLogin"{% endblock %}
+
 {% block content %}
-<div class="container">
-<div class="row">
-<div class="col-lg-12">
-<h1> Registration </h1>
+<nav class="navbar navbar-fixed-top navbar-inverse semitransparent" role="navigation">
+	<div class="navbar-header">
+		<img src="/static/logo2.png" id="logo" height="50px">
+	</div>
+</nav>
 
-<form class="form-horizontal" role="form" method="post" action="/registration">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+<div id="loginmenu-place">
+	<div class="panel panel-primary" id="loginmenu">
+		<div class="panel-heading">Login		
+		</div>
+		<div class="panel-body">
+			<form class="form-horizontal" role="form" method="post" action="/registration">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-<div class="form-group">
-	<label for="username" class="col-sm-2 control-label">Username</label>
-	<div class="col-sm-10">
-		<input class="form-control" name="username" id="username" placeholder="username">
+				<div class="form-group">
+					<label for="username" class="col-sm-2 control-label">Username</label>
+					<div class="col-sm-10">
+						<input class="form-control" name="username" id="username" placeholder="username">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="email" class="col-sm-2 control-label">Email</label>
+					<div class="col-sm-10">
+						<input type="email" class="form-control" name="email" id="email" placeholder="email">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="password" class="col-sm-2 control-label">Password</label>
+					<div class="col-sm-10">
+						<input type="password" class="form-control" name="password" id="password" placeholder="Password">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="invite" class="col-sm-2 control-label">Invite Code</label>
+					<div class="col-sm-10">
+						<input  class="form-control" name="invite" id="invite" placeholder="Invite Code">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+					<button type="submit" class="btn btn-default">Register</button>
+					</div>
+				</div>
+
+				</table>
+
+				</form>
+		</div>
 	</div>
 </div>
 
-<div class="form-group">
-	<label for="email" class="col-sm-2 control-label">Email</label>
-	<div class="col-sm-10">
-		<input type="email" class="form-control" name="email" id="email" placeholder="email">
-	</div>
+<div class="fill">
+		<leaflet defaults="defaults" controls="controls" center="center" tiles="tiles" height="100%"></leaflet>
 </div>
 
-<div class="form-group">
-	<label for="password" class="col-sm-2 control-label">Password</label>
-	<div class="col-sm-10">
-		<input type="password" class="form-control" name="password" id="password" placeholder="Password">
-	</div>
-</div>
-
-<div class="form-group">
-	<label for="invite" class="col-sm-2 control-label">Invite Code</label>
-	<div class="col-sm-10">
-		<input  class="form-control" name="invite" id="invite" placeholder="Invite Code">
-	</div>
-</div>
-
-<div class="form-group">
-	<div class="col-sm-offset-2 col-sm-10">
-	<button type="submit" class="btn btn-default">Register</button>
-	</div>
-</div>
-
-</table>
-
-</form>
-</div>
-</div>
-</div>
-{% endblock %}
+{% endblock content %}
