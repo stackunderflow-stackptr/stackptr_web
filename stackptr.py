@@ -357,7 +357,7 @@ def addfeature():
 	name = request.form.get('name',"Untitled")
 	group = int(request.form['group'])
 	ownerid = g.user.id
-	gjson = request.form['geojson']
+	gjson = request.form['gjson']
 	return json.dumps(stackptr_core.addFeature(db=db, pm=publish_message, name=name, group=group, guser=ownerid, gjson=gjson))
 
 @app.route('/delfeature', methods=['POST'])
@@ -372,7 +372,7 @@ def delfeature():
 @cross_origin()
 @login_required
 def editfeature():
-	gjson = request.form.get('geojson', None)
+	gjson = request.form.get('gjson', None)
 	name = request.form.get('name', None)
 	description = request.form.get('description', None)
 	fid = int(request.form['fid'])
