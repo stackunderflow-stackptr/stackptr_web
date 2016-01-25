@@ -548,6 +548,7 @@ def setShareToGroup(gid=None, share=None, db=None, guser=None, pm=None):
 			return error("Not sharing to group")
 
 def sharedGroupLocs(gid=None, db=None, guser=None):
+	if gid == None: return []
 	if not roleInGroup(db=db, guser=guser, group=gid): return []
 
 	ll = db.session.query(GroupLocShare,TrackPerson)\
