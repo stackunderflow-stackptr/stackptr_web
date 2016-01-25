@@ -18,15 +18,15 @@ def utc_seconds(time):
 	diff = (time - epoch).total_seconds()
 	return int(diff)
 
-def gravatar(email, size=64):
-	return 'https://gravatar.com/avatar/' + md5.md5(email).hexdigest() + ('?s=%i&d=retro' % size)
+def avatar(email, size=64):
+	return 'https://seccdn.libravatar.org/avatar/' + md5.md5(email).hexdigest() + ('?s=%i&d=retro' % size)
 
 def user_object(user):
 	return {'loc': [user.lat if user.lat else -1, user.lon if user.lon else -1],
 			'alt': user.alt, 'hdg': user.hdg, 'spd': user.spd,
 			'id': user.userid,
 			'username': user.user.username,
-			'icon': gravatar(user.user.email),
+			'icon': avatar(user.user.email),
 			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
 			'extra': process_extra(user.extra)}
 
@@ -37,7 +37,7 @@ def user_object_with_gid(tp,gid):
 
 def group_user_object(gm):
 	return {'username': gm.user.username,
-			'icon': gravatar(gm.user.email),
+			'icon': avatar(gm.user.email),
 			'id': gm.user.id,
 			'role': gm.role}
 
@@ -151,7 +151,7 @@ def userList(guser, db=None):
 	others = {'type': 'user', 'data': others_list}
 	
 	pending_list = [ {	'username': p.following_user.username,
-						'icon': gravatar(p.following_user.email),
+						'icon': avatar(p.following_user.email),
 						'id': p.following}
 					for p in db.session.query(Follower)\
 					.filter(Follower.follower == guser.id, Follower.confirmed == 0)\
@@ -160,7 +160,7 @@ def userList(guser, db=None):
 	pending = {'type': 'user-pending', 'data': pending_list}
 	
 	reqs_list = [ {	'username': r.follower_user.username,
-					'icon': gravatar(r.follower_user.email),
+					'icon': avatar(r.follower_user.email),
 					'id': r.follower }
 				for r in db.session.query(Follower)\
 				.filter(Follower.following == guser.id, Follower.confirmed == 0)
@@ -603,7 +603,7 @@ def addUser(user=None, pm=None, guser=None, db=None):
 		# yes, that should just be the following_user object on fobj2
 		# but the object is newly created so that hasn't been looked up yet?
 		pending = [{ 'username': puser.username,
-					 'icon': gravatar(puser.email),
+					 'icon': avatar(puser.email),
 					 'id': puser.id }]
 
 		# send pending user info to requester
@@ -613,7 +613,7 @@ def addUser(user=None, pm=None, guser=None, db=None):
 		# also send pending user the request
 		allowed_list = sessions_for_uid(puser.id, db=db)
 		request = [{ 'username': guser.username,
-					 'icon': gravatar(guser.email),
+					 'icon': avatar(guser.email),
 					 'id': guser.id }]
 		pm("com.stackptr.user", "user-request", msg=request, eligible=allowed_list)
 
