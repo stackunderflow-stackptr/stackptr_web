@@ -83,6 +83,13 @@ def load_user_from_request(request):
 		return db.session.query(Users).filter_by(id=key.userid).first()
 	return None
 
+@login_manager.unauthorized_handler
+def unauthorized():
+	if request.form.get('apikey') or request.args.get('apikey'):
+		abort(401)
+	else:
+		redirect(login_manager.login_view)
+
 @app.before_request
 def before_request():
 	g.user = current_user
