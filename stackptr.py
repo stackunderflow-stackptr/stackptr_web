@@ -86,9 +86,9 @@ def load_user_from_request(request):
 @login_manager.unauthorized_handler
 def unauthorized():
 	if request.form.get('apikey') or request.args.get('apikey'):
-		abort(401)
+		return abort(401)
 	else:
-		redirect(login_manager.login_view)
+		return redirect(login_manager.login_view)
 
 @app.before_request
 def before_request():
