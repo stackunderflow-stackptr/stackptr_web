@@ -55,27 +55,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 				subdomains: '123456',
 			}
 		},
-		stackptr_cyber: {
-			name: 'StackPtr Cyber Style',
-			url: 'https://tile{s}.stackcdn.com/' + (L.Browser.retina ? 'osm_tiles_cg_2x' : 'osm_tiles_cg') + '/{z}/{x}/{y}.png',
-			options: {
-				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-				maxZoom: 18,
-				subdomains: '123456',
-			}
-		},
 		stackptr_no_retina: {
 			name: 'StackPtr Default No Retina',
 			url: 'https://tile{s}.stackcdn.com/osm_tiles/{z}/{x}/{y}.png',
-			options: {
-				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-				maxZoom: 18,
-				subdomains: '123456',
-			}
-		},
-		stackptr_cyber_no_retina: {
-			name: 'StackPtr Cyber No Retina',
-			url: 'https://tile{s}.stackcdn.com/osm_tiles_cg/{z}/{x}/{y}.png',
 			options: {
 				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 				maxZoom: 18,
