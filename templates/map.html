@@ -172,11 +172,12 @@
 				</div>
 				<div class="col-sm-3" style="padding: 0px">
 					    <span class="glyphicon glyphicon-plus icon-white" data-template-url="static/template/groupAdd.html"
-					    data-container="body" data-title="Add Group" bs-modal></span>
+					    data-container="body" data-title="Add Group" ng-click="groupAdd()" bs-modal></span>
 					    <span class="glyphicon glyphicon-list icon-white" data-template-url="static/template/groupDiscover.html"
 					    data-container="body" data-title="Discover Groups" ng-click="groupDiscover()" bs-modal></span>
 					    <span class="glyphicon glyphicon-cog icon-white" data-template-url="static/template/groupInfo.html"
-					    data-container="body" data-title="Group Info: [[ grouplist[group].name ]]" ng-if="group >= 0 && group != null" bs-modal></span>
+					    data-container="body" data-title="Group Info: [[ grouplist[group].name ]]" ng-if="group >= 0 && group != null" 
+					    ng-click="groupInfo()" bs-modal></span>
 				</div>
 			</div>
 		</div>

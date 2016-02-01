@@ -354,6 +354,14 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	/////
 
+	$scope.closeGroupOnMobileUI = function() {
+		if (isMobileUi) {
+			$scope.toggleGroupMenu();
+		}
+	}
+
+	/////
+
 	$scope.createNewGroup = function(hide, $event) {
 		var etf = $event.target.form;
 		$wamp.call('com.stackptr.api.createGroup', [], {
@@ -374,10 +382,19 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.groupDiscover = function() {
 		$scope.discoverGroupList = [];
 		$wamp.call('com.stackptr.api.groupDiscover').then($scope.groupDiscovered);
+		$scope.closeGroupOnMobileUI();
 	}
 
 	$scope.groupDiscovered = function(data) {
 		$scope.discoverGroupList = data[0].data;
+	}
+
+	$scope.groupAdd = function() {
+		$scope.closeGroupOnMobileUI();
+	}
+
+	$scope.groupInfo = function() {
+		$scope.closeGroupOnMobileUI();
 	}
 
 	$scope.joinGroup = function(group, hide, $event) {
@@ -599,9 +616,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 				}
 			}
 		});
-		if (isMobileUi) {
-			$scope.toggleGroupMenu();
-		}
+		$scope.closeGroupOnMobileUI();
 	}
 
 	///////////
