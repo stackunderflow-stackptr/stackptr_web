@@ -194,7 +194,7 @@
 
 		<span ng-if="!groupShareUsersEmpty"><div class="label">Users sharing location</div></span>
 
-		<img width="32" height="32" class="user-icon" ng-repeat="user in groupShareUsers track by user.id" ng-src="[[user.icon]]" 
+		<img width="32" height="32" class="user-icon" ng-repeat="user in groupShareUsers track by user.id" ng-src="[[::user.icon]]" 
 			data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
 			data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
 			ng-click="clickMarker(user)">
@@ -202,7 +202,7 @@
 		<span><div class="label">Drawn Objects</div></span>
 		
 		<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
-		<span id="feature-[[item.id]]" class="list-group-item list-item-draw" ng-repeat="item in groupdata track by item.id">
+		<span id="feature-[[::item.id]]" class="list-group-item list-item-draw" ng-repeat="item in groupdata track by item.id">
 			<span class="icon_type icon_[[::item.json.geometry.type]]">&nbsp;</span>
 			<a ng-click="gotoItem(item.id)">[[item.name]]</a>
 			<span class="glyphicon glyphicon-pencil pull-right" bs-collapse-toggle></span>
@@ -210,19 +210,19 @@
 				<br>
 				<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
 					<input type="text" name="name" class="form-control" value="[[item.name]]">
-					<input type="hidden" name="id" value="[[item.id]]">
+					<input type="hidden" name="id" ng-value="::item.id">
 					<span class="input-group-btn">
 						<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
 					</span>
 				</form>
 				<b>Created by</b>: [[ item.owner ]]<br>
-				<b>Type</b>: [[item.json.geometry.type]]<br>
-				<b>ID</b>: [[item.json.id]]<br>
+				<b>Type</b>: [[::item.json.geometry.type]]<br>
+				<b>ID</b>: [[::item.id]]<br>
 				<b>Description</b>:
 				<div class="form-group">
 					<form class="input-group input-group-sm">
 						<textarea name="description">[[item.description]]</textarea>
-						<input type="hidden" name="id" value="[[item.id]]">
+						<input type="hidden" name="id" ng-value="::item.id">
 						<span class="input-group-btn">
 							<button class="btn btn-default" type="button" ng-click="redescriptionGroupItem($event)">Update</button>
 						</span>
@@ -230,7 +230,7 @@
 				</div>
 
 				<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
-					<input type="hidden" name="id" value="[[item.id]]">
+					<input type="hidden" name="id" ng-value="::item.id">
 					<span class="input-group-btn">
 						<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
 					</span>
