@@ -41,6 +41,8 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	stackptr_leafletdata_map = leafletData.getMap;
 
+	$scope.isStackPtrAndroid = !(typeof stackptr_android == 'undefined');
+
 	$scope.tiles = {
 		name: ""
 	}
