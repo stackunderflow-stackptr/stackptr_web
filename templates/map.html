@@ -2,7 +2,6 @@
 <html ng-app="StackPtr">
   <head>
 	<title>StackPtr</title>
-	<meta name="csrf-token" content="{{ csrf_token() }}" />
 	<meta name="mobile-web-app-capable" content="yes">
 	<link rel="apple-touch-icon" sizes="57x57" href="static/icons/apple-icon-57x57.png" />
 	<link rel="apple-touch-icon" sizes="60x60" href="static/icons/apple-icon-60x60.png" />
@@ -30,7 +29,6 @@
 	<link rel="stylesheet" type="text/css" href="static/css/leaflet.css" />
 	<link rel="stylesheet" type="text/css" href="static/css/leaflet.draw.css" />
 	<link rel="stylesheet" type="text/css" href="static/css/index.css" />
-	<link rel="stylesheet" type="text/css" href="static/css/stackptr_android.css" />
 	<style type="text/css">
 		body {
 			overflow: hidden;
@@ -56,9 +54,8 @@
 	<script type="text/javascript" src="static/js/autobahn.min.js"></script>
 	<script type="text/javascript" src="static/js/angular-wamp.js"></script>
 	<script type="text/javascript" src="static/js/stackptr-utils.js"></script>
-	<script type="text/javascript" src="stackptr_android_shim.js"></script>
+	<script type="text/javascript" src="stackptr_platform_shim.js"></script>
 	<script type="text/javascript" src="static/js/stackptr-mapview.js"></script>
-	<script type="text/javascript" src="stackptr_service_controller.js"></script>
 	<script type="text/javascript" src="static/js/color-thief.min.js"></script>
   </head>
   <body ng-controller="StackPtrMap">
