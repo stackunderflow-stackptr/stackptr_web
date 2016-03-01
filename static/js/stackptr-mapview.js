@@ -33,7 +33,6 @@ app.config(function($wampProvider, $modalProvider) {
 });
 
 app.run(function($http) {
-	$http.defaults.headers.post['X-CSRFToken'] = $('meta[name=csrf-token]').attr('content');
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 });
 
@@ -656,34 +655,47 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	///////////
 
+	$scope.getCSRFTokenThen = function(f) {
+		if (stackptr_apikey == undefined) {
+			var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
+			csrf.success(function(cdata, status, headers, config) {
+				$http.defaults.headers.post['X-CSRFToken'] = cdata;
+				f();
+			});
+		} else {
+			f();
+		}
+	};
 
 	$scope.doInitialConnect = function() {
-		$http.post(stackptr_server_base_addr + '/uid', (stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "").then(
-			function success(response) {
-				var rdata = response.data;
-				if (typeof rdata != "object") {
+		$scope.getCSRFTokenThen(function() {
+			$http.post(stackptr_server_base_addr + '/uid', (stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "").then(
+				function success(response) {
+					var rdata = response.data;
+					if (typeof rdata != "object") {
+						if (!(typeof stackptr_connection_failed === 'undefined')) {
+								stackptr_connection_failed("uid not object", "");
+						}
+					} else {
+						console.log(rdata);
+						$scope.me = rdata;
+						$wamp.connection._options.authid = rdata.id.toString();
+						$scope.doConnect = function() {
+							console.log("Connecting");
+							$wamp.open();
+						}
+						$scope.doInitialConnect = function() {};
+						$scope.doConnect();
+					}
+				},
+				function failure(response) {
 					if (!(typeof stackptr_connection_failed === 'undefined')) {
-							stackptr_connection_failed("uid not object", "");
+							stackptr_connection_failed("uid failed to fetch", "");
 					}
-				} else {
-					console.log(rdata);
-					$scope.me = rdata;
-					$wamp.connection._options.authid = rdata.id.toString();
-					$scope.doConnect = function() {
-						console.log("Connecting");
-						$wamp.open();
-					}
-					$scope.doInitialConnect = function() {};
-					$scope.doConnect();
 				}
-			},
-			function failure(response) {
-				if (!(typeof stackptr_connection_failed === 'undefined')) {
-						stackptr_connection_failed("uid failed to fetch", "");
-				}
-			}
-		)
-	}
+			)
+		})
+	};
 
 	$scope.doConnect = $scope.doInitialConnect;
 	$scope.doInitialConnect();
@@ -696,15 +708,9 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
 		if (data.method === "ticket") {
-			if (stackptr_apikey != undefined) {
+			$scope.getCSRFTokenThen(function() {
 				$scope.getWSToken(data);
-			} else {
-				var csrf = $http.get(stackptr_server_base_addr + '/csrf', "");
-				csrf.success(function(cdata, status, headers, config) {
-					$http.defaults.headers.post['X-CSRFToken'] = cdata;
-					$scope.getWSToken(data);
-				});
-			}
+			});
 		} else {
 			alert("Could not auth to server - ticket auth not offered!");
 		}
