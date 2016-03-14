@@ -811,6 +811,23 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	  }
   }
 
+	////////////
+	// android client
+	////////////
+
+	$scope.serviceRunning = $scope.isStackPtrAndroid && (StackPtrAndroidShim.serviceRunning() == "true");
+
+	$scope.stopAndroidService = function() {
+		console.log("stopping service")
+		StackPtrAndroidShim.serviceStop();
+		$scope.serviceRunning = false;
+	}
+	$scope.startAndroidService = function() {
+		console.log("starting service")
+		StackPtrAndroidShim.serviceStart();
+		$scope.serviceRunning = true;
+	}
+
 }]);
 
 app.filter('updateRange', function() {
