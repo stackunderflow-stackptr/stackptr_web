@@ -78,8 +78,9 @@
 			</li>
 			<li><a ng-bind="status"></a></li>
 			<li><a ng-if="::!isStackPtrAndroid" href="/logout">Log out</a></li>
-			<li><a ng-if="::isStackPtrAndroid" ng-show="serviceRunning" ng-click="stopService()">Stop Service</a></li>
-			<li><a ng-if="::isStackPtrAndroid" ng-show="!serviceRunning" ng-click="startService()">Start Service</a></li>
+			<li><a ng-if="::isStackPtrAndroid" onclick="StackPtrAndroidShim.showSettings()">Prefs</a></li>
+			<li><a ng-if="::isStackPtrAndroid" ng-show="serviceRunning" ng-click="stopAndroidService()">Stop Service</a></li>
+			<li><a ng-if="::isStackPtrAndroid" ng-show="!serviceRunning" ng-click="startAndroidService()">Start Service</a></li>
 		</ul>
 		
 		<ul class="nav navbar-nav navbar-right visible-sm-block visible-xs-block">
@@ -101,6 +102,18 @@
 					<li><a ng-if="::isStackPtrAndroid" ng-show="serviceRunning" ng-click="stopAndroidService()">Stop Service</a></li>
 					<li><a ng-if="::isStackPtrAndroid" ng-show="!serviceRunning" ng-click="startAndroidService()">Start Service</a></li>
 				</ul>
+			</li>
+		</ul>
+	</nav>
+
+	<nav class="navbar navbar-fixed-bottom navbar-inverse semitransparent" ng-if="::isStackPtrAndroid" ng-show="!serviceRunning">
+		<ul class="nav navbar-nav">
+			<li><span class="navbar-text">Location Update Service not running</span></li>
+		</ul>
+		<ul class="nav navbar-nav navbar-right">
+				<form class="navbar-form">
+					<button type="button" class="btn btn-success" ng-click="startAndroidService()">Start</button>&nbsp;
+				</form>
 			</li>
 		</ul>
 	</nav>
