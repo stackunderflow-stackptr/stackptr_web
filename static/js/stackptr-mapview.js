@@ -811,6 +811,22 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	  }
   }
 
+  	////////////
+  	// mobile clients
+  	////////////
+
+  	$scope.closeModal = null;
+
+  	$scope.doCloseModal = function() {
+  		if ($scope.closeModal == null) {
+  			return false;
+  		} else {
+  			$scope.closeModal();
+  			$scope.closeModal = null;
+  			return true;
+  		}
+  	}
+
 	////////////
 	// android client
 	////////////
@@ -893,6 +909,10 @@ function StackPtrConnect() {
 
 function StackPtrDisconnect() {
 	angular.element($('body')).scope().doDisconnect();
+}
+
+function StackPtrCloseModal() {
+	return angular.element($('body')).scope().doCloseModal();
 }
 
 function setRoleUserClick(uid, role) {
