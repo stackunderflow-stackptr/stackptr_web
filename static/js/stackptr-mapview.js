@@ -785,6 +785,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			um.css("top", 0);
 			um.css("z-index", 9001);
 			um.toggle();
+			if (um.is(':visible')) {
+				$scope.closeModal = $scope.toggleUserMenu;
+			} else {
+				$scope.closeModal = null;
+			}
 		} else {
 			$("#usermenu").toggle();
 		}
@@ -800,6 +805,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			gm.css("top", 0);
 			gm.css("z-index", 9001);
 			gm.toggle();
+			if (gm.is(':visible')) {
+				$scope.closeModal = $scope.toggleGroupMenu;
+			} else {
+				$scope.closeModal = null;
+			}
 		} else {
 			$("#groupmenu").toggle();
 		}
@@ -816,6 +826,16 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
   	////////////
 
   	$scope.closeModal = null;
+
+	$scope.$on('modal.hide', function() {
+		$scope.closeModal = null;
+	});
+	
+	$scope.$on('modal.show', function(modal) {
+		$scope.closeModal = function() {
+			angular.element('.modal').trigger('click');
+		};
+	});
 
   	$scope.doCloseModal = function() {
   		if ($scope.closeModal == null) {
