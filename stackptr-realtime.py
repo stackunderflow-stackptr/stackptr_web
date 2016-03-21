@@ -23,6 +23,8 @@ config.read('./stackptr.conf')
 db = create_engine(config.get("database", "uri"))
 db.session = sessionmaker(bind=db)()
 
+sessions = {}
+
 
 #md = MetaData(db)
 #AuthTicket = Table('auth_ticket', md, autoload=True)
@@ -101,9 +103,7 @@ class StackPtrAPI(ApplicationSession):
 			def func_wrapper(*args, **kwargs):
 				try:
 					details = kwargs['details']
-					guser = db.session.query(WAMPSession,Users)\
-						.join(Users, Users.id == WAMPSession.user)\
-						.filter(WAMPSession.sessionid == details.caller).first()[1]
+					guser = db.session.query(Users).filter(Users.id == sessions[int(details.caller)]).first()
 					printargs = filter(lambda a: a != 'details', kwargs)
 					printlist = map(lambda b: "%s=%s" % (b, kwargs[b]), printargs)
 					print "%s -> %s(%s)" % (guser.username, func.__name__, ", ".join(printlist))
@@ -246,32 +246,19 @@ class StackPtrSessionMonitor(ApplicationSession):
 	def onJoin(self, details=None):
 		def on_session_join(details=None):
 			try:
-				session = WAMPSession()
-				session.user = int(details['authid'])
-				session.sessionid = int(details['session'])
-				db.session.add(session)
-				db.session.commit()
-				print "session added: %i" % session.sessionid
+				sessions[int(details['session'])] = int(details['authid'])
 			except Exception as e:
 				print traceback.format_exc()
 				raise e
 		
 		def on_session_leave(sessionid):
 			try:
-				session = db.session.query(WAMPSession).filter(WAMPSession.sessionid==sessionid).first()
-				if session:
-					db.session.delete(session)
-					db.session.commit()
-					print "session removed: %i" % sessionid
-				else:
-					print "removed nonexistant session"
+				del sessions[int(sessionid)]
 			except Exception as e:
 				print traceback.format_exc()
 				raise e
 		
 		try:
-			print "removed %i old sessions" % db.session.query(WAMPSession).delete()
-			db.session.commit()
 			yield self.subscribe(on_session_join, 'wamp.session.on_join')
 			yield self.subscribe(on_session_leave, 'wamp.session.on_leave')
 			print "sessionmonitor registered"
