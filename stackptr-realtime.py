@@ -210,32 +210,34 @@ class StackPtrAPI(ApplicationSession):
 		#	return stackptr_core.sharedGroupLocHistory(gid=gid, db=db, )
 
 		################################
+
+		ro = RegisterOptions(details_arg='details')
 		
 		try:
-			yield self.register(locHist, 'com.stackptr.api.lochist', options=RegisterOptions(details_arg='details'))
-			yield self.register(userList, 'com.stackptr.api.userList', options=RegisterOptions(details_arg='details'))
-			yield self.register(addUser, 'com.stackptr.api.addUser', options=RegisterOptions(details_arg='details'))
-			yield self.register(acceptUser, 'com.stackptr.api.acceptUser', options=RegisterOptions(details_arg='details'))
-			yield self.register(delUser, 'com.stackptr.api.delUser', options=RegisterOptions(details_arg='details'))
+			yield self.register(locHist, 'com.stackptr.api.lochist', options=ro)
+			yield self.register(userList, 'com.stackptr.api.userList', options=ro)
+			yield self.register(addUser, 'com.stackptr.api.addUser', options=ro)
+			yield self.register(acceptUser, 'com.stackptr.api.acceptUser', options=ro)
+			yield self.register(delUser, 'com.stackptr.api.delUser', options=ro)
 
-			yield self.register(groupList, 'com.stackptr.api.groupList', options=RegisterOptions(details_arg='details'))
-			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=RegisterOptions(details_arg='details'))
-			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=RegisterOptions(details_arg='details'))
-			yield self.register(joinGroup, 'com.stackptr.api.joinGroup', options=RegisterOptions(details_arg='details'))
-			yield self.register(groupUserMod, 'com.stackptr.api.groupUserMod', options=RegisterOptions(details_arg='details'))
-			yield self.register(leaveGroup, 'com.stackptr.api.leaveGroup', options=RegisterOptions(details_arg='details'))
-			yield self.register(deleteGroup, 'com.stackptr.api.deleteGroup', options=RegisterOptions(details_arg='details'))
-			yield self.register(updateGroup, 'com.stackptr.api.updateGroup', options=RegisterOptions(details_arg='details'))
+			yield self.register(groupList, 'com.stackptr.api.groupList', options=ro)
+			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=ro)
+			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=ro)
+			yield self.register(joinGroup, 'com.stackptr.api.joinGroup', options=ro)
+			yield self.register(groupUserMod, 'com.stackptr.api.groupUserMod', options=ro)
+			yield self.register(leaveGroup, 'com.stackptr.api.leaveGroup', options=ro)
+			yield self.register(deleteGroup, 'com.stackptr.api.deleteGroup', options=ro)
+			yield self.register(updateGroup, 'com.stackptr.api.updateGroup', options=ro)
 
-			yield self.register(getSharedToGroups, 'com.stackptr.api.getSharedToGroups', options=RegisterOptions(details_arg='details'))
-			yield self.register(setShareToGroup, 'com.stackptr.api.setShareToGroup', options=RegisterOptions(details_arg='details'))
-			yield self.register(sharedGroupLocs, 'com.stackptr.api.sharedGroupLocs', options=RegisterOptions(details_arg='details'))
-			#yield self.register(sharedGroupLocHistory, 'com.stackptr.api.sharedGroupLocHistory', options=RegisterOptions(details_arg='details'))
+			yield self.register(getSharedToGroups, 'com.stackptr.api.getSharedToGroups', options=ro)
+			yield self.register(setShareToGroup, 'com.stackptr.api.setShareToGroup', options=ro)
+			yield self.register(sharedGroupLocs, 'com.stackptr.api.sharedGroupLocs', options=ro)
+			#yield self.register(sharedGroupLocHistory, 'com.stackptr.api.sharedGroupLocHistory', options=ro)
 
-			yield self.register(groupData, 'com.stackptr.api.groupData', options=RegisterOptions(details_arg='details'))
-			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=RegisterOptions(details_arg='details'))
-			yield self.register(editFeature, 'com.stackptr.api.editFeature', options=RegisterOptions(details_arg='details'))
-			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=RegisterOptions(details_arg='details'))			
+			yield self.register(groupData, 'com.stackptr.api.groupData', options=ro)
+			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=ro)
+			yield self.register(editFeature, 'com.stackptr.api.editFeature', options=ro)
+			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=ro)
 		except Exception as e:
 			print "could not register api calls: %s" % e
 
