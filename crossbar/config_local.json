@@ -165,8 +165,7 @@
                         },
                         {
                             "name": "user",
-                            "authorizer": "com.stackptr.authorizer",
-                            "permissions": []
+                            "authorizer": "com.stackptr.authorizer"
                         }
                     ]
                 }

@@ -30,8 +30,9 @@ db.session = sessionmaker(bind=db)()
 class StackPtrAuthenticator(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details=None):
-		def authenticate(realm, authid, ticket):
+		def authenticate(realm, authid, details):
 			try:
+				ticket = details['ticket']
 				res = db.session.query(AuthTicket).filter_by(key=ticket, userid=authid).first()
 				if res:
 					db.session.delete(res)
@@ -64,6 +65,7 @@ class StackPtrAuthorizer(ApplicationSession):
 			print("could not register authenticator: %s" % e)
 	
 	def authorize(self, session, uri, action):
+		print "!auth"
 		try:
 			user = session['authid']
 			reqpath = ".".join(uri.split(".")[:3])
