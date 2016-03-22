@@ -39,7 +39,7 @@ class StackPtrAuthenticator(ApplicationSession):
 					db.session.commit()
 					#fixme: check date
 					print "authenticated"
-					return 'user'
+					return u"user"
 				else:
 					raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
 			except Exception as e:
