@@ -53,48 +53,6 @@ class StackPtrAuthenticator(ApplicationSession):
 		except Exception as e:
 			print("could not register authenticator: %s" % e)
 
-
-
-class StackPtrAuthorizer(ApplicationSession):
-	@inlineCallbacks
-	def onJoin(self, details=None):
-		try:
-			yield self.register(self.authorize, 'com.stackptr.authorizer')
-			print("authorizer registered")
-		except Exception as e:
-			print("could not register authenticator: %s" % e)
-	
-	def authorize(self, session, uri, action):
-		print "!auth"
-		try:
-			user = session['authid']
-			reqpath = ".".join(uri.split(".")[:3])
-			#requser = uri.split(".")[3]
-			
-			if (action == 'subscribe' and uri == 'com.stackptr.user'):
-				return true
-			if (action == 'subscribe' and uri == 'com.stackptr.group'):
-				return true
-			elif (action == 'subscribe' and uri == 'com.stackptr.alert'):
-				return true
-				#res = db.session.query(Follower).filter_by(follower=user,following=requser,confirmed=1).first()
-				#if res:
-				#	#print "accepted sub request: %s %s %s" % (session, uri, action)
-				#	return True
-				#else:
-				#	print "rejected sub request: %s %s %s" % (session, uri, action)
-				#	return False
-			elif (action == 'call' and reqpath == "com.stackptr.api"):
-				#print "grant api"
-				return True
-			
-			print "rejected invalid action: %s %s %s" % (session, uri, action)
-			return False
-		except Exception as e:
-			print traceback.format_exc()
-			raise e
-
-
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details=None):
