@@ -29,27 +29,7 @@
                                         "caller": false,
                                         "publisher": false
                                     },
-                                    "cache": true
-                                }
-                            ]
-                        },
-                        {
-                            "name": "authorizer",
-                            "permissions": [
-                                {
-                                    "uri": "com.stackptr.authorizer",
-                                    "match": "exact",
-                                    "allow": {
-                                        "call": false,
-                                        "register": true,
-                                        "publish": false,
-                                        "subscribe": false
-                                    },
-                                    "disclose": {
-                                        "caller": false,
-                                        "publisher": false
-                                    },
-                                    "cache": true
+                                    "cache": false
                                 }
                             ]
                         },
@@ -69,7 +49,7 @@
                                         "caller": false,
                                         "publisher": false
                                     },
-                                    "cache": true
+                                    "cache": false
                                 },
                                 {
                                     "uri": "com.stackptr.user",
@@ -84,7 +64,7 @@
                                         "caller": false,
                                         "publisher": false
                                     },
-                                    "cache": true
+                                    "cache": false
                                 },
                                 {
                                     "uri": "com.stackptr.group",
@@ -99,7 +79,7 @@
                                         "caller": false,
                                         "publisher": false
                                     },
-                                    "cache": true
+                                    "cache": false
                                 }
                             ]
                         },
@@ -119,7 +99,7 @@
                                         "caller": false,
                                         "publisher": false
                                     },
-                                    "cache": true
+                                    "cache": false
                                 }
                             ]
                         },
@@ -139,34 +119,74 @@
                                         "caller": false,
                                         "publisher": false
                                     },
-                                    "cache": true
-                                }
-                            ]
-                        },
-                        {
-                            "name": "stackptr",
-                            "permissions": [
-                                {
-                                    "uri": "com.stackptr.",
-                                    "match": "prefix",
-                                    "allow": {
-                                        "call": false,
-                                        "register": false,
-                                        "publish": true,
-                                        "subscribe": false
-                                    },
-                                    "disclose": {
-                                        "caller": false,
-                                        "publisher": false
-                                    },
-                                    "cache": true
+                                    "cache": false
                                 }
                             ]
                         },
                         {
                             "name": "user",
-                            "authorizer": "com.stackptr.authorizer",
-                            "permissions": []
+                            "permissions": [
+                                {
+                                    "uri": "com.stackptr.user",
+                                    "match": "exact",
+                                    "allow": {
+                                        "call": false,
+                                        "register": false,
+                                        "publish": false,
+                                        "subscribe": true
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": false
+                                    },
+                                    "cache": false
+                                },
+                                {
+                                    "uri": "com.stackptr.group",
+                                    "match": "exact",
+                                    "allow": {
+                                        "call": false,
+                                        "register": false,
+                                        "publish": false,
+                                        "subscribe": true
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": false
+                                    },
+                                    "cache": false
+                                },
+                                {
+                                    "uri": "com.stackptr.alert",
+                                    "match": "exact",
+                                    "allow": {
+                                        "call": false,
+                                        "register": false,
+                                        "publish": false,
+                                        "subscribe": true
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": false
+                                    },
+                                    "cache": false
+                                },
+                                {
+                                    "uri": "com.stackptr.api.",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "call": true,
+                                        "register": false,
+                                        "publish": false,
+                                        "subscribe": false
+                                    },
+                                    "disclose": {
+                                        "caller": true,
+                                        "publisher": false
+                                    },
+                                    "cache": false
+                                }
+                            ]
                         }
                     ]
                 }
@@ -226,12 +246,6 @@
                     "classname": "stackptr-realtime.StackPtrAuthenticator",
                     "realm": "stackptr",
                     "role": "authenticator"
-                },
-                {
-                    "type": "class",
-                    "classname": "stackptr-realtime.StackPtrAuthorizer",
-                    "realm": "stackptr",
-                    "role": "authorizer"
                 },
                 {
                     "type": "class",
