@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style type="text/css">
+			.bubble {
+				width: 400px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="bubble"> 
+			
+			<div class="row">
+				<div class="col-md-12">
+
+
+						<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
+							<input type="text" name="name" class="form-control" ng-value="item.name">
+							<input type="hidden" name="id" ng-value="::item.id">
+							<span class="input-group-btn">
+								<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
+							</span>
+						</form>
+						<b>Created by</b>: [[::item.owner]]<br>
+						<b>Type</b>: [[::item.json.geometry.type]]<br>
+						<b>ID</b>: [[::item.id]]<br>
+						<b>Description</b>:
+						<div class="form-group">
+							<form class="input-group input-group-sm">
+								<textarea name="description" ng-bind-="item.description"></textarea>
+								<input type="hidden" name="id" ng-value="::item.id">
+								<span class="input-group-btn">
+									<button class="btn btn-default" type="button" ng-click="redescriptionGroupItem($event)">Update</button>
+								</span>
+							</form>
+						</div>
+
+						<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
+							<input type="hidden" name="id" ng-value="::item.id">
+							<span class="input-group-btn">
+								<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
+							</span>
+						</form>
+
+
+
+
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

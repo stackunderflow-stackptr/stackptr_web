@@ -36,7 +36,7 @@ app.run(function($http) {
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 });
 
-app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp) {
+app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', '$compile', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp, $compile) {
 
 	stackptr_leafletdata_map = leafletData.getMap;
 
@@ -488,14 +488,26 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		var geom0 = layer.getLayers()[0];
 		geom0.id = item.id;
 
-		geom0.on("click", function() {
-			$("#groupfeaturelist").find(".panel-collapse").collapse("hide");
-			var featureId = item.id;
-			$("#feature-" + featureId).children(".panel-collapse").collapse("show");
+		var sc = $scope.$new(false);
+		sc.item = item;
+
+		geom0.bindPopup('<div ng-include="\'static/template/feature.html\'"></div>',{
+			closeButton: false,
+			minWidth: 320,
+			scope: sc
 		});
 
 		di.addLayer(geom0);
 	}
+
+	$scope.$on('leafletDirectiveMap.popupopen', function(event, leafletEvent) {
+		var scope = leafletEvent.leafletEvent.popup.options.scope;
+		var content = leafletEvent.leafletEvent.popup._contentNode;
+
+		if (scope != undefined) {
+			$compile(content)(scope);
+		}
+	});
 
 	$scope.updateDelGroupData = function(cid) {
 		var di = $scope.drawOptions.edit.featureGroup;
@@ -615,6 +627,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 					$scope.center.lat = loc.lat;
 					$scope.center.lng = loc.lng;
 				}
+				v.openPopup();
 			}
 		});
 		$scope.closeGroupOnMobileUI();
