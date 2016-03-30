@@ -14,7 +14,7 @@ if (typeof stackptr_apikey == 'undefined') {
 
 stackptr_server_base_addr = stackptr_server_base_protocol + "//" + stackptr_server_base_host;
 
-var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies']).config(function($interpolateProvider) {
+var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies', 'xeditable']).config(function($interpolateProvider) {
 	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 });
 
@@ -32,8 +32,9 @@ app.config(function($wampProvider, $modalProvider) {
 	});
 });
 
-app.run(function($http) {
+app.run(function($http,editableOptions) {
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
+	editableOptions.theme = 'bs3';
 });
 
 app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', '$compile', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp, $compile) {
@@ -488,25 +489,32 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		var geom0 = layer.getLayers()[0];
 		geom0.id = item.id;
 
-		var sc = $scope.$new(false);
-		sc.item = item;
-
 		geom0.bindPopup('<div ng-include="\'static/template/feature.html\'"></div>',{
-			closeButton: false,
+			closeButton: true,
 			minWidth: 320,
-			scope: sc
+			getScope: function() {
+				var sc = $scope.$new(false);
+				sc.item = item;
+				return sc;
+			}
 		});
 
 		di.addLayer(geom0);
 	}
 
 	$scope.$on('leafletDirectiveMap.popupopen', function(event, leafletEvent) {
-		var scope = leafletEvent.leafletEvent.popup.options.scope;
-		var content = leafletEvent.leafletEvent.popup._contentNode;
+		var popup = leafletEvent.leafletEvent.popup;
+		var getScope = popup.options.getScope;
+		var content = popup._contentNode;
 
-		if (scope != undefined) {
-			$compile(content)(scope);
+		if (getScope != undefined) {
+			popup.options.scope = getScope();
+			$compile(content)(popup.options.scope);
 		}
+	});
+
+	$scope.$on('leafletDirectiveMap.popupclose', function(event, leafletEvent) {
+		leafletEvent.leafletEvent.popup.options.scope.$destroy();
 	});
 
 	$scope.updateDelGroupData = function(cid) {
@@ -591,20 +599,20 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		});
 	});
 
-	$scope.renameGroupItem = function($event) {
-		var etf = $event.target.form || $event.target;
+	$scope.renameGroupItem = function(newname,item) {
 		$wamp.call('com.stackptr.api.editFeature', [], {
-			fid: etf.id.value,
-			name: etf.name.value
+			fid: item.id,
+			name: newname
 		}).then($scope.processData);
+		return false;
 	};
 
-	$scope.redescriptionGroupItem = function($event) {
-		var etf = $event.target.form || $event.target;
+	$scope.redescriptionGroupItem = function(newdesc,item) {
 		$wamp.call('com.stackptr.api.editFeature', [], {
-			fid: etf.id.value,
-			description: etf.description.value
+			fid: item.id,
+			description: newdesc
 		}).then($scope.processData);
+		return false;
 	};
 
 	$scope.removeGroupItem = function($event) {

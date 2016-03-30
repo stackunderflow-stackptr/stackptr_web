@@ -9,42 +9,38 @@
 	</head>
 	<body>
 		<div class="bubble"> 
+			<div class="row">
+				<div class="col-md-12">
+					<a href="#" editable-text="item.name" ng-bind="item.name" onbeforesave="renameGroupItem($data,item)"></a>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12">
+					<b>Description</b>:
+				</div>
+			</div>
 			
 			<div class="row">
 				<div class="col-md-12">
+					<a href="#" editable-textarea="item.description" e-rows="7" e-cols="40" 
+					onbeforesave="redescriptionGroupItem($data,item)">
+						<pre>[[item.description || 'no description']]</pre>
+					</a>
+				</div>
+			</div>
 
-
-						<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
-							<input type="text" name="name" class="form-control" ng-value="item.name">
-							<input type="hidden" name="id" ng-value="::item.id">
-							<span class="input-group-btn">
-								<button class="btn btn-default" type="button" ng-click="renameGroupItem($event)">Rename</button>
-							</span>
-						</form>
-						<b>Created by</b>: [[::item.owner]]<br>
-						<b>Type</b>: [[::item.json.geometry.type]]<br>
-						<b>ID</b>: [[::item.id]]<br>
-						<b>Description</b>:
-						<div class="form-group">
-							<form class="input-group input-group-sm">
-								<textarea name="description" ng-bind-="item.description"></textarea>
-								<input type="hidden" name="id" ng-value="::item.id">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button" ng-click="redescriptionGroupItem($event)">Update</button>
-								</span>
-							</form>
-						</div>
-
-						<form class="input-group input-group-sm" ng-submit="renameGroupItem($event)">
-							<input type="hidden" name="id" ng-value="::item.id">
-							<span class="input-group-btn">
-								<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
-							</span>
-						</form>
-
-
-
-
+			<div class="row">
+				<div class="col-md-12">
+					<b>Created by</b>: [[::item.owner]]<br>
+					<b>Type</b>: [[::item.json.geometry.type]]<br>
+					<b>ID</b>: [[::item.id]]<br>
+					<form class="input-group input-group-sm">
+						<input type="hidden" name="id" ng-value="::item.id">
+						<span class="input-group-btn">
+							<button class="btn btn-danger" type="button" ng-click="removeGroupItem($event)">Remove</button>
+						</span>
+					</form>
 				</div>
 			</div>
 		</div>
