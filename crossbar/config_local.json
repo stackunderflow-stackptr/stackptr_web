@@ -230,7 +230,7 @@
                         "/": {
                             "type": "publisher",
                             "realm": "stackptr",
-                            "role": "stackptr",
+                            "role": "api",
                             "options": {
                                 "require_ip": [
                                     "127.0.0.1"
