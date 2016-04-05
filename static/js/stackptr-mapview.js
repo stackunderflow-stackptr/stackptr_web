@@ -175,6 +175,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.groupsSharedTo = {};
 	$scope.groupShareUsers = {};
 	$scope.groupShareUsersEmpty = false;
+	$scope.addingUser = null;
 
 	$scope.processItem = function(item) {
 		if (item.type == 'user') {
@@ -463,6 +464,10 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 			status: vis ? "0" : "1",
 		}).then($scope.processData);
 		return false;
+	}
+
+	$scope.addUserPopup = function(user) {
+		$scope.addingUser = user;
 	}
 
 	$scope.groupAddUser = function($event, role) {

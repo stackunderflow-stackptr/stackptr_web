@@ -176,9 +176,7 @@
 			<span ng-if="!reqsListEmpty"><div class="label">Incoming Requests</div></span>
 			
 			<img width="32" height="32" class="user-icon" ng-repeat="user in userReqs track by user.id" ng-src="[[::user.icon]]" 
-				data-trigger="click" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br><a onClick='acceptUserClick(this,[[user.id]])'>Accept</a>
-				<a onClick='delUserClick(this,[[user.id]])'>Delete</a>">
+				 data-template-url="static/template/userAddRequest.html" data-container="body" data-title="Add Group" ng-click="addUserPopup(user)" bs-modal>
 
 			<br>
 

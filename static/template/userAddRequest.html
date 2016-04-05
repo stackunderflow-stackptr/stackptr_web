@@ -1,0 +1,33 @@
+<div class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog"> 
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" ng-click="$hide()">&times;</button>
+				<h4 class="modal-title">Incoming User Request</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<p class="lead" ng-bind="addingUser.username"></p>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-3">
+						<img ng-src="[[addingUser.icon]]" width=96 height=96>
+					</div>
+					<div class="col-md-9">
+						<div class="row">
+							Adding this user will share your location with them at all times.
+						</div>
+						<br>
+						<div class="row">
+								<button class="btn btn-success" type="button" ng-click="acceptUser(addingUser.id)">Accept</button>
+								<button class="btn btn-danger" type="button" ng-click="delUser(addingUser.id)">Deny</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
