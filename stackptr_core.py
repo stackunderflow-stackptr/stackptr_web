@@ -336,7 +336,6 @@ def leaveGroup(gid=None, pm=None, guser=None, db=None):
 
 	if len(admins) == 1 and admins[0].userid == guser.id:
 		return error("You are the only admin in this group - you may not leave")
-	return error("test")
 
 	gl = db.session.query(GroupMember)\
 				   .filter(GroupMember.groupid == int(gid))\
