@@ -55,37 +55,64 @@
 
 				</div>
 
-				<form>
 					<div class="form-group">
 						<label for="groupname">Group Name</label>
-						<input type="text" class="form-control" id="groupname" ng-value="grouplist[group].name" ng-disabled="grouplist[group].role != 2">
+						<div class="col-md-12" ng-if="grouplist[group].role == 2">
+							<a href="#" editable-text="grouplist[group].name" ng-bind="grouplist[group].name" onbeforesave="updateGroupName($data,group)"></a>
+						</div>
+						<div class="col-md-12" ng-if="grouplist[group].role != 2">
+							<span ng-bind="grouplist[group].name"></span>
+						</div>
 					</div>
+					<br>
 					<div class="form-group">
 						<label for="groupdesc">Description</label>
-						<input type="text" class="form-control" id="groupdesc" ng-value="grouplist[group].description" ng-disabled="grouplist[group].role != 2">
+						
+						<div class="col-md-12" ng-if="grouplist[group].role == 2">
+							<a href="#" editable-textarea="grouplist[group].description" e-rows="7" e-cols="40" 
+							onbeforesave="updateGroupDescription($data,group)">
+								<div style="white-space: normal">[[grouplist[group].description || 'no description']]</div>
+							</a>
+						</div>
+						<div class="col-md-12" ng-if="grouplist[group].role != 2">
+							<div style="white-space: normal">[[grouplist[group].description || 'no description']]</div>
+						</div>
 					</div>
-					<div class="checkbox">
-						<label>
-						<input type="checkbox" name="mode" value="" ng-checked="grouplist[group].status > 0" ng-disabled="grouplist[group].role != 2">
-							Require owner approval to join
-						</label>
-					</div>
+					<br>
 
 					<div class="form-group">
-						<button class="btn btn-primary" type="button" ng-click="updateGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Update Group</button>
+						<label>Status</label>
+						<div class="col-md-12" ng-if="grouplist[group].role == 2">
+							<a href="#" editable-checkbox="grouplist[group].status == 0" e-title="Show group in public list?"
+							ng-bind="(grouplist[group].status > 0) && 'Group not shown in public list' || 'Group shown and joinable in public list' "
+							onbeforesave="updateGroupVisibility($data,group)"></a>
+						</div>
+						<div class="col-md-12" ng-if="grouplist[group].role != 2">
+							<i ng-bind="(grouplist[group].status > 0) && 'Group not shown in public list' || 'Group shown and joinable in public list' "></i>
+						</div>
 					</div>
+					<br>
 
 					<div class="form-group">
-						<button class="btn btn-default" type="button" ng-click="setShareToGroup(group,1,$hide,$event)" ng-if="!groupsSharedTo[group]">Share Location With Group</button>
-						<button class="btn btn-default" type="button" ng-click="setShareToGroup(group,0,$hide,$event)" ng-if="groupsSharedTo[group]">Stop Sharing Location With Group</button>
+						<label>Sharing</label>
+						<div class="col-md-12">
+							<button class="btn btn-default" type="button" ng-click="setShareToGroup(group,1,$hide,$event)" ng-if="!groupsSharedTo[group]">Share Location With Group</button>
+							<button class="btn btn-default" type="button" ng-click="setShareToGroup(group,0,$hide,$event)" ng-if="groupsSharedTo[group]">Stop Sharing Location With Group</button>
+						</div>
 					</div>
+					<br>
+					<br>
 
 					<div class="form-group">
-						<button class="btn btn-default" type="button" ng-click="leaveGroup(group,$hide,$event)">Leave Group</button>
-						<button class="btn btn-danger" type="button" ng-click="deleteGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Delete Group</button>
+						<label>Manage</label>
+						<div class="col-md-12">
+							<button class="btn btn-default" type="button" ng-click="leaveGroup(group,$hide,$event)">Leave Group</button>
+							<button class="btn btn-danger" type="button" ng-click="deleteGroup(group,$hide,$event)" ng-if="grouplist[group].role == 2">Delete Group</button>
+						</div>
 					</div>
 
-				</form>
+					&nbsp;
+
 			</div>
 		</div>
 	</div>

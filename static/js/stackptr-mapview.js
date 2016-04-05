@@ -438,18 +438,31 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		$scope.processData(data);
 		if (data[0].type != "error") {
 			$scope.resetGroup();
-		}
+		}	
 	}
 
-	$scope.updateGroup = function(group, hide, $event) {
-		var etf = $event.target.form;
+	$scope.updateGroupName = function(gname, group) {
 		$wamp.call('com.stackptr.api.updateGroup', [], {
-			gid: $scope.group,
-			name: etf.groupname.value,
-			description: etf.groupdesc.value,
-			status: etf.mode.checked ? "1" : "0"
+			gid: group,
+			name: gname,
 		}).then($scope.processData);
-		hide();
+		return false;
+	}
+
+	$scope.updateGroupDescription = function(gdesc, group) {
+		$wamp.call('com.stackptr.api.updateGroup', [], {
+			gid: group,
+			description: gdesc,
+		}).then($scope.processData);
+		return false;
+	}
+
+	$scope.updateGroupVisibility = function(vis, group) {
+		$wamp.call('com.stackptr.api.updateGroup', [], {
+			gid: group,
+			status: vis ? "0" : "1",
+		}).then($scope.processData);
+		return false;
 	}
 
 	$scope.groupAddUser = function($event, role) {
