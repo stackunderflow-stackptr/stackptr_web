@@ -400,9 +400,9 @@ def updateGroup(gid=None, pm=None, name=None, description=None, status=None, gus
 			  		  .first()
 	if not group: return error("No such group")
 	
-	group.name = name
-	group.description = description
-	group.status = int(status)
+	group.name = name if (name != None) else group.name
+	group.description = description if (description != None) else group.description
+	group.status = int(status) if (status != None) else group.status
 	db.session.commit()
 	
 	res = [{'name': group.name, 'id': group.id, 'description': group.description, 
