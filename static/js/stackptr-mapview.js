@@ -983,8 +983,3 @@ function delUserClick(item, uid) {
 	var $scope = angular.element($('body')).scope();
 	$scope.delUser(uid);
 }
-
-function acceptUserClick(item, uid) {
-	var $scope = angular.element($('body')).scope();
-	$scope.acceptUser(uid);
-}
