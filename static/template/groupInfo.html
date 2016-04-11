@@ -71,11 +71,11 @@
 						<div class="col-md-12" ng-if="grouplist[group].role == 2">
 							<a href="#" editable-textarea="grouplist[group].description" e-rows="7" e-cols="40" 
 							onbeforesave="updateGroupDescription($data,group)">
-								<div style="white-space: normal">{{grouplist[group].description || 'no description'}}</div>
+								<div style="white-space: normal" ng-bind="grouplist[group].description || 'no description'"></div>
 							</a>
 						</div>
 						<div class="col-md-12" ng-if="grouplist[group].role != 2">
-							<div style="white-space: normal">{{grouplist[group].description || 'no description'}}</div>
+							<div style="white-space: normal" ng-bind="grouplist[group].description || 'no description'"></div>
 						</div>
 					</div>
 					<br>

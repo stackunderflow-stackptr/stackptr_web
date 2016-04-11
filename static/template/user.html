@@ -11,7 +11,7 @@
 		<div class="bubble"> 
 			<div class="row">
 				<div class="col-md-12">
-					<p class="lead">{{userObj = (isMe) ? userMe : (isGroup ? groupShareUsers[userId] : userList[userId]); userObj.username }}</p>
+					<p class="lead" ng-bind="userObj = (isMe) ? userMe : (isGroup ? groupShareUsers[userId] : userList[userId]); userObj.username"></p>
 				</div>
 			</div>
 
@@ -23,27 +23,27 @@
 				<div class="col-md-9">
 					<div ng-if="userObj.gid">
 						<span class="col-md-2"><b>Group:</b></span>
-						<span class="col-md-10">{{ grouplist[userObj.gid].name }}</span>
+						<span class="col-md-10" ng-bind="grouplist[userObj.gid].name"></span>
 					</div>
 					<div>
 						<span class="col-md-2"><b>Loc:</b></span>
-						<span class="col-md-10">{{userObj.loc}}</span>
+						<span class="col-md-10" ng-bind="userObj.loc"></span>
 					</div>
 					<div ng-if="userObj.alt">
 						<span class="col-md-2"><b>Alt:</b></span>
-						<span class="col-md-10">{{userObj.alt | number:1}}m ASL</span>
+						<span class="col-md-10" ng-bind-template="{{userObj.alt | number:1}}m ASL"></span>
 					</div>
 					<div ng-if="userObj.spd > 0">
 						<span class="col-md-2"><b>Spd:</b></span>
-						<span class="col-md-10">{{userObj.spd * 3.6}}km/h</span>
+						<span class="col-md-10" ng-bind-template="{{userObj.spd * 3.6}}km/h"></span>
 					</div>
 					<div ng-if="userObj.hdg > 0">
 						<span class="col-md-2"><b>Hdg:</b></span>
-						<span class="col-md-10">{{userObj.hdg}}&deg;N</span>
+						<span class="col-md-10" ng-bind-template="{{userObj.hdg}}&deg;N"></span>
 					</div>
 					<div ng-if="userObj.extra.prov">
 						<span class="col-md-2"><b>Via:</b></span>
-						<span class="col-md-10">{{userObj.extra.prov}}</span>
+						<span class="col-md-10" ng-bind="userObj.extra.prov"></span>
 					</div>
 					<div ng-if="userObj.extra.bat">
 						<span class="col-md-2"><b>Bat:</b></span>
@@ -58,7 +58,7 @@
 					</div>
 					<div>
 						<span class="col-md-5"><b>Last update:</b></span>
-						<span class="col-md-7">{{userObj.lastupd * 1000 | amCalendar}}</span>
+						<span class="col-md-7" ng-bind="userObj.lastupd * 1000 | amCalendar"></span>
 					</div>
 				</div>
 			</div>

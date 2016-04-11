@@ -25,7 +25,7 @@
 				<div class="col-md-12">
 					<a href="#" editable-textarea="item.description" e-rows="7" e-cols="40" 
 					onbeforesave="redescriptionGroupItem($data,item)">
-						<div style="white-space: normal">{{item.description || 'no description'}}</div>
+						<div style="white-space: normal" ng-bind="item.description || 'no description'"></div>
 					</a>
 				</div>
 			</div>
