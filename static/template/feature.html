@@ -25,16 +25,16 @@
 				<div class="col-md-12">
 					<a href="#" editable-textarea="item.description" e-rows="7" e-cols="40" 
 					onbeforesave="redescriptionGroupItem($data,item)">
-						<div style="white-space: normal">[[item.description || 'no description']]</div>
+						<div style="white-space: normal">{{item.description || 'no description'}}</div>
 					</a>
 				</div>
 			</div>
 
 			<div class="row">
 				<div class="col-md-12">
-					<b>Created by</b>: [[::item.owner]]<br>
-					<b>Type</b>: [[::item.json.geometry.type]]<br>
-					<b>ID</b>: [[::item.id]]<br>
+					<b>Created by</b>: {{::item.owner}}<br>
+					<b>Type</b>: {{::item.json.geometry.type}}<br>
+					<b>ID</b>: {{::item.id}}<br>
 					<form class="input-group input-group-sm">
 						<input type="hidden" name="id" ng-value="::item.id">
 						<span class="input-group-btn">

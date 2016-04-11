@@ -73,9 +73,9 @@
 		</ul>
 		<ul class="nav navbar-nav navbar-right hidden-sm hidden-xs">
 			<li class="dropdown">
-				<a href="#" class="dropdown-toggle" data-toggle="dropdown">[[tiles.name]] <span class="caret"></span></a>
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{tiles.name}} <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
-						<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer([[tilename]])" ng-bind="::tile.name"></a></li>
+						<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer({{tilename}})" ng-bind="::tile.name"></a></li>
 					</ul>
 			</li>
 			<li><a ng-bind="status"></a></li>
@@ -94,7 +94,7 @@
 					<li><a ng-if="::!isStackPtrAndroid" href="/api/">Manage API keys</a></li>
 					<li><a ng-if="::!isStackPtrAndroid" href="https://stackptr.readthedocs.org/">API Docs</a></li>
 					<li class="divider" ng-if="::!isStackPtrAndroid" />
-					<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer([[tilename]])" ng-bind="::tile.name"></a></li>
+					<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer({{tilename}})" ng-bind="::tile.name"></a></li>
 					<li class="divider" />
 					<li><a ng-bind="status"></a></li>
 					<li class="divider" />
@@ -127,62 +127,62 @@
 		</div>
 		<div class="panel-body">
 			
-			<img width="32" height="32" class="user-icon" ng-src="[[::userMe.icon]]" ng-click="center.lat = userMe.loc[0]; center.lng = userMe.loc[1]; center.zoom = 16">
-			<span class="userme-label">[[userMe.username]]<span ng-if="userMe.lastupd > 0">, </span><span am-time-ago="userMe.lastupd" am-preprocess="unix" ng-if="userMe.lastupd > 0">,</span></span>
+			<img width="32" height="32" class="user-icon" ng-src="{{::userMe.icon}}" ng-click="center.lat = userMe.loc[0]; center.lng = userMe.loc[1]; center.zoom = 16">
+			<span class="userme-label">{{userMe.username}}<span ng-if="userMe.lastupd > 0">, </span><span am-time-ago="userMe.lastupd" am-preprocess="unix" ng-if="userMe.lastupd > 0">,</span></span>
 			
 			<div ng-if="userMe.lastupd < 0">Your position has never been updated. You can install the mobile client for Android <a href="https://play.google.com/apps/testing/com.stackunderflow.stackptr">here</a> (iOS coming soon)</div>
 					
 			<span ng-if="(hUsers = (userList | updateRange:0:60)).length"><div class="label" >&lt;1m ago</div></span>
 			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers track by user.id" ng-src="[[::user.icon]]"
+			<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers track by user.id" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 
 			<span ng-if="(hUsers = (userList | updateRange:60:3600)).length"><div class="label" >&lt;1h ago</div></span>
 			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers track by user.id" ng-src="[[::user.icon]]"
+			<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers track by user.id" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 			
 			<span ng-if="(dUsers = (userList | updateRange:3600:86400)).length"><div class="label">&lt;1d ago</div></span>
 			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in dUsers track by user.id" ng-src="[[::user.icon]]" 
+			<img width="32" height="32" class="user-icon" ng-repeat="user in dUsers track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 			
 			<span ng-if="(wUsers = (userList | updateRange:86400:604800)).length"><div class="label">&lt;1w ago</div></span>
 
-			<img width="32" height="32" class="user-icon" ng-repeat="user in wUsers track by user.id" ng-src="[[::user.icon]]" 
+			<img width="32" height="32" class="user-icon" ng-repeat="user in wUsers track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 			
 			<span ng-if="(oUsers = (userList | updateRange:604800:-1)).length"><div class="label">&gt;1w ago</div></span>
 
-			<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers track by user.id" ng-src="[[::user.icon]]" 
+			<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 			
 			<span ng-if="!pendingListEmpty"><div class="label">Outgoing Requests</div></span>
 			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in userPending track by user.id" ng-src="[[::user.icon]]" 
+			<img width="32" height="32" class="user-icon" ng-repeat="user in userPending track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="click" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br><a onClick='delUserClick(this,[[user.id]])'>Cancel Request</a>">
+				data-title="<b>{{user.username}}</b><br><a onClick='delUserClick(this,{{user.id}})'>Cancel Request</a>">
 			
 			<span ng-if="!reqsListEmpty"><div class="label">Incoming Requests</div></span>
 			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in userReqs track by user.id" ng-src="[[::user.icon]]" 
+			<img width="32" height="32" class="user-icon" ng-repeat="user in userReqs track by user.id" ng-src="{{::user.icon}}" 
 				 data-template-url="static/template/userAddRequest.html" data-container="body" data-title="Add Group" ng-click="addUserPopup(user)" bs-modal>
 
 			<br>
 
 			<div ng-if="userListEmpty">Your user list is empty. Click the <span class="glyphicon glyphicon-plus"></span> to add another user.</div>
 
-			<div ng-repeat="g in groupsSharedTo track by g.gid">Sharing with group [[ grouplist[g.gid].name ]]: <a ng-click="setShareToGroup(g.gid,0,null,$event)">Stop</a></div>
+			<div ng-repeat="g in groupsSharedTo track by g.gid">Sharing with group {{ grouplist[g.gid].name }}: <a ng-click="setShareToGroup(g.gid,0,null,$event)">Stop</a></div>
 
 
 				<span class="glyphicon glyphicon-plus" onclick="$('#adduser').collapse('toggle')"></span>
@@ -215,7 +215,7 @@
 							<span class="glyphicon glyphicon-list icon-white" data-template-url="static/template/groupDiscover.html"
 							data-container="body" data-title="Discover Groups" ng-click="groupDiscover()" bs-modal></span>
 							<span class="glyphicon glyphicon-cog icon-white" data-template-url="static/template/groupInfo.html"
-							data-container="body" data-title="Group Info: [[ grouplist[group].name ]]" ng-if="group >= 0 && group != null" 
+							data-container="body" data-title="Group Info: {{ grouplist[group].name }}" ng-if="group >= 0 && group != null" 
 							ng-click="groupInfo()" bs-modal></span>
 					</div>
 				</div>
@@ -231,16 +231,16 @@
 
 			<span ng-if="!groupShareUsersEmpty"><div class="label">Users sharing location</div></span>
 
-			<img width="32" height="32" class="user-icon" ng-repeat="user in groupShareUsers track by user.id" ng-src="[[::user.icon]]" 
+			<img width="32" height="32" class="user-icon" ng-repeat="user in groupShareUsers track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>[[user.username]]</b><br>Last update: [[user.lastupd * 1000 | amCalendar]]"
+				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 
 			<span><div class="label">Drawn Objects</div></span>
 			
 			<div class="list-group" id="groupfeaturelist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
-			<span id="feature-[[::item.id]]" class="list-group-item list-item-draw" ng-repeat="item in groupdata track by item.id" ng-click="gotoItem(item.id)">
-				<span class="icon_type icon_[[::item.json.geometry.type]]">&nbsp;</span>
+			<span id="feature-{{::item.id}}" class="list-group-item list-item-draw" ng-repeat="item in groupdata track by item.id" ng-click="gotoItem(item.id)">
+				<span class="icon_type icon_{{::item.json.geometry.type}}">&nbsp;</span>
 				<a ng-bind="item.name"></a>
 				<span ng-bind="item.description"></span>
 			</span>

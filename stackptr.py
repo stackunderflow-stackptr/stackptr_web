@@ -102,7 +102,7 @@ def before_request():
 @app.route('/')
 @login_required
 def index():
-	return render_template("map.html", current_user=g.user.username)
+	return send_from_directory("templates","map.html")
 
 # registration
 

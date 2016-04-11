@@ -7,11 +7,11 @@
 			</div>
 			<div class="modal-body">
 				<div class="list-group" id="groupjoinlist" bs-collapse ng-model="activePanel" ng-animation="am-fade">
-					<span id="group-[[group.id]]" class="list-group-item list-item-draw" ng-repeat="group in discoverGroupList">
-						<a bs-collapse-toggle>[[group.name]]</a>
+					<span id="group-{{group.id}}" class="list-group-item list-item-draw" ng-repeat="group in discoverGroupList">
+						<a bs-collapse-toggle>{{group.name}}</a>
 						<div class="panel panel-collapse" bs-collapse-target>
 							<div class="well well-sm">
-								[[group.description]]
+								{{group.description}}
 							</div>
 							<button type="submit" class="btn btn-primary" ng-click="joinGroup(group,$hide,$event)">Join Group</button>
 						</div>

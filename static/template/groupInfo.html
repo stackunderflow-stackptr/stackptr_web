@@ -9,14 +9,14 @@
 
 				<label for="groupadminlist">Group Administrators</label>
 				<div id="groupadminlist">
-					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="{{user.icon}}"
 				data-trigger="click" bs-tooltip data-placement="top" data-html="true"
-				data-title="<b>[[user.username]]</b><br><a onClick='setRoleUserClick([[user.id]],1)'>Demote</a> <a onClick='setRoleUserClick([[user.id]],0)'>Delete</a>"
+				data-title="<b>{{user.username}}</b><br><a onClick='setRoleUserClick({{user.id}},1)'>Demote</a> <a onClick='setRoleUserClick({{user.id}},0)'>Delete</a>"
 				ng-if="user.role == 2 && grouplist[group].role == 2">
 
-				<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+				<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="{{user.icon}}"
 				data-trigger="click" bs-tooltip data-placement="top" data-html="true"
-				data-title="<b>[[user.username]]</b>"
+				data-title="<b>{{user.username}}</b>"
 				ng-if="user.role == 2 && grouplist[group].role != 2">
 
 				<span class="glyphicon glyphicon-plus pull-right" onclick="$('#groupaddadmin').collapse('toggle')" ng-if="grouplist[group].role == 2"></span>
@@ -33,14 +33,14 @@
 
 				<label for="groupuserlist">Group Members</label>
 				<div id="groupuserlist">
-					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+					<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="{{user.icon}}"
 				data-trigger="click" bs-tooltip data-placement="top" data-html="true"
-				data-title="<b>[[user.username]]</b><br><a ng-if='0' onClick='setRoleUserClick([[user.id]],2)'>Promote</a> <a onClick='setRoleUserClick([[user.id]],0)'>Delete</a>"
+				data-title="<b>{{user.username}}</b><br><a ng-if='0' onClick='setRoleUserClick({{user.id}},2)'>Promote</a> <a onClick='setRoleUserClick({{user.id}},0)'>Delete</a>"
 				ng-if="user.role != 2 && grouplist[group].role == 2">
 
-				<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="[[user.icon]]"
+				<img width="32" height="32" class="user-icon" ng-repeat="user in grouplist[group].members" ng-src="{{user.icon}}"
 				data-trigger="click" bs-tooltip data-placement="top" data-html="true"
-				data-title="<b>[[user.username]]</b>"
+				data-title="<b>{{user.username}}</b>"
 				ng-if="user.role != 2 && grouplist[group].role != 2">
 
 				<span class="glyphicon glyphicon-plus pull-right" onclick="$('#groupadduser').collapse('toggle')" ng-if="grouplist[group].role == 2"></span>
@@ -71,11 +71,11 @@
 						<div class="col-md-12" ng-if="grouplist[group].role == 2">
 							<a href="#" editable-textarea="grouplist[group].description" e-rows="7" e-cols="40" 
 							onbeforesave="updateGroupDescription($data,group)">
-								<div style="white-space: normal">[[grouplist[group].description || 'no description']]</div>
+								<div style="white-space: normal">{{grouplist[group].description || 'no description'}}</div>
 							</a>
 						</div>
 						<div class="col-md-12" ng-if="grouplist[group].role != 2">
-							<div style="white-space: normal">[[grouplist[group].description || 'no description']]</div>
+							<div style="white-space: normal">{{grouplist[group].description || 'no description'}}</div>
 						</div>
 					</div>
 					<br>

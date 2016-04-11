@@ -16,7 +16,7 @@ stackptr_server_base_addr = stackptr_server_base_protocol + "//" + stackptr_serv
 
 var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies', 'xeditable']);
 
-app.config(['$wampProvider', '$modalProvider', '$compileProvider', '$interpolateProvider', function($wampProvider, $modalProvider, $compileProvider, $interpolateProvider) {
+app.config(['$wampProvider', '$modalProvider', '$compileProvider', function($wampProvider, $modalProvider, $compileProvider) {
 	var wsurl = (stackptr_server_base_protocol == 'https:' ? 'wss://' : 'ws://') + stackptr_server_base_host + '/ws';
 	$wampProvider.init({
 		url: wsurl,
@@ -29,7 +29,6 @@ app.config(['$wampProvider', '$modalProvider', '$compileProvider', '$interpolate
 		html: true
 	});
 	$compileProvider.debugInfoEnabled(false);
-	$interpolateProvider.startSymbol('[[').endSymbol(']]');
 }]);
 
 app.run(['$http', 'editableOptions', function($http,editableOptions) {
