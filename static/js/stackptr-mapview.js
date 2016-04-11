@@ -745,16 +745,20 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.$on("$wamp.onchallenge", function(event, data) {
 		console.log(data);
 		if (data.method === "ticket") {
-			$scope.getCSRFTokenThen(function() {
-				$scope.getWSToken(data);
-			});
+			if (stackptr_apikey != undefined) {
+				data.promise.resolve(stackptr_apikey);
+			} else {
+				$scope.getCSRFTokenThen(function() {
+					$scope.getWSToken(data);
+				});
+			}
 		} else {
 			alert("Could not auth to server - ticket auth not offered!");
 		}
 	});
 
 	$scope.getWSToken = function(data) {
-		$http.post(stackptr_server_base_addr + '/ws_token', (stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "").then(
+		$http.post(stackptr_server_base_addr + '/ws_token').then(
 			function success(response) {
 				data.promise.resolve(response.data);
 			},

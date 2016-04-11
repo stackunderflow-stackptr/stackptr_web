@@ -33,13 +33,19 @@ class StackPtrAuthenticator(ApplicationSession):
 		def authenticate(realm, authid, details):
 			try:
 				ticket = details['ticket']
-				res = db.session.query(AuthTicket).filter_by(key=ticket, userid=authid).first()
-				if res:
-					db.session.delete(res)
-					db.session.commit()
-					#fixme: check date
-					print "authenticated"
-					return u"user"
+				if len(ticket) == 30:
+					res = db.session.query(AuthTicket).filter_by(key=ticket, userid=authid).first()
+					if res:
+						db.session.delete(res)
+						db.session.commit()
+						#fixme: check date
+						print "authenticated by ticket"
+						return u"user"
+				elif len(ticket) == 32:
+					res = db.session.query(ApiKey).filter_by(key=ticket, userid=authid).first()
+					if res:
+						print "authenticated by apikey"
+						return u"user"
 				else:
 					raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
 			except Exception as e:
