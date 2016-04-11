@@ -31,6 +31,7 @@ app.config(function($wampProvider, $modalProvider) {
 		html: true
 	});
 });
+	$compileProvider.debugInfoEnabled(false);
 
 app.run(function($http,editableOptions) {
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
