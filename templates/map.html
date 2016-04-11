@@ -75,7 +75,7 @@
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{tiles.name}} <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
-						<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer({{tilename}})" ng-bind="::tile.name"></a></li>
+						<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer(tilename)" ng-bind="::tile.name"></a></li>
 					</ul>
 			</li>
 			<li><a ng-bind="status"></a></li>
@@ -94,7 +94,7 @@
 					<li><a ng-if="::!isStackPtrAndroid" href="/api/">Manage API keys</a></li>
 					<li><a ng-if="::!isStackPtrAndroid" href="https://stackptr.readthedocs.org/">API Docs</a></li>
 					<li class="divider" ng-if="::!isStackPtrAndroid" />
-					<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer({{tilename}})" ng-bind="::tile.name"></a></li>
+					<li ng-repeat="(tilename,tile) in ::tileservers"><a ng-click="setTileServer(tilename)" ng-bind="::tile.name"></a></li>
 					<li class="divider" />
 					<li><a ng-bind="status"></a></li>
 					<li class="divider" />

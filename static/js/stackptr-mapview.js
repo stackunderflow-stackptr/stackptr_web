@@ -85,12 +85,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		return cookie_ts
 	}
 
-	$scope.setTileServer = function(ev) {
-		var new_ts_name = ev[0][0];
+	$scope.setTileServer = function(new_ts_name) {
 		$cookies.put('tileserver', new_ts_name);
 		angular.extend($scope, {
 			tiles: $scope.getTileServer()
-		})
+		});
 	}
 
 	$scope.$on('leafletDirectiveMap.moveend', function(event) {
