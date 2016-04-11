@@ -14,11 +14,9 @@ if (typeof stackptr_apikey == 'undefined') {
 
 stackptr_server_base_addr = stackptr_server_base_protocol + "//" + stackptr_server_base_host;
 
-var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies', 'xeditable']).config(function($interpolateProvider) {
-	$interpolateProvider.startSymbol('[[').endSymbol(']]');
-});
+var app = angular.module("StackPtr", ['ui-leaflet', 'angularMoment', 'ngAnimate', 'ngSanitize', 'mgcrea.ngStrap', 'vxWamp', 'ngCookies', 'xeditable']);
 
-app.config(function($wampProvider, $modalProvider) {
+app.config(['$wampProvider', '$modalProvider', '$compileProvider', '$interpolateProvider', function($wampProvider, $modalProvider, $compileProvider, $interpolateProvider) {
 	var wsurl = (stackptr_server_base_protocol == 'https:' ? 'wss://' : 'ws://') + stackptr_server_base_host + '/ws';
 	$wampProvider.init({
 		url: wsurl,
@@ -30,13 +28,14 @@ app.config(function($wampProvider, $modalProvider) {
 	angular.extend($modalProvider.defaults, {
 		html: true
 	});
-});
 	$compileProvider.debugInfoEnabled(false);
+	$interpolateProvider.startSymbol('[[').endSymbol(']]');
+}]);
 
-app.run(function($http,editableOptions) {
+app.run(['$http', 'editableOptions', function($http,editableOptions) {
 	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 	editableOptions.theme = 'bs3';
-});
+}]);
 
 app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', '$compile', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp, $compile) {
 
