@@ -209,7 +209,7 @@ def ws_uid():
 @login_required
 def ws_token():
 	at = AuthTicket()
-	at.key = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+	at.key = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(30)])
 	at.userid = g.user.id
 	at.created = datetime.datetime.now()
 	db.session.add(at)

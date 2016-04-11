@@ -147,7 +147,7 @@ class GroupLocShare(Base):
 
 class AuthTicket(Base):
 	__tablename__ = "auth_ticket"
-	key = Column(String(32), primary_key=True)
+	key = Column(String(30), primary_key=True)
 	userid = Column(Integer, ForeignKey('users.id'))
 	created = Column(DateTime)
 
