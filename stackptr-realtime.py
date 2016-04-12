@@ -41,9 +41,12 @@ class StackPtrAuthenticator(ApplicationSession):
 						#fixme: check date
 						print "authenticated by ticket"
 						return u"user"
-				elif len(ticket) == 32:
-					res = db.session.query(ApiKey).filter_by(key=ticket, userid=authid).first()
+				elif len(ticket) >= 32:
+					res = db.session.query(ApiKey).filter_by(key=ticket[:32], userid=authid).first()
 					if res:
+						uid = ticket[32:]
+						if uid and (int(uid,16) != res.userid):
+							raise ApplicationError("invalid-ticket", "uid mismatch")
 						print "authenticated by apikey"
 						return u"user"
 				else:

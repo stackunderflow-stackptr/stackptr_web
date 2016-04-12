@@ -24,8 +24,8 @@
 <table class="table table-striped">
 	<tr><th>key</th><th></th><th>created</th><th>description</th><th></th></tr>
 	{% for key in keys %}
-		<tr><td>{{ key.key }}</td>
-		<td><button type="submit" class="btn btn-sm btn-info" onclick="showQR('{{key.key}}')"><span class="glyphicon glyphicon-qrcode"></span></button></td>
+		<tr><td>{{ key.key }}{{ suffix }}</td>
+		<td><button type="submit" class="btn btn-sm btn-info" onclick="showQR('{{key.key}}{{suffix}}')"><span class="glyphicon glyphicon-qrcode"></span></button></td>
 		<td>{{ key.created }}</td><td>{{ key.name }}</td>
 		<td>
 			<form method="POST" action="/api/remove">

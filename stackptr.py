@@ -77,8 +77,11 @@ def load_user_from_request(request):
 	else:
 		apikey = request.args.get('apikey')
 	if apikey:
-		key = db.session.query(ApiKey).filter_by(key=apikey).first()
+		key = db.session.query(ApiKey).filter_by(key=apikey[:32]).first()
 		if key == None:
+			return None
+		uid = apikey[32:]
+		if uid and (int(uid,16) != key.userid):
 			return None
 		return db.session.query(Users).filter_by(id=key.userid).first()
 	return None
@@ -162,7 +165,7 @@ def login():
 @login_required
 def logout():
 	logout_user()
-	return redirect("/")
+	return redirect("/login")
 
 ## API keys
 
@@ -170,7 +173,7 @@ def logout():
 @login_required
 def api_info():
 	keys = db.session.query(ApiKey).filter_by(userid = g.user.id).order_by(ApiKey.created).all()
-	return render_template("api.html", keys=keys)
+	return render_template("api.html", keys=keys, suffix=("%x" % g.user.id))
 
 @app.route('/api/new', methods=['POST'])
 @login_required
@@ -183,7 +186,7 @@ def api_create():
 	db.session.add(key)
 	db.session.commit()
 	if 'return' in request.form:
-		return key.key
+		return "%s%x" % (key.key, g.user.id)
 	return redirect(url_for('api_info'))
 
 @app.route('/api/remove', methods=['POST'])
