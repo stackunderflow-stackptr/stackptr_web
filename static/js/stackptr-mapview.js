@@ -37,7 +37,10 @@ app.run(['$http', 'editableOptions', function($http,editableOptions) {
 	editableOptions.theme = 'bs3';
 }]);
 
+var stackptr_scope;
+
 app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', '$compile', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp, $compile) {
+	stackptr_scope = $scope;
 
 	stackptr_leafletdata_map = leafletData.getMap;
 
@@ -939,23 +942,21 @@ $(document).ready(function() {
 });
 
 function StackPtrConnect() {
-	angular.element($('body')).scope().doConnect();
+	stackptr_scope.doConnect();
 }
 
 function StackPtrDisconnect() {
-	angular.element($('body')).scope().doDisconnect();
+	stackptr_scope.doDisconnect();
 }
 
 function StackPtrCloseModal() {
-	return angular.element($('body')).scope().doCloseModal();
+	return stackptr_scope.doCloseModal();
 }
 
 function setRoleUserClick(uid, role) {
-	var $scope = angular.element($('body')).scope();
-	$scope.setRoleUser(uid, role);
+	stackptr_scope.setRoleUser(uid, role);
 }
 
 function delUserClick(item, uid) {
-	var $scope = angular.element($('body')).scope();
-	$scope.delUser(uid);
+	stackptr_scope.delUser(uid);
 }
