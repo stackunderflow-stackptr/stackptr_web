@@ -33,21 +33,34 @@ class StackPtrAuthenticator(ApplicationSession):
 		def authenticate(realm, authid, details):
 			try:
 				ticket = details['ticket']
-				if len(ticket) == 30:
-					res = db.session.query(AuthTicket).filter_by(key=ticket, userid=authid).first()
+				uid = None
+				if len(ticket) == 30: # is generated from /ws_token
+					res = db.session.query(AuthTicket).filter_by(key=ticket).first()
 					if res:
 						db.session.delete(res)
 						db.session.commit()
 						#fixme: check date
 						print "authenticated by ticket"
-						return u"user"
-				elif len(ticket) == 32:
-					res = db.session.query(ApiKey).filter_by(key=ticket, userid=authid).first()
+						uid = res.userid
+					else:
+						raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
+				elif len(ticket) == 32: # is an API key
+					res = db.session.query(ApiKey).filter_by(key=ticket).first()
 					if res:
 						print "authenticated by apikey"
-						return u"user"
+						uid = res.userid
+					else:
+						raise ApplicationError("invalid-ticket", "invalid api key %s" % ticket)
 				else:
-					raise ApplicationError("invalid-ticket", "invalid ticket %s" % ticket)
+					raise ApplicationError("invalid-ticket", "unrecognised login %s" % ticket)
+				# we didn't bail out before now, so the session is valid, so save it
+				session = WAMPSession()
+				session.user = uid
+				session.sessionid = int(details['session'])
+				db.session.add(session)
+				db.session.commit()
+				print "session added: %i" % session.sessionid
+				return u"user"
 			except Exception as e:
 				db.session.rollback()
 				print traceback.format_exc()
@@ -210,18 +223,6 @@ class StackPtrAPI(ApplicationSession):
 class StackPtrSessionMonitor(ApplicationSession):
 	@inlineCallbacks
 	def onJoin(self, details=None):
-		def on_session_join(details=None):
-			try:
-				session = WAMPSession()
-				session.user = int(details['authid'])
-				session.sessionid = int(details['session'])
-				db.session.add(session)
-				db.session.commit()
-				print "session added: %i" % session.sessionid
-			except Exception as e:
-				print traceback.format_exc()
-				raise e
-		
 		def on_session_leave(sessionid):
 			try:
 				session = db.session.query(WAMPSession).filter(WAMPSession.sessionid==sessionid).first()
@@ -238,7 +239,6 @@ class StackPtrSessionMonitor(ApplicationSession):
 		try:
 			print "removed %i old sessions" % db.session.query(WAMPSession).delete()
 			db.session.commit()
-			yield self.subscribe(on_session_join, 'wamp.session.on_join')
 			yield self.subscribe(on_session_leave, 'wamp.session.on_leave')
 			print "sessionmonitor registered"
 		except Exception as e:

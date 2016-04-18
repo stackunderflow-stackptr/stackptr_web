@@ -21,6 +21,7 @@ app.config(['$wampProvider', '$modalProvider', '$compileProvider', function($wam
 	$wampProvider.init({
 		url: wsurl,
 		realm: 'stackptr',
+		authid: '-1',
 		authmethods: ["ticket"],
 		max_retries: -1,
 		max_retry_delay: 60,
@@ -157,7 +158,6 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 
 	});
 
-	$scope.me = null;
 	$scope.markers = {};
 	$scope.userList = {};
 	$scope.userPending = {};
@@ -210,7 +210,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		} else if (item.type == 'grouplist') {
 			item.data.forEach(function(v) {
 				v.members.forEach(function(vm) {
-					if (vm.id == $scope.me.id) {
+					if (vm.id == $scope.userMe.id) {
 						this.role = vm.role;
 					}
 				}, v);
@@ -704,38 +704,12 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		}
 	};
 
-	$scope.doInitialConnect = function() {
-		$scope.getCSRFTokenThen(function() {
-			$http.post(stackptr_server_base_addr + '/uid', (stackptr_apikey != undefined) ? "apikey=" + encodeURIComponent(stackptr_apikey) : "").then(
-				function success(response) {
-					var rdata = response.data;
-					if (typeof rdata != "object") {
-						if (!(typeof stackptr_connection_failed === 'undefined')) {
-								stackptr_connection_failed("uid not object", "");
-						}
-					} else {
-						console.log(rdata);
-						$scope.me = rdata;
-						$wamp.connection._options.authid = rdata.id.toString();
-						$scope.doConnect = function() {
-							console.log("Connecting");
-							$wamp.open();
-						}
-						$scope.doInitialConnect = function() {};
-						$scope.doConnect();
-					}
-				},
-				function failure(response) {
-					if (!(typeof stackptr_connection_failed === 'undefined')) {
-							stackptr_connection_failed("uid failed to fetch", "");
-					}
-				}
-			)
-		})
-	};
+	$scope.doConnect = function() {
+		console.log("Connecting");
+		$wamp.open();
+	}
 
-	$scope.doConnect = $scope.doInitialConnect;
-	$scope.doInitialConnect();
+	$scope.doConnect();
 
 	$scope.doDisconnect = function() {
 		console.log("Disconnecting");
