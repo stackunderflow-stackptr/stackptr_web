@@ -37,10 +37,13 @@ app.run(['$http', 'editableOptions', function($http,editableOptions) {
 	editableOptions.theme = 'bs3';
 }]);
 
-var stackptr_scope;
+var StackPtrConnect;
+var StackPtrDisconnect;
+var StackPtrCloseModal;
+var setRoleUserClick;
+var delUserClick;
 
 app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leafletData', 'leafletDrawEvents', 'leafletMapEvents', '$wamp', '$compile', function($scope, $cookies, $http, $interval, leafletData, leafletDrawEvents, leafletMapEvents, $wamp, $compile) {
-	stackptr_scope = $scope;
 
 	stackptr_leafletdata_map = leafletData.getMap;
 
@@ -177,6 +180,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 	$scope.groupShareUsers = {};
 	$scope.groupShareUsersEmpty = false;
 	$scope.addingUser = null;
+	$scope.hasDisconnected = false;
 
 	$scope.processItem = function(item) {
 		if (item.type == 'user') {
@@ -480,7 +484,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		}).then($scope.processData);
 	};
 
-	$scope.setRoleUser = function(uid, role) {
+	$scope.setRoleUser = setRoleUserClick = function(uid, role) {
 		$wamp.call('com.stackptr.api.groupUserMod', [], {
 			gid: $scope.group,
 			uid: uid,
@@ -680,7 +684,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		}).then($scope.processData);
 	};
 
-	$scope.delUser = function(uid) {
+	$scope.delUser = delUserClick = function(uid) {
 		$wamp.call('com.stackptr.api.delUser', [], {
 			uid: uid
 		}).then($scope.processData);
@@ -707,15 +711,17 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		}
 	};
 
-	$scope.doConnect = function() {
+	$scope.doConnect = StackPtrConnect = function() {
 		console.log("Connecting");
+		$scope.hasDisconnected = false;
 		$wamp.open();
 	}
 
 	$scope.doConnect();
 
-	$scope.doDisconnect = function() {
+	$scope.doDisconnect = StackPtrDisconnect = function() {
 		console.log("Disconnecting");
+		$scope.hasDisconnected = true;
 		$wamp.close();
 	}
 
@@ -780,9 +786,11 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		$scope.status = "Disconnected: " + data.reason;
 		$scope.reason = data.reason;
 		$scope.details = data.details;
-		if (!(typeof stackptr_connection_failed === 'undefined')) {
-		stackptr_connection_failed(data.reason, data.details);
-	}
+		if (!$scope.hasDisconnected && 
+			!(typeof stackptr_connection_failed === 'undefined')) {
+				stackptr_connection_failed(data.reason, data.details);
+		}
+		
 	});
 
 	$scope.processWS = function(type, data) {
@@ -855,7 +863,7 @@ app.controller("StackPtrMap", ['$scope', '$cookies', '$http', '$interval', 'leaf
 		};
 	});
 
-  	$scope.doCloseModal = function() {
+  	$scope.doCloseModal = StackPtrCloseModal = function() {
   		if ($scope.closeModal == null) {
   			return false;
   		} else {
@@ -940,23 +948,3 @@ $(document).ready(function() {
 		$("#usermenu").on("DOMSubtreeModified", shiftGroupMenu);
 	}
 });
-
-function StackPtrConnect() {
-	stackptr_scope.doConnect();
-}
-
-function StackPtrDisconnect() {
-	stackptr_scope.doDisconnect();
-}
-
-function StackPtrCloseModal() {
-	return stackptr_scope.doCloseModal();
-}
-
-function setRoleUserClick(uid, role) {
-	stackptr_scope.setRoleUser(uid, role);
-}
-
-function delUserClick(item, uid) {
-	stackptr_scope.delUser(uid);
-}
