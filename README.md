@@ -11,3 +11,7 @@ StackPtr is released under the terms of the GNU Affero General Public License, v
 ## Documentation ##
 
 Please see the documentation at [stackptr.readthedocs.org](https://stackptr.readthedocs.org/).
+
+## Trello ##
+
+Current development progress and future directions are documented on the [StackPtr Trello Board](https://trello.com/b/rFaVVb2s).
