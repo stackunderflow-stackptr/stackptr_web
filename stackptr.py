@@ -11,7 +11,7 @@ from flask_cors import *
 app = application = Flask(__name__)
 
 app.config['WTF_CSRF_CHECK_DEFAULT'] = False
-csrf = CsrfProtect()
+csrf = CSRFProtect()
 csrf.init_app(app)
 
 import os
@@ -36,10 +36,10 @@ logging.basicConfig(stream=sys.stderr)
 import crossbarconnect
 
 from werkzeug.security import *
-from flask.ext.login import login_user, logout_user, login_required, current_user, LoginManager
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.script import Manager
-from flask.ext.migrate import Migrate, MigrateCommand
+from flask_login import login_user, logout_user, login_required, current_user, LoginManager
+from flask_sqlalchemy import SQLAlchemy
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 
 import stackptr_core
 
@@ -48,6 +48,7 @@ import stackptr_core
 ####################
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get("database","uri")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 from models import *
 db = SQLAlchemy(app)
