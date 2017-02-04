@@ -7,4 +7,4 @@ stackptr.conf
 env
 *~
 *.db3
-*.pid
+crossbar/key.*
