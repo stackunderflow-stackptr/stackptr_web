@@ -88,14 +88,14 @@ def rev_geocode(lat,lon):
 
 	if gh in geocode_cache:
 		cache_hit += 1
-		print "cache %i/%i" % (cache_hit, cache_miss)
+		print "geocode cache hit %i of %i" % (cache_hit, cache_hit+cache_miss)
 		return geocode_cache[gh]
 	else:
 		cache_miss += 1	
 		gc = reverse_geocoder.search((lat,lon))
 		gc_text = ", ".join([gc[0][thing] for thing in ['name', 'admin1', 'cc']])
 		geocode_cache[gh] = gc_text
-		print "cache %i/%i" % (cache_hit, cache_miss)
+		print "geocode cache hit %i of %i" % (cache_hit, cache_hit+cache_miss)
 		return gc_text
 
 ####
