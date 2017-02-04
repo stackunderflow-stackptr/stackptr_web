@@ -239,7 +239,7 @@ class Client:
       response = self._connection.getresponse()
       response_body = response.read()
 
-      if response.status != 202:
+      if response.status not in [200, 202]:
          raise Exception("publication request failed {0} [{1}] - {2}".format(response.status, response.reason, response_body))
 
       try:
