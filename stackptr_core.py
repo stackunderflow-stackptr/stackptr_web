@@ -77,32 +77,26 @@ def error(msg):
 
 geocode_cache = {}
 cache_hit = 0
-cache_hit_incorrect = 0
 cache_miss = 0
 
 def rev_geocode(lat,lon):
 	global geocode_cache
 	global cache_hit
-	global cache_hit_incorrect
 	global cache_miss
-	
-	gh = geohash.encode(lat,lon, precision=6)
-	gc = reverse_geocoder.search((lat,lon))
-	gc2 = ", ".join([gc[0][thing] for thing in ['name', 'admin1', 'cc']])
+
+	gh = geohash.encode(lat,lon, precision=7)
 
 	if gh in geocode_cache:
 		cache_hit += 1
-		if geocode_cache[gh] != gc2:
-			print "cache got %s" % geocode_cache[gh]
-			print "we got    %s" % gc2
-			cache_hit_incorrect += 1
-		print "cache %i/%i, %i false hit" % (cache_hit, cache_miss, cache_hit_incorrect)
+		print "cache %i/%i" % (cache_hit, cache_miss)
 		return geocode_cache[gh]
 	else:
-		geocode_cache[gh] = gc2
-		cache_miss += 1
-		print "cache %i/%i, %i false hit" % (cache_hit, cache_miss, cache_hit_incorrect)
-		return gc2
+		cache_miss += 1	
+		gc = reverse_geocoder.search((lat,lon))
+		gc_text = ", ".join([gc[0][thing] for thing in ['name', 'admin1', 'cc']])
+		geocode_cache[gh] = gc_text
+		print "cache %i/%i" % (cache_hit, cache_miss)
+		return gc_text
 
 ####
 
