@@ -2,6 +2,12 @@ import datetime
 from models import *
 import md5
 import json
+import Geohash as geohash
+
+####
+
+import reverse_geocoder
+reverse_geocoder.search((0.0,0.0)) # warm up geocoder
 
 ####
 
@@ -28,7 +34,8 @@ def user_object(user):
 			'username': user.user.username,
 			'icon': gravatar(user.user.email),
 			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
-			'extra': process_extra(user.extra)}
+			'extra': process_extra(user.extra),
+			'geocode': rev_geocode(user.lat, user.lon) if (user.lat and user.lon) else None }
 
 def user_object_with_gid(tp,gid):
 	uo = user_object(tp)
@@ -67,6 +74,35 @@ def roleInGroup(db=None, guser=None, group=None, roleMin=1):
 
 def error(msg):
 	return [{'type': 'error', 'data': msg}]
+
+geocode_cache = {}
+cache_hit = 0
+cache_hit_incorrect = 0
+cache_miss = 0
+
+def rev_geocode(lat,lon):
+	global geocode_cache
+	global cache_hit
+	global cache_hit_incorrect
+	global cache_miss
+	
+	gh = geohash.encode(lat,lon, precision=6)
+	gc = reverse_geocoder.search((lat,lon))
+	gc2 = ", ".join([gc[0][thing] for thing in ['name', 'admin1', 'cc']])
+
+	if gh in geocode_cache:
+		cache_hit += 1
+		if geocode_cache[gh] != gc2:
+			print "cache got %s" % geocode_cache[gh]
+			print "we got    %s" % gc2
+			cache_hit_incorrect += 1
+		print "cache %i/%i, %i false hit" % (cache_hit, cache_miss, cache_hit_incorrect)
+		return geocode_cache[gh]
+	else:
+		geocode_cache[gh] = gc2
+		cache_miss += 1
+		print "cache %i/%i, %i false hit" % (cache_hit, cache_miss, cache_hit_incorrect)
+		return gc2
 
 ####
 

@@ -11,4 +11,5 @@ flask-wtf
 pytz
 sqlalchemy
 twisted
-
+reverse-geocoder
+geohash

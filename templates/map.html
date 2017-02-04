@@ -133,18 +133,24 @@
 			<div ng-if="userMe.lastupd < 0">Your position has never been updated. You can install the mobile client for Android <a href="https://play.google.com/apps/testing/com.stackunderflow.stackptr">here</a> (iOS coming soon)</div>
 					
 			<span ng-if="(hUsers = (userList | updateRange:0:60)).length"><div class="label" >&lt;1m ago</div></span>
-			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers track by user.id" ng-src="{{::user.icon}}"
+
+			<div ng-repeat="user in hUsers track by user.id">
+				<img width="32" height="32" class="user-icon" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
 				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
+				<span class="user-geocode" ng-bind="user.geocode"></span>
+			</div>
 
 			<span ng-if="(hUsers = (userList | updateRange:60:3600)).length"><div class="label" >&lt;1h ago</div></span>
 			
-			<img width="32" height="32" class="user-icon" ng-repeat="user in hUsers track by user.id" ng-src="{{::user.icon}}"
+			<div ng-repeat="user in hUsers track by user.id">
+				<img width="32" height="32" class="user-icon" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
 				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
+				<span class="user-geocode" ng-bind="user.geocode"></span>
+			</div>
 			
 			<span ng-if="(dUsers = (userList | updateRange:3600:86400)).length"><div class="label">&lt;1d ago</div></span>
 			
