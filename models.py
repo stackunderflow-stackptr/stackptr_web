@@ -156,4 +156,12 @@ class WAMPSession(Base):
 	sessionid = Column(BigInteger, primary_key=True)
 	user = Column(Integer, ForeignKey('users.id'))
 
+class GeocodeCache(Base):
+	__tablename__ = "geocode_cache"
+	geohash = Column(String(8), primary_key=True)
+	geocode = Column(String(64))
+
+	def __init__(self, geohash, geocode):
+		self.geohash = geohash
+		self.geocode = geocode
 

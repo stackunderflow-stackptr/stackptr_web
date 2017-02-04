@@ -3,6 +3,7 @@ from models import *
 import md5
 import json
 import Geohash as geohash
+import sqlalchemy
 
 ####
 
@@ -27,7 +28,7 @@ def utc_seconds(time):
 def gravatar(email, size=64):
 	return 'https://gravatar.com/avatar/' + md5.md5(email).hexdigest() + ('?s=%i&d=retro' % size)
 
-def user_object(user):
+def user_object(user, db):
 	return {'loc': [user.lat if user.lat else -1, user.lon if user.lon else -1],
 			'alt': user.alt, 'hdg': user.hdg, 'spd': user.spd,
 			'id': user.userid,
@@ -35,10 +36,10 @@ def user_object(user):
 			'icon': gravatar(user.user.email),
 			'lastupd': -1 if (user.lastupd == None) else utc_seconds(user.lastupd),
 			'extra': process_extra(user.extra),
-			'geocode': rev_geocode(user.lat, user.lon) if (user.lat and user.lon) else None }
+			'geocode': rev_geocode(user.lat, user.lon, db) if (user.lat and user.lon) else None }
 
-def user_object_with_gid(tp,gid):
-	uo = user_object(tp)
+def user_object_with_gid(tp,gid,db):
+	uo = user_object(tp,db)
 	uo.update({'gid': gid})
 	return uo
 
@@ -75,27 +76,36 @@ def roleInGroup(db=None, guser=None, group=None, roleMin=1):
 def error(msg):
 	return [{'type': 'error', 'data': msg}]
 
-geocode_cache = {}
 cache_hit = 0
 cache_miss = 0
 
-def rev_geocode(lat,lon):
-	global geocode_cache
+def rev_geocode(lat,lon,db):
 	global cache_hit
 	global cache_miss
 
+	def cachestat():
+		print "geocode cache hit %i of %i (%.1f%%)" % (cache_hit, cache_hit+cache_miss,
+		  float(cache_hit)/float(cache_hit+cache_miss)*100.0)
+
 	gh = geohash.encode(lat,lon, precision=7)
 
-	if gh in geocode_cache:
+	gh_cache = db.session.query(GeocodeCache).filter_by(geohash=gh).first()
+
+	if gh_cache:
 		cache_hit += 1
-		print "geocode cache hit %i of %i" % (cache_hit, cache_hit+cache_miss)
-		return geocode_cache[gh]
+		cachestat()
+		return gh_cache.geocode
 	else:
 		cache_miss += 1	
 		gc = reverse_geocoder.search((lat,lon))
 		gc_text = ", ".join([gc[0][thing] for thing in ['name', 'admin1', 'cc']])
-		geocode_cache[gh] = gc_text
-		print "geocode cache hit %i of %i" % (cache_hit, cache_hit+cache_miss)
+		db.session.add(GeocodeCache(geohash=gh, geocode=gc_text))
+		try:
+			db.session.commit()
+		except sqlalchemy.orm.exc.FlushError:
+			# race condition - another thread has stored a result
+			db.session.rollback()
+		cachestat()
 		return gc_text
 
 ####
@@ -126,7 +136,7 @@ def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
 	
 	#push message to realtime
 	
-	msg = user_object(tu)
+	msg = user_object(tu, db)
 	
 	
 	#lookup list of followers
@@ -169,9 +179,9 @@ def userList(guser, db=None):
 	now = datetime.datetime.utcnow()
 	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
 	
-	me = {'type': 'user-me', 'data': user_object(tu)}
+	me = {'type': 'user-me', 'data': user_object(tu, db)}
 	
-	others_list = [user_object(tu) for f,tu in db.session.query(Follower,TrackPerson)
+	others_list = [user_object(tu, db) for f,tu in db.session.query(Follower,TrackPerson)
 							.join(TrackPerson, Follower.following == TrackPerson.userid)\
 							.filter(Follower.follower == guser.id, Follower.confirmed == 1)\
 							#.filter(TrackPerson.lastupd != None)
@@ -545,7 +555,7 @@ def setShareToGroup(gid=None, share=None, db=None, guser=None, pm=None):
 					   .first()
 		if not tp: return [{'type': 'grouplocshare', 'data': res}]
 
-		res2 = [user_object_with_gid(tp, gid)]
+		res2 = [user_object_with_gid(tp, gid, db)]
 		allowed_list = sessions_for_group(gid, db=db)
 		pm("com.stackptr.user", "grouplocshareuser", msg=res2, eligible=allowed_list)
 
@@ -585,7 +595,7 @@ def sharedGroupLocs(gid=None, db=None, guser=None):
 				   .filter(GroupLocShare.groupid == gid)\
 				   .all()
 
-	res = [user_object_with_gid(tp,gid) for gls,tp in ll]
+	res = [user_object_with_gid(tp,gid,db) for gls,tp in ll]
 	return [{'type': 'grouplocshareuser', 'data': res}]
 
 def sharedGroupLocHistory(gid=None, db=None, guser=None):
@@ -648,7 +658,7 @@ def addUser(user=None, pm=None, guser=None, db=None):
 
 		# and an update
 		tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
-		user_upd = [user_object(tu)]
+		user_upd = [user_object(tu, db)]
 		pm("com.stackptr.user", "user", msg=user_upd, eligible=allowed_list)
 	
 	return []
@@ -668,7 +678,7 @@ def acceptUser(uid=None, pm=None, guser=None, db=None):
 
 	# send user update to them
 	tu = db.session.query(TrackPerson).filter_by(userid = fobj.following).first()
-	user_upd = [user_object(tu)]
+	user_upd = [user_object(tu, db)]
 	pm("com.stackptr.user", "user", msg=user_upd, eligible=allowed_list)
 
 	# send delete user request to me
