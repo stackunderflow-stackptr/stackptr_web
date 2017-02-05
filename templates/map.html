@@ -137,7 +137,8 @@
 			<div ng-repeat="user in hUsers track by user.id">
 				<img width="32" height="32" class="user-icon" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
+				data-title="<b>{{user.username}}</b><br>{{user.geocode}}
+							<br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 				<span class="user-geocode" ng-bind="user.geocode"></span>
 			</div>
@@ -147,7 +148,8 @@
 			<div ng-repeat="user in hUsers track by user.id">
 				<img width="32" height="32" class="user-icon" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
+				data-title="<b>{{user.username}}</b><br>{{user.geocode}}
+							<br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 				<span class="user-geocode" ng-bind="user.geocode"></span>
 			</div>
@@ -157,7 +159,8 @@
 			<div ng-repeat="user in dUsers track by user.id">
 				<img width="32" height="32" class="user-icon" ng-src="{{::user.icon}}"
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
+				data-title="<b>{{user.username}}</b><br>{{user.geocode}}
+							<br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 				<span class="user-geocode" ng-bind="user.geocode"></span>
 			</div>
@@ -166,14 +169,16 @@
 
 			<img width="32" height="32" class="user-icon" ng-repeat="user in wUsers track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
+				data-title="<b>{{user.username}}</b><br>{{user.geocode}}
+							<br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 			
 			<span ng-if="(oUsers = (userList | updateRange:604800:-1)).length"><div class="label">&gt;1w ago</div></span>
 
 			<img width="32" height="32" class="user-icon" ng-repeat="user in oUsers track by user.id" ng-src="{{::user.icon}}" 
 				data-trigger="hover" bs-tooltip data-placement="left" data-html="true"
-				data-title="<b>{{user.username}}</b><br>Last update: {{user.lastupd * 1000 | amCalendar}}"
+				data-title="<b>{{user.username}}</b><br>{{user.geocode}}
+							<br>Last update: {{user.lastupd * 1000 | amCalendar}}"
 				ng-click="clickMarker(user)">
 			
 			<span ng-if="!pendingListEmpty"><div class="label">Outgoing Requests</div></span>

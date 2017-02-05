@@ -29,6 +29,10 @@
 						<span class="col-md-2"><b>Loc:</b></span>
 						<span class="col-md-10" ng-bind="userObj.loc"></span>
 					</div>
+					<div>
+						<span class="col-md-2">&nbsp;</span>
+						<span class="col-md-10" ng-bind="userObj.geocode"></span>
+					</div>
 					<div ng-if="userObj.alt">
 						<span class="col-md-2"><b>Alt:</b></span>
 						<span class="col-md-10" ng-bind-template="{{userObj.alt | number:1}}m ASL"></span>
