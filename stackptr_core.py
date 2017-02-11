@@ -99,12 +99,8 @@ def rev_geocode(lat,lon,db):
 		cache_miss += 1	
 		gc = reverse_geocoder.search((lat,lon))
 		gc_text = ", ".join([gc[0][thing] for thing in ['name', 'admin1', 'cc']])
-		db.session.add(GeocodeCache(geohash=gh, geocode=gc_text))
-		try:
-			db.session.commit()
-		except sqlalchemy.orm.exc.FlushError:
-			# race condition - another thread has stored a result
-			db.session.rollback()
+		db.session.merge(GeocodeCache(geohash=gh, geocode=gc_text))
+		db.session.commit()
 		cachestat()
 		return gc_text
 
