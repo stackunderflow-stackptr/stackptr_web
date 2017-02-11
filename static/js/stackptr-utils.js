@@ -15,7 +15,28 @@ function opacityValue(time) {
 	}
 }
 
+function updateTrackColour(usericon,colour_callback) {
+	var img = new Image();
+	img.onload = function() {
+		var colourThief = new ColorThief();
+		var colourPalette = colourThief.getPalette(img,8);
+		for (var i=0; i<colourPalette.length; i++) {
+			var e = colourPalette[i];
+			var lum = e[0] + e[1] + e[2];
+			if (lum < (127*3)) {
+				colour_callback(rgb2hash(e[0], e[1], e[2]));
+				return;
+			}
+		};
+		// otherwise if we didn't find a suitable colour, just return the first...
+		colour_callback(rgb2hash(colourPalette[0][0], colourPalette[0][1], colourPalette[0][2]));
+		return;
+	};
+	img.crossOrigin = 'Anonymous';
+	img.src = usericon;
 }
+
+
 
 function rgb2hash(r,g,b) {
 	var r = r.toString(16);
