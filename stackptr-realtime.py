@@ -67,10 +67,11 @@ class StackPtrAuthenticator(ApplicationSession):
 				raise e
 		
 		try:
-			yield self.register(authenticate, 'com.stackptr.authenticate')
+			yield self.register(authenticate, u'com.stackptr.authenticate')
 			print("authenticator registered")
 		except Exception as e:
-			print("could not register authenticator: %s" % e)
+			print("could not register authenticator")
+			print traceback.format_exc()
 
 class StackPtrAPI(ApplicationSession):
 	@inlineCallbacks
@@ -193,32 +194,33 @@ class StackPtrAPI(ApplicationSession):
 		ro = RegisterOptions(details_arg='details')
 		
 		try:
-			yield self.register(locHist, 'com.stackptr.api.lochist', options=ro)
-			yield self.register(userList, 'com.stackptr.api.userList', options=ro)
-			yield self.register(addUser, 'com.stackptr.api.addUser', options=ro)
-			yield self.register(acceptUser, 'com.stackptr.api.acceptUser', options=ro)
-			yield self.register(delUser, 'com.stackptr.api.delUser', options=ro)
+			yield self.register(locHist, u'com.stackptr.api.lochist', options=ro)
+			yield self.register(userList, u'com.stackptr.api.userList', options=ro)
+			yield self.register(addUser, u'com.stackptr.api.addUser', options=ro)
+			yield self.register(acceptUser, u'com.stackptr.api.acceptUser', options=ro)
+			yield self.register(delUser, u'com.stackptr.api.delUser', options=ro)
 
-			yield self.register(groupList, 'com.stackptr.api.groupList', options=ro)
-			yield self.register(groupDiscover, 'com.stackptr.api.groupDiscover', options=ro)
-			yield self.register(createGroup, 'com.stackptr.api.createGroup', options=ro)
-			yield self.register(joinGroup, 'com.stackptr.api.joinGroup', options=ro)
-			yield self.register(groupUserMod, 'com.stackptr.api.groupUserMod', options=ro)
-			yield self.register(leaveGroup, 'com.stackptr.api.leaveGroup', options=ro)
-			yield self.register(deleteGroup, 'com.stackptr.api.deleteGroup', options=ro)
-			yield self.register(updateGroup, 'com.stackptr.api.updateGroup', options=ro)
+			yield self.register(groupList, u'com.stackptr.api.groupList', options=ro)
+			yield self.register(groupDiscover, u'com.stackptr.api.groupDiscover', options=ro)
+			yield self.register(createGroup, u'com.stackptr.api.createGroup', options=ro)
+			yield self.register(joinGroup, u'com.stackptr.api.joinGroup', options=ro)
+			yield self.register(groupUserMod, u'com.stackptr.api.groupUserMod', options=ro)
+			yield self.register(leaveGroup, u'com.stackptr.api.leaveGroup', options=ro)
+			yield self.register(deleteGroup, u'com.stackptr.api.deleteGroup', options=ro)
+			yield self.register(updateGroup, u'com.stackptr.api.updateGroup', options=ro)
 
-			yield self.register(getSharedToGroups, 'com.stackptr.api.getSharedToGroups', options=ro)
-			yield self.register(setShareToGroup, 'com.stackptr.api.setShareToGroup', options=ro)
-			yield self.register(sharedGroupLocs, 'com.stackptr.api.sharedGroupLocs', options=ro)
+			yield self.register(getSharedToGroups, u'com.stackptr.api.getSharedToGroups', options=ro)
+			yield self.register(setShareToGroup, u'com.stackptr.api.setShareToGroup', options=ro)
+			yield self.register(sharedGroupLocs, u'com.stackptr.api.sharedGroupLocs', options=ro)
 			#yield self.register(sharedGroupLocHistory, 'com.stackptr.api.sharedGroupLocHistory', options=ro)
 
-			yield self.register(groupData, 'com.stackptr.api.groupData', options=ro)
-			yield self.register(addFeature, 'com.stackptr.api.addFeature', options=ro)
-			yield self.register(editFeature, 'com.stackptr.api.editFeature', options=ro)
-			yield self.register(deleteFeature, 'com.stackptr.api.deleteFeature', options=ro)
+			yield self.register(groupData, u'com.stackptr.api.groupData', options=ro)
+			yield self.register(addFeature, u'com.stackptr.api.addFeature', options=ro)
+			yield self.register(editFeature, u'com.stackptr.api.editFeature', options=ro)
+			yield self.register(deleteFeature, u'com.stackptr.api.deleteFeature', options=ro)
 		except Exception as e:
-			print "could not register api calls: %s" % e
+			print("could not register api calls")
+			print traceback.format_exc()
 
 class StackPtrSessionMonitor(ApplicationSession):
 	@inlineCallbacks
@@ -233,13 +235,14 @@ class StackPtrSessionMonitor(ApplicationSession):
 				else:
 					print "removed nonexistant session"
 			except Exception as e:
+				print("could not remove sessions")
 				print traceback.format_exc()
-				raise e
 		
 		try:
 			print "removed %i old sessions" % db.session.query(WAMPSession).delete()
 			db.session.commit()
-			yield self.subscribe(on_session_leave, 'wamp.session.on_leave')
+			yield self.subscribe(on_session_leave, u'wamp.session.on_leave')
 			print "sessionmonitor registered"
 		except Exception as e:
-			print "could not register sessionmonitor: %s" % e
+			print("could not register session monitor")
+			print traceback.format_exc()
