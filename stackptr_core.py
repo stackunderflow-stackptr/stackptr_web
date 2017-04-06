@@ -4,10 +4,9 @@ import md5
 import json
 import Geohash as geohash
 import sqlalchemy
-
-####
-
 import reverse_geocoder
+import geopy.distance
+
 reverse_geocoder.search((0.0,0.0)) # warm up geocoder
 
 ####
@@ -109,20 +108,36 @@ def rev_geocode(lat,lon,db):
 def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
 	if None in (lat, lon):
 		return "No lat/lon specified"
+	if (lat,lon) == (0.0,0.0):
+		return "0,0 rejected - likely not valid"
 	
-	#update TrackPerson
+	#get previous TrackPerson
 	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
 	if not tu:
-		tu = TrackPerson(guser.id, guser.username)
+		tu = TrackPerson(guser.id, guser.username, lat, lon)
 		db.session.add(tu)
 		db.session.commit()
+
+	# filter potentially erroneous locations
+	updtime = datetime.datetime.utcnow()
+	provider = process_extra(extra).get("prov","")
+	if not provider.endswith("gps"):
+		distance = geopy.distance.vincenty((tu.lat,tu.lon),(lat,lon)).meters
+		timediff = (updtime - tu.lastupd).total_seconds()
+		if timediff < 7200.0: # 2 hours since last fix
+			speed = distance / timediff
+			if speed > 56.0: # ~200km/h
+				print "Rejected update: speed = %.2fm/s" % speed
+				return "Position erroneous - average speed too high"
+
+	# do the update
 	tu.lat = lat
 	tu.lon = lon
 	tu.alt = alt
 	tu.hdg = hdg
 	tu.spd = spd
 	tu.extra = extra
-	tu.lastupd = datetime.datetime.utcnow()
+	tu.lastupd = updtime
 	
 	#add to TrackHistory
 	

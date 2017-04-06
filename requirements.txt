@@ -13,3 +13,4 @@ sqlalchemy
 twisted
 reverse-geocoder
 geohash
+geopy
