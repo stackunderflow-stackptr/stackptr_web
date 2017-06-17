@@ -189,7 +189,11 @@ def userList(guser, db=None):
 
 	now = datetime.datetime.utcnow()
 	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
-	
+	if not tu:
+		tu = TrackPerson(guser.id, guser.username, -1, -1)
+		db.session.add(tu)
+		db.session.commit()
+
 	me = {'type': 'user-me', 'data': user_object(tu, db)}
 	
 	others_list = [user_object(tu, db) for f,tu in db.session.query(Follower,TrackPerson)
