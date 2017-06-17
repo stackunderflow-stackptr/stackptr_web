@@ -124,12 +124,13 @@ def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
 	provider = process_extra(extra).get("prov","")
 	if not provider.endswith("gps"):
 		distance = geopy.distance.vincenty((tu.lat,tu.lon),(lat,lon)).meters
-		timediff = (updtime - tu.lastupd).total_seconds()
-		if timediff < 7200.0: # 2 hours since last fix
-			speed = distance / timediff
-			if speed > 56.0: # ~200km/h
-				print "Rejected update: speed = %.2fm/s" % speed
-				return "Position erroneous - average speed too high"
+		if tu.lastupd:
+			timediff = (updtime - tu.lastupd).total_seconds()
+			if timediff < 7200.0: # 2 hours since last fix
+				speed = distance / timediff
+				if speed > 56.0: # ~200km/h
+					print "Rejected update: speed = %.2fm/s" % speed
+					return "Position erroneous - average speed too high"
 
 	# do the update
 	tu.lat = lat
