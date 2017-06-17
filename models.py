@@ -26,7 +26,7 @@ class TrackPerson(Base):
 		self.device = device
 		self.lat = lat
 		self.lon = lon
-		self.lastupd = 0
+		self.lastupd = None
 
 class TrackHistory(Base):
 	__tablename__ = "track_history"
