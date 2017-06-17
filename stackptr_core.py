@@ -110,16 +110,17 @@ def update(lat, lon, alt, hdg, spd, extra, pm=None, guser=None, db=None):
 		return "No lat/lon specified"
 	if (lat,lon) == (0.0,0.0):
 		return "0,0 rejected - likely not valid"
+
+	updtime = datetime.datetime.utcnow()
 	
 	#get previous TrackPerson
 	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
 	if not tu:
-		tu = TrackPerson(guser.id, guser.username, lat, lon)
+		tu = TrackPerson(guser.id, guser.username, lat, lon, updtime)
 		db.session.add(tu)
 		db.session.commit()
 
 	# filter potentially erroneous locations
-	updtime = datetime.datetime.utcnow()
 	provider = process_extra(extra).get("prov","")
 	if not provider.endswith("gps"):
 		distance = geopy.distance.vincenty((tu.lat,tu.lon),(lat,lon)).meters
@@ -190,7 +191,7 @@ def userList(guser, db=None):
 	now = datetime.datetime.utcnow()
 	tu = db.session.query(TrackPerson).filter_by(userid = guser.id).first()
 	if not tu:
-		tu = TrackPerson(guser.id, guser.username, -1, -1)
+		tu = TrackPerson(guser.id, guser.username, -1, -1, None)
 		db.session.add(tu)
 		db.session.commit()
 

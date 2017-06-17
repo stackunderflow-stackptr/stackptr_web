@@ -21,12 +21,12 @@ class TrackPerson(Base):
 	user = relationship('Users', foreign_keys=userid, lazy='joined',
 							primaryjoin="TrackPerson.userid==Users.id")
 	
-	def __init__(self, userid, device, lat, lon):
+	def __init__(self, userid, device, lat, lon, updtime):
 		self.userid = userid
 		self.device = device
 		self.lat = lat
 		self.lon = lon
-		self.lastupd = None
+		self.lastupd = updtime
 
 class TrackHistory(Base):
 	__tablename__ = "track_history"
