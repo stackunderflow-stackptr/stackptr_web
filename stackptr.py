@@ -373,7 +373,7 @@ def addfeature():
 @login_required
 def delfeature():
 	fid = int(request.form['fid'])
-	return json.dumps(stackptr_core.deleteFeature(db=db, pm=publish_message, fid=fid, guser=g.user.id))
+	return json.dumps(stackptr_core.deleteFeature(db=db, pm=publish_message, fid=fid, guser=g.user))
 
 
 @app.route('/editfeature', methods=['POST'])
@@ -384,7 +384,7 @@ def editfeature():
 	name = request.form.get('name', None)
 	description = request.form.get('description', None)
 	fid = int(request.form['fid'])
-	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, fid=fid, gjson=gjson, name=name, description=description, guser=g.user.id))
+	return json.dumps(stackptr_core.editFeature(db=db, pm=publish_message, fid=fid, gjson=gjson, name=name, description=description, guser=g.user))
 
 
 if __name__ == '__main__':
